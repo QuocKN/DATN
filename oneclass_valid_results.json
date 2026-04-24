@@ -1,0 +1,19 @@
+{
+  "test_root": "C:\\Users\\DiepHM\\Documents\\data\\DroneDetect_spectrogram_dataset\\valid",
+  "oneclass": {
+    "method": "one_class_centroid",
+    "embedding_backbone": "resnet18_penultimate",
+    "eval_mode": "positive_only",
+    "positive_label": "drone",
+    "train_images": 9080,
+    "test_images": 3040,
+    "threshold_percentile": 95.0,
+    "threshold": 29.24912452697754,
+    "mean_distance": 22.048967361450195,
+    "std_distance": 3.491973876953125,
+    "min_distance": 13.651611328125,
+    "max_distance": 42.16034698486328,
+    "accept_rate": 0.9710526315789474,
+    "reject_rate": 0.02894736842105261
+  }
+}
