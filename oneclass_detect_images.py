@@ -18,7 +18,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly instead of passing command-line arguments.
 ARTIFACT_IN = "oneclass_artifact.joblib"
-SOURCE_DIR = r"C:\Users\DiepHM\Documents\data\DroneDetect_spectrogram_dataset\test\CLEAN\AIR_FY"
+SOURCE_DIR = r"/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/spectrograms"
 OUTPUT_JSON = "oneclass_detect_results.json"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"

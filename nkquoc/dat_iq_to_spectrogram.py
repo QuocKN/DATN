@@ -21,8 +21,8 @@ from bin_iq_to_spectrogram import compute_spectrogram, save_spectrogram_image
 # ========================
 # CONFIG
 # ========================
-INPUT_DAT_PATH = r"/home/quocnk/Documents/NKQuoc/Data/DroneDetect/MAV_0000_03.dat"
-OUTPUT_DIR = r"/home/quocnk/Documents/NKQuoc/Data/DroneDetect/spectrograms"
+INPUT_DAT_PATH = r"/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/MAV_0000_03.dat"
+OUTPUT_DIR = r"/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/spectrograms"
 
 SAMPLE_RATE = 60_000_000  # Hz (adjust as needed)
 STFT_POINT = 2048
