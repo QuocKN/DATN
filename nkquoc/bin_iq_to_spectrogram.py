@@ -19,10 +19,13 @@ from scipy.signal import stft, windows
 # ========================
 # CONFIG
 # ========================
-INPUT_BIN_PATH = r"C:\Users\DiepHM\Documents\data\2toan.bin"
-OUTPUT_DIR = r"C:\Users\DiepHM\Documents\data\spectrograms\2toanbin"
+# INPUT_BIN_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone/2toan.bin"
+# OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone/spectrograms"
+INPUT_BIN_PATH ="/home/quocnk/Documents/NKQuoc/Data/RF/Noisy_Drone_RF_Signal_v2_kaggle"
+OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/IQdata_sample10000_target4_snr20/spectrograms"
 
-SAMPLE_RATE = 28_000_000  # Hz (adjust as needed)
+
+SAMPLE_RATE = 60_000_000  # Hz (adjust as needed)
 STFT_POINT = 2048
 DURATION_TIME = 0.03  # seconds per spectrogram
 CHUNK_SIZE = 4096  # IQ samples per chunk
@@ -30,7 +33,7 @@ OUTPUT_PREFIX = "spectrogram"
 IMAGE_SIZE = 224
 
 # Set to None to read entire file, or set to N seconds to read only first N seconds
-MAX_DURATION_SECONDS = 4  # Read only first 4 seconds
+MAX_DURATION_SECONDS = 500  # Read only first 500 seconds
 
 # Set to True to normalize int16 to [-1, 1] range, False to keep raw values
 NORMALIZE = False

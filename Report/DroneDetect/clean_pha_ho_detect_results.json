@@ -1,0 +1,251 @@
+{
+  "summary": {
+    "method": "one_class_centroid",
+    "embedding_backbone": "resnet18_penultimate",
+    "artifact_in": "oneclass_artifact.joblib",
+    "source_images": 39,
+    "threshold_percentile": 95.0,
+    "threshold": 28.598876953125,
+    "detected_drone_count": 34,
+    "detected_non_drone_count": 5,
+    "detected_drone_rate": 0.8717948717948718,
+    "mean_distance": 23.685379028320312,
+    "std_distance": 3.4204118251800537
+  },
+  "predictions": [
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00001.png",
+      "distance": 30.318803787231445,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00002.png",
+      "distance": 27.813594818115234,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00003.png",
+      "distance": 28.944440841674805,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00004.png",
+      "distance": 27.808246612548828,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00005.png",
+      "distance": 25.01612091064453,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00006.png",
+      "distance": 23.216651916503906,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00007.png",
+      "distance": 22.335567474365234,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00008.png",
+      "distance": 22.964784622192383,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00009.png",
+      "distance": 33.28845977783203,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00010.png",
+      "distance": 24.01876449584961,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00011.png",
+      "distance": 20.575111389160156,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00012.png",
+      "distance": 21.029563903808594,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00013.png",
+      "distance": 20.900297164916992,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00014.png",
+      "distance": 23.84771728515625,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00015.png",
+      "distance": 23.355318069458008,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00016.png",
+      "distance": 19.897724151611328,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00017.png",
+      "distance": 21.58268165588379,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00018.png",
+      "distance": 25.09450340270996,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00019.png",
+      "distance": 25.392118453979492,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00020.png",
+      "distance": 29.73735809326172,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00021.png",
+      "distance": 24.918766021728516,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00022.png",
+      "distance": 21.005876541137695,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00023.png",
+      "distance": 20.211793899536133,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00024.png",
+      "distance": 20.063953399658203,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00025.png",
+      "distance": 24.917192459106445,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00026.png",
+      "distance": 25.404165267944336,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00027.png",
+      "distance": 22.60588836669922,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00028.png",
+      "distance": 22.24688148498535,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00029.png",
+      "distance": 26.421064376831055,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00030.png",
+      "distance": 22.018043518066406,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00031.png",
+      "distance": 21.330448150634766,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00032.png",
+      "distance": 21.01305389404297,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00033.png",
+      "distance": 22.13267707824707,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00034.png",
+      "distance": 19.749801635742188,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00035.png",
+      "distance": 29.874826431274414,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00036.png",
+      "distance": 23.450838088989258,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00037.png",
+      "distance": 20.719715118408203,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00038.png",
+      "distance": 19.49219512939453,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/DroneDetect_spectrogram_dataset/test/CLEAN/PHA_HO/spectrogram__CLEAN__PHA_HO__PHA_0001_02__w00039.png",
+      "distance": 19.014755249023438,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    }
+  ]
+}

@@ -21,17 +21,16 @@ from bin_iq_to_spectrogram import compute_spectrogram, save_spectrogram_image
 # ========================
 # CONFIG
 # ========================
-INPUT_DAT_PATH = r"/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/MAV_0000_03.dat"
-OUTPUT_DIR = r"/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/spectrograms"
-
+INPUT_DAT_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/MAV_0000_03.dat"
+OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/spectrograms"
 SAMPLE_RATE = 60_000_000  # Hz (adjust as needed)
 STFT_POINT = 2048
 DURATION_TIME = 0.1  # seconds per spectrogram
 CHUNK_SIZE = 1_000_000  # IQ samples per chunk (will auto-increase if needed)
-OUTPUT_PREFIX = "spectrogram"
+OUTPUT_PREFIX = "spectrogram_MA1_0000_03"
 
 # Set to None to read entire file, or set to N seconds to read only first N seconds
-MAX_DURATION_SECONDS = 1
+MAX_DURATION_SECONDS = 2
 
 # Supported values: "float32_iq" or "int16_iq"
 DAT_FORMAT = "float32_iq"
