@@ -25,7 +25,7 @@ import numpy as np
 # ========================
 # CONFIG
 # ========================
-DAT_PATH = r"C:\Users\DiepHM\Documents\data\CLEAN\PHA_ON\PHA_0000_00.dat"
+DAT_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/pack2_0-1s.iq"
 HEAD_BYTES = 512           # bytes to inspect from beginning of file
 HEX_PER_LINE = 16          # bytes per hex row
 PREVIEW_COUNT = 16         # number of values for numeric previews

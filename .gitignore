@@ -3,5 +3,5 @@ BLUE/
 CLEAN/
 WIFI/
 BOTH/
-
-
+.venv/
+__pycache__/

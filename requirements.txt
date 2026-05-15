@@ -1,0 +1,21 @@
+numpy
+opencv-python
+torch
+torchvision
+scikit-learn
+matplotlib
+scipy
+pandas
+Pillow
+PyYAML
+tqdm
+seaborn
+joblib
+h5py
+imageio
+albumentations
+requests
+psutil
+colorama
+thop
+# pkg_resources

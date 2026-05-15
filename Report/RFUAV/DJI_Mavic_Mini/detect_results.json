@@ -1,0 +1,305 @@
+{
+  "summary": {
+    "method": "one_class_centroid",
+    "embedding_backbone": "resnet18_penultimate",
+    "artifact_in": "oneclass_artifact.joblib",
+    "source_images": 48,
+    "threshold_percentile": 95.0,
+    "threshold": 28.598876953125,
+    "detected_drone_count": 1,
+    "detected_non_drone_count": 47,
+    "detected_drone_rate": 0.020833333333333332,
+    "mean_distance": 32.68016052246094,
+    "std_distance": 2.1447219848632812
+  },
+  "predictions": [
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000001.png",
+      "distance": 34.8517951965332,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000002.png",
+      "distance": 35.05442428588867,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000003.png",
+      "distance": 34.48042297363281,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000004.png",
+      "distance": 37.732120513916016,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000005.png",
+      "distance": 35.88766860961914,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000006.png",
+      "distance": 29.28622817993164,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000007.png",
+      "distance": 31.065752029418945,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000008.png",
+      "distance": 30.13524627685547,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000009.png",
+      "distance": 31.33292007446289,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000010.png",
+      "distance": 32.041683197021484,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000011.png",
+      "distance": 32.22824478149414,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000012.png",
+      "distance": 32.295738220214844,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000013.png",
+      "distance": 31.42418098449707,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000014.png",
+      "distance": 34.52970886230469,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000015.png",
+      "distance": 33.975830078125,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000016.png",
+      "distance": 30.128787994384766,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000001.png",
+      "distance": 33.327491760253906,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000002.png",
+      "distance": 34.133609771728516,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000003.png",
+      "distance": 30.77495002746582,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000004.png",
+      "distance": 34.80021286010742,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000005.png",
+      "distance": 33.11703109741211,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000006.png",
+      "distance": 34.657901763916016,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000007.png",
+      "distance": 32.53725814819336,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000008.png",
+      "distance": 35.55156326293945,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000009.png",
+      "distance": 32.15127182006836,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000010.png",
+      "distance": 35.544803619384766,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000011.png",
+      "distance": 32.34111785888672,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000012.png",
+      "distance": 33.37532043457031,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000013.png",
+      "distance": 33.30757522583008,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000014.png",
+      "distance": 33.185848236083984,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000015.png",
+      "distance": 36.210174560546875,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000016.png",
+      "distance": 33.562400817871094,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000001.png",
+      "distance": 37.524559020996094,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000002.png",
+      "distance": 29.870019912719727,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000003.png",
+      "distance": 32.363182067871094,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000004.png",
+      "distance": 29.77086639404297,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000005.png",
+      "distance": 29.738264083862305,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000006.png",
+      "distance": 31.8287410736084,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000007.png",
+      "distance": 32.2696418762207,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000008.png",
+      "distance": 30.150611877441406,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000009.png",
+      "distance": 28.001384735107422,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000010.png",
+      "distance": 31.24452781677246,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000011.png",
+      "distance": 33.05532455444336,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000012.png",
+      "distance": 31.36027717590332,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000013.png",
+      "distance": 31.873743057250977,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000014.png",
+      "distance": 32.70683670043945,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000015.png",
+      "distance": 31.450294494628906,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000016.png",
+      "distance": 30.41008949279785,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    }
+  ]
+}

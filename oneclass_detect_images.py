@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List, Tuple, cast
 
 import joblib
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
@@ -18,8 +19,9 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly instead of passing command-line arguments.
 ARTIFACT_IN = "oneclass_artifact.joblib"
-SOURCE_DIR = r"C:\Users\DiepHM\Documents\data\DroneDetect_spectrogram_dataset\test\CLEAN\AIR_FY"
-OUTPUT_JSON = "oneclass_detect_results.json"
+SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms"
+OUTPUT_JSON = "Report/RFUAV/DJI_Mavic_Mini/detect_results.json"
+OUTPUT_CHART = "Report/RFUAV/DJI_Mavic_Mini/threshold_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 
@@ -88,6 +90,64 @@ def load_artifact(path: Path) -> Tuple[StandardScaler, np.ndarray, float, float,
     return scaler, centroid, threshold, threshold_percentile, image_size
 
 
+def visualize_threshold_distribution(
+    distances: np.ndarray,
+    threshold: float,
+    threshold_percentile: float,
+    output_path: Path,
+    drone_count: int,
+    total: int,
+) -> None:
+    """Create a visualization showing distance distribution and threshold."""
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    # Histogram with threshold line
+    ax1 = axes[0]
+    ax1.hist(distances, bins=50, alpha=0.7, color="skyblue", edgecolor="black")
+    ax1.axvline(threshold, color="red", linestyle="--", linewidth=2, label=f"Threshold: {threshold:.3f}")
+    ax1.set_xlabel("Distance from Centroid", fontsize=11)
+    ax1.set_ylabel("Frequency", fontsize=11)
+    ax1.set_title("Distance Distribution", fontsize=12, fontweight="bold")
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+
+    # Line chart showing distance progression
+    ax2 = axes[1]
+    drone_mask = distances <= threshold
+
+    # Plot drone samples in green
+    drone_indices = np.where(drone_mask)[0]
+    ax2.plot(drone_indices, distances[drone_mask], color="green", linewidth=1.5, alpha=0.7, label="Drone")
+    ax2.scatter(drone_indices, distances[drone_mask], color="green", s=20, alpha=0.6)
+
+    # Plot non-drone samples in orange
+    non_drone_indices = np.where(~drone_mask)[0]
+    ax2.plot(non_drone_indices, distances[~drone_mask], color="orange", linewidth=1.5, alpha=0.7, label="Non-drone")
+    ax2.scatter(non_drone_indices, distances[~drone_mask], color="orange", s=20, alpha=0.6)
+
+    ax2.axhline(threshold, color="red", linestyle="--", linewidth=2, label=f"Threshold: {threshold:.3f}")
+    ax2.set_xlabel("Image Index", fontsize=11)
+    ax2.set_ylabel("Distance from Centroid", fontsize=11)
+    ax2.set_title("Distance Progression", fontsize=12, fontweight="bold")
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+
+    # Add overall title with statistics
+    fig.suptitle(
+        f"One-Class Detection Results | Threshold: {threshold_percentile}th percentile | "
+        f"Drone: {drone_count}/{total} ({100*drone_count/max(total, 1):.1f}%)",
+        fontsize=13,
+        fontweight="bold",
+        y=1.02
+    )
+
+    plt.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(output_path, dpi=150, bbox_inches="tight")
+    print(f"Saved chart: {output_path}")
+    plt.close()
+
+
 def main() -> None:
     device = torch.device(DEVICE if torch.cuda.is_available() and DEVICE.startswith("cuda") else "cpu")
 
@@ -147,6 +207,17 @@ def main() -> None:
 
     print(json.dumps(summary, indent=2, ensure_ascii=True))
     print(f"Saved JSON: {output_path}")
+
+    # Generate visualization chart
+    chart_path = Path(OUTPUT_CHART)
+    visualize_threshold_distribution(
+        source_distances,
+        threshold,
+        threshold_percentile,
+        chart_path,
+        drone_count,
+        total,
+    )
 
 
 if __name__ == "__main__":
