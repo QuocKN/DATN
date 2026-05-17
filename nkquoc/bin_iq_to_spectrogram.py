@@ -13,7 +13,7 @@ from typing import Generator
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-from scipy.signal import stft, windows
+from scipy.signal import stft
 
 
 # ========================
@@ -47,8 +47,13 @@ def STFT(data,
 
     slice_point = int(fs * duration_time)
 
-    f, t, Zxx = stft(data[0: slice_point], fs,
-         return_onesided=onside, window=windows.hamming(stft_point), nperseg=stft_point)
+    f, t, Zxx = stft(
+        data[0:slice_point],
+        fs=fs,
+        return_onesided=onside,
+        window="hamming",
+        nperseg=stft_point,
+    )
 
     return f, t, Zxx
 

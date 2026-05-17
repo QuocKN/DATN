@@ -19,9 +19,9 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly instead of passing command-line arguments.
 ARTIFACT_IN = "oneclass_artifact.joblib"
-SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms"
-OUTPUT_JSON = "Report/RFUAV/DJI_Mavic_Mini/detect_results.json"
-OUTPUT_CHART = "Report/RFUAV/DJI_Mavic_Mini/threshold_chart.png"
+SOURCE_DIR = "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms"
+OUTPUT_JSON = "Report/RFUAV/DJI_Inspire/detect_threshold_results.json"
+OUTPUT_CHART = "Report/RFUAV/DJI_Inspire/threshold_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 

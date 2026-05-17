@@ -1,0 +1,149 @@
+{
+  "summary": {
+    "method": "one_class_centroid",
+    "embedding_backbone": "resnet18_penultimate",
+    "artifact_in": "oneclass_artifact.joblib",
+    "source_images": 22,
+    "threshold_percentile": 95.0,
+    "threshold": 28.598876953125,
+    "detected_drone_count": 11,
+    "detected_non_drone_count": 11,
+    "detected_drone_rate": 0.5,
+    "mean_distance": 32.105403900146484,
+    "std_distance": 6.217364311218262
+  },
+  "predictions": [
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000001.png",
+      "distance": 39.30289840698242,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000002.png",
+      "distance": 40.564666748046875,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000003.png",
+      "distance": 36.93268966674805,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000004.png",
+      "distance": 29.307931900024414,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000005.png",
+      "distance": 42.17842483520508,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000006.png",
+      "distance": 42.64978790283203,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000007.png",
+      "distance": 36.94564437866211,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000008.png",
+      "distance": 35.182960510253906,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000009.png",
+      "distance": 42.087982177734375,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000010.png",
+      "distance": 36.44515609741211,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000001.png",
+      "distance": 27.88503646850586,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000002.png",
+      "distance": 27.094837188720703,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000003.png",
+      "distance": 28.36629867553711,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000004.png",
+      "distance": 28.209962844848633,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000005.png",
+      "distance": 29.12749671936035,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000006.png",
+      "distance": 27.927757263183594,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000007.png",
+      "distance": 26.77589225769043,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000008.png",
+      "distance": 28.453285217285156,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000009.png",
+      "distance": 25.41217613220215,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000010.png",
+      "distance": 26.26519203186035,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000011.png",
+      "distance": 24.943870544433594,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000012.png",
+      "distance": 24.258893966674805,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    }
+  ]
+}
