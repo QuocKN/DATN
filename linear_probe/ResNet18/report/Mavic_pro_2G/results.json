@@ -2,7 +2,7 @@
   "summary": {
     "method": "linear_probe_classifier",
     "model_name": "logistic_regression",
-    "artifact_in": "linear_probe_artifact.joblib",
+    "artifact_in": "linear_probe\\ResNet18\\linear_probe_artifact.joblib",
     "source_images": 12,
     "detected_drone_count": 12,
     "detected_non_drone_count": 0,

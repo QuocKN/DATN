@@ -1,0 +1,781 @@
+{
+  "summary": {
+    "method": "linear_probe_classifier",
+    "model_name": "logistic_regression",
+    "artifact_in": "linear_probe\\ConvNext_Tiny\\trained_classifier.joblib",
+    "source_images": 147,
+    "detected_drone_count": 34,
+    "detected_non_drone_count": 113,
+    "detected_drone_rate": 0.23129251700680273,
+    "score_mean": 0.2797368354651561,
+    "score_std": 0.2692981709209415,
+    "train_summary": {
+      "feature_extractor": "convnext_tiny_imagenet_penultimate",
+      "image_size": 224,
+      "device": "cpu",
+      "n_total": 3087,
+      "n_drone": 1700,
+      "n_non_drone": 1387,
+      "val_size": 0.2,
+      "seed": 42,
+      "models": {
+        "logistic_regression": {
+          "macro_f1": 1.0,
+          "drone_precision": 1.0,
+          "drone_recall": 1.0,
+          "drone_f1": 1.0,
+          "non_drone_precision": 1.0,
+          "non_drone_recall": 1.0,
+          "non_drone_f1": 1.0
+        },
+        "linear_svm": {
+          "macro_f1": 1.0,
+          "drone_precision": 1.0,
+          "drone_recall": 1.0,
+          "drone_f1": 1.0,
+          "non_drone_precision": 1.0,
+          "non_drone_recall": 1.0,
+          "non_drone_f1": 1.0
+        }
+      },
+      "selected_model": "logistic_regression"
+    }
+  },
+  "predictions": [
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000008.png",
+      "prediction": "non_drone",
+      "drone_score": 0.00510296491988505
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000009.png",
+      "prediction": "non_drone",
+      "drone_score": 0.09132780081551375
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000010.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3952685022441091
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000011.png",
+      "prediction": "non_drone",
+      "drone_score": 0.15624965001662663
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000012.png",
+      "prediction": "non_drone",
+      "drone_score": 0.05752941835955007
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000013.png",
+      "prediction": "non_drone",
+      "drone_score": 0.24775939337121514
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000014.png",
+      "prediction": "non_drone",
+      "drone_score": 0.31515093963312396
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000015.png",
+      "prediction": "non_drone",
+      "drone_score": 0.4107200867629209
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000016.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3560928664814
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000017.png",
+      "prediction": "non_drone",
+      "drone_score": 0.2275387132783314
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000018.png",
+      "prediction": "non_drone",
+      "drone_score": 0.1511089704547758
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000019.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0035778462766653564
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000020.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0033326012214132277
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000021.png",
+      "prediction": "non_drone",
+      "drone_score": 0.002635760417792245
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000022.png",
+      "prediction": "non_drone",
+      "drone_score": 0.00344337942469636
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000023.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0025002871254332973
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000024.png",
+      "prediction": "non_drone",
+      "drone_score": 0.003755758493194747
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000025.png",
+      "prediction": "non_drone",
+      "drone_score": 0.002127899836990039
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000026.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0016554793908820742
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000027.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0014940856662408514
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000028.png",
+      "prediction": "non_drone",
+      "drone_score": 0.004041916011955867
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000029.png",
+      "prediction": "non_drone",
+      "drone_score": 0.005003458703677134
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000030.png",
+      "prediction": "non_drone",
+      "drone_score": 0.004284925718396986
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000031.png",
+      "prediction": "non_drone",
+      "drone_score": 0.002842512983211845
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000032.png",
+      "prediction": "non_drone",
+      "drone_score": 0.003061073467829342
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000033.png",
+      "prediction": "non_drone",
+      "drone_score": 0.001240392404941717
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000034.png",
+      "prediction": "non_drone",
+      "drone_score": 0.006416196979011165
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000035.png",
+      "prediction": "non_drone",
+      "drone_score": 0.012621082659701044
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000036.png",
+      "prediction": "non_drone",
+      "drone_score": 0.008356009291954137
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000037.png",
+      "prediction": "non_drone",
+      "drone_score": 0.03642329314285695
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000038.png",
+      "prediction": "non_drone",
+      "drone_score": 0.1102732244285326
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000039.png",
+      "prediction": "non_drone",
+      "drone_score": 0.14640511603601397
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000040.png",
+      "prediction": "non_drone",
+      "drone_score": 0.4242061915018182
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000041.png",
+      "prediction": "non_drone",
+      "drone_score": 0.08590786749244204
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000042.png",
+      "prediction": "non_drone",
+      "drone_score": 0.03933134529592406
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000043.png",
+      "prediction": "non_drone",
+      "drone_score": 0.03546384283251319
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000044.png",
+      "prediction": "non_drone",
+      "drone_score": 0.009732571534596257
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000045.png",
+      "prediction": "non_drone",
+      "drone_score": 0.006768046767052343
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000046.png",
+      "prediction": "non_drone",
+      "drone_score": 0.02373421563892084
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000047.png",
+      "prediction": "non_drone",
+      "drone_score": 0.010417901800787091
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000048.png",
+      "prediction": "non_drone",
+      "drone_score": 0.4697295363452661
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000049.png",
+      "prediction": "non_drone",
+      "drone_score": 0.2851941077066245
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000050.png",
+      "prediction": "drone",
+      "drone_score": 0.6901634476500712
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000051.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3781859959275535
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000052.png",
+      "prediction": "non_drone",
+      "drone_score": 0.1319088199900115
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000053.png",
+      "prediction": "non_drone",
+      "drone_score": 0.07620692174066843
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000054.png",
+      "prediction": "non_drone",
+      "drone_score": 0.009422219936958718
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000055.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0357764676842315
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000056.png",
+      "prediction": "drone",
+      "drone_score": 0.587383849092568
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000057.png",
+      "prediction": "non_drone",
+      "drone_score": 0.17758762915903722
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000058.png",
+      "prediction": "non_drone",
+      "drone_score": 0.01658566211023868
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000059.png",
+      "prediction": "non_drone",
+      "drone_score": 0.05826910656200922
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000060.png",
+      "prediction": "non_drone",
+      "drone_score": 0.2745391286851897
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000061.png",
+      "prediction": "non_drone",
+      "drone_score": 0.2611473505443531
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000062.png",
+      "prediction": "drone",
+      "drone_score": 0.6470082884786242
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000063.png",
+      "prediction": "non_drone",
+      "drone_score": 0.4181641396240945
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000064.png",
+      "prediction": "drone",
+      "drone_score": 0.5747491983524308
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000065.png",
+      "prediction": "drone",
+      "drone_score": 0.944638829037413
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000066.png",
+      "prediction": "drone",
+      "drone_score": 0.7865817368294237
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000067.png",
+      "prediction": "non_drone",
+      "drone_score": 0.44981156441280623
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000068.png",
+      "prediction": "non_drone",
+      "drone_score": 0.44283433384616666
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000069.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3774210983834312
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000070.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3537752674880236
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000071.png",
+      "prediction": "non_drone",
+      "drone_score": 0.07975445279705948
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000072.png",
+      "prediction": "drone",
+      "drone_score": 0.7002329320219771
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000073.png",
+      "prediction": "non_drone",
+      "drone_score": 0.2506436251671691
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000074.png",
+      "prediction": "non_drone",
+      "drone_score": 0.1426006227081857
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000075.png",
+      "prediction": "drone",
+      "drone_score": 0.8181181747973395
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000076.png",
+      "prediction": "non_drone",
+      "drone_score": 0.1901980975299883
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000077.png",
+      "prediction": "drone",
+      "drone_score": 0.6346969035994701
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000078.png",
+      "prediction": "drone",
+      "drone_score": 0.6792542557583037
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000079.png",
+      "prediction": "non_drone",
+      "drone_score": 0.045740261813879926
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000080.png",
+      "prediction": "non_drone",
+      "drone_score": 0.1646940535431973
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000081.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0571463949930959
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000082.png",
+      "prediction": "non_drone",
+      "drone_score": 0.4326743355541833
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000083.png",
+      "prediction": "non_drone",
+      "drone_score": 0.4290324273035348
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000084.png",
+      "prediction": "drone",
+      "drone_score": 0.517488485015432
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000085.png",
+      "prediction": "non_drone",
+      "drone_score": 0.4346412664554285
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000086.png",
+      "prediction": "non_drone",
+      "drone_score": 0.15971081506302634
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000087.png",
+      "prediction": "non_drone",
+      "drone_score": 0.17689219176244467
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000088.png",
+      "prediction": "non_drone",
+      "drone_score": 0.4028070675521458
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000089.png",
+      "prediction": "drone",
+      "drone_score": 0.638462949043903
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000090.png",
+      "prediction": "drone",
+      "drone_score": 0.5724141479085065
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000091.png",
+      "prediction": "drone",
+      "drone_score": 0.7017294243691936
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000092.png",
+      "prediction": "drone",
+      "drone_score": 0.6754894556138665
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000093.png",
+      "prediction": "non_drone",
+      "drone_score": 0.2559427139025179
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000094.png",
+      "prediction": "drone",
+      "drone_score": 0.5454253816744798
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000095.png",
+      "prediction": "non_drone",
+      "drone_score": 0.37107632744033187
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000096.png",
+      "prediction": "non_drone",
+      "drone_score": 0.008883737153458297
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000097.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0029281401509785865
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000098.png",
+      "prediction": "non_drone",
+      "drone_score": 0.16648364082676906
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000099.png",
+      "prediction": "drone",
+      "drone_score": 0.5577337965547993
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000100.png",
+      "prediction": "non_drone",
+      "drone_score": 0.005410774460482573
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000101.png",
+      "prediction": "non_drone",
+      "drone_score": 0.00614591359296255
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000102.png",
+      "prediction": "non_drone",
+      "drone_score": 0.03103814075294206
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000103.png",
+      "prediction": "non_drone",
+      "drone_score": 0.002870137135506273
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000104.png",
+      "prediction": "non_drone",
+      "drone_score": 0.018480097229263834
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000105.png",
+      "prediction": "non_drone",
+      "drone_score": 0.004934150482712951
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000106.png",
+      "prediction": "non_drone",
+      "drone_score": 0.010245546469749853
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000107.png",
+      "prediction": "non_drone",
+      "drone_score": 0.053263133178147286
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000108.png",
+      "prediction": "non_drone",
+      "drone_score": 0.14965621845872895
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000109.png",
+      "prediction": "non_drone",
+      "drone_score": 0.007623593975196203
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000110.png",
+      "prediction": "non_drone",
+      "drone_score": 0.016654830588595192
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000111.png",
+      "prediction": "non_drone",
+      "drone_score": 0.46944797015502393
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000112.png",
+      "prediction": "non_drone",
+      "drone_score": 0.49829043576424903
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000113.png",
+      "prediction": "non_drone",
+      "drone_score": 0.05230426026079074
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000114.png",
+      "prediction": "non_drone",
+      "drone_score": 0.2894782516709929
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000115.png",
+      "prediction": "drone",
+      "drone_score": 0.5390014628456047
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000116.png",
+      "prediction": "non_drone",
+      "drone_score": 0.1026590134130816
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000117.png",
+      "prediction": "drone",
+      "drone_score": 0.6827458711555517
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000118.png",
+      "prediction": "non_drone",
+      "drone_score": 0.1331123245937259
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000119.png",
+      "prediction": "drone",
+      "drone_score": 0.7322545851689819
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000120.png",
+      "prediction": "drone",
+      "drone_score": 0.6156794548344523
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000121.png",
+      "prediction": "non_drone",
+      "drone_score": 0.41350618748745677
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000122.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0351392806903278
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000123.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3321213993851467
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000124.png",
+      "prediction": "non_drone",
+      "drone_score": 0.04403422466924272
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000125.png",
+      "prediction": "non_drone",
+      "drone_score": 0.022232463325005676
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000126.png",
+      "prediction": "non_drone",
+      "drone_score": 0.13715714612353894
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000127.png",
+      "prediction": "non_drone",
+      "drone_score": 0.20980499631309868
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000128.png",
+      "prediction": "drone",
+      "drone_score": 0.5828957008496982
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000129.png",
+      "prediction": "non_drone",
+      "drone_score": 0.04510994776325602
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000130.png",
+      "prediction": "non_drone",
+      "drone_score": 0.08625104629613306
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000131.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3193401006857326
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000132.png",
+      "prediction": "non_drone",
+      "drone_score": 0.29408835897676966
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000133.png",
+      "prediction": "drone",
+      "drone_score": 0.7292491792919892
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000134.png",
+      "prediction": "drone",
+      "drone_score": 0.7100313877411387
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000135.png",
+      "prediction": "drone",
+      "drone_score": 0.8208577838116331
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000136.png",
+      "prediction": "drone",
+      "drone_score": 0.916289798220479
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000137.png",
+      "prediction": "drone",
+      "drone_score": 0.934206441009359
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000138.png",
+      "prediction": "non_drone",
+      "drone_score": 0.1461615200082724
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000139.png",
+      "prediction": "non_drone",
+      "drone_score": 0.10828999814549103
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000140.png",
+      "prediction": "non_drone",
+      "drone_score": 0.17476448127484237
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000141.png",
+      "prediction": "drone",
+      "drone_score": 0.8156175105542218
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000142.png",
+      "prediction": "drone",
+      "drone_score": 0.6346656941800864
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000143.png",
+      "prediction": "non_drone",
+      "drone_score": 0.45951553642288384
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000144.png",
+      "prediction": "drone",
+      "drone_score": 0.786444383061187
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000145.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3800389608319739
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000146.png",
+      "prediction": "non_drone",
+      "drone_score": 0.12511829947633424
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000147.png",
+      "prediction": "non_drone",
+      "drone_score": 0.27884503682450495
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000148.png",
+      "prediction": "non_drone",
+      "drone_score": 0.23152671457933754
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000149.png",
+      "prediction": "drone",
+      "drone_score": 0.770254550410358
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000150.png",
+      "prediction": "non_drone",
+      "drone_score": 0.1365696336077886
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000151.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3795078026700699
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000152.png",
+      "prediction": "drone",
+      "drone_score": 0.6299443364772654
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000153.png",
+      "prediction": "drone",
+      "drone_score": 0.6249815455635915
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\1toan_spectrograms\\1toan_spectrogram_000154.png",
+      "prediction": "drone",
+      "drone_score": 0.7105728339182267
+    }
+  ]
+}

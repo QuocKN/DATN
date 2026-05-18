@@ -20,10 +20,10 @@ from tqdm import tqdm
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-ARTIFACT_IN = "linear_probe_artifact.joblib"
-SOURCE_DIR = "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\DJI_mavic_pro_2G_spectrograms"
-OUTPUT_JSON = "Report/Mavic_pro_2G/results.json"
-OUTPUT_CHART = "Report/Mavic_pro_2G/results_chart.png"
+ARTIFACT_IN = "linear_probe/ResNet50/trained_classifier.joblib"
+SOURCE_DIR = "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms"
+OUTPUT_JSON = "linear_probe/ResNet50/report/Inspire/results.json"
+OUTPUT_CHART = "linear_probe/ResNet50/report/Inspire/results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 128
@@ -58,9 +58,9 @@ def collect_image_paths(root: Path) -> List[Path]:
 
 def load_feature_model(device: torch.device) -> torch.nn.Module:
     try:
-        base = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
+        base = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
     except Exception:
-        base = models.resnet18(weights=None)
+        base = models.resnet50(weights=None)
 
     model = nn.Sequential(*list(base.children())[:-1])
     model.eval()
@@ -185,6 +185,12 @@ def main() -> None:
 
     clf = payload["model"]
     summary_train = payload.get("summary", {})
+    feature_extractor = summary_train.get("feature_extractor")
+    if feature_extractor and feature_extractor != "resnet50_imagenet_v2_penultimate":
+        raise ValueError(
+            "This detector expects a ResNet50 artifact, "
+            f"but artifact feature_extractor={feature_extractor!r}"
+        )
 
     device = torch.device(DEVICE if torch.cuda.is_available() and DEVICE.startswith("cuda") else "cpu")
 
@@ -226,6 +232,7 @@ def main() -> None:
 
     summary = {
         "method": "linear_probe_classifier",
+        "feature_extractor": "resnet50_imagenet_v2_penultimate",
         "model_name": payload.get("model_name"),
         "artifact_in": str(artifact_in),
         "source_images": total,
