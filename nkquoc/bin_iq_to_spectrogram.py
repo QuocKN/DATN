@@ -21,8 +21,8 @@ from scipy.signal import stft
 # ========================
 # INPUT_BIN_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone/2toan.bin"
 # OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone/spectrograms"
-INPUT_BIN_PATH ="/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/1toan.bin"
-OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms"
+INPUT_BIN_PATH ="E:\\DATN_DATA\\RF\\1toan.bin"
+OUTPUT_DIR = "E:\\DATN_DATA\\RF\\1toan_spectrograms"
 
 
 SAMPLE_RATE = 28_000_000  # Hz (adjust as needed)
@@ -177,6 +177,98 @@ def save_spectrogram_image(
         image = image.resize((IMAGE_SIZE, IMAGE_SIZE), Image.Resampling.BILINEAR)
         image.save(output_path)
 
+def check_iq_amplitude(iq_data: np.ndarray, index: int | None = None) -> None:
+    amp = np.abs(iq_data)
+    i = iq_data.real
+    q = iq_data.imag
+
+    prefix = f"[AMP CHECK] Chunk {index}" if index is not None else "[AMP CHECK]"
+
+    print("\n" + "=" * 60)
+    print(prefix)
+    print(f"I min/max       : {i.min():.2f} / {i.max():.2f}")
+    print(f"Q min/max       : {q.min():.2f} / {q.max():.2f}")
+    print(f"Amp min/max     : {amp.min():.2f} / {amp.max():.2f}")
+    print(f"Amp mean/std    : {amp.mean():.2f} / {amp.std():.2f}")
+    print("Amp percentile  :")
+    print(f"  90%   = {np.percentile(amp, 90):.2f}")
+    print(f"  95%   = {np.percentile(amp, 95):.2f}")
+    print(f"  99%   = {np.percentile(amp, 99):.2f}")
+    print(f"  99.9% = {np.percentile(amp, 99.9):.2f}")
+
+    # Dữ liệu của bạn có vẻ là ADC 12-bit lưu trong int16
+    adc_max = 2047
+    adc_min = -2048
+
+    i_clip_ratio = np.mean((i <= adc_min) | (i >= adc_max)) * 100
+    q_clip_ratio = np.mean((q <= adc_min) | (q >= adc_max)) * 100
+
+    print(f"I 12-bit clipping ratio: {i_clip_ratio:.6f}%")
+    print(f"Q 12-bit clipping ratio: {q_clip_ratio:.6f}%")
+
+    if i_clip_ratio > 0.01 or q_clip_ratio > 0.01:
+        print("[WARN] Có dấu hiệu clipping/saturation theo ADC 12-bit.")
+
+    p90 = np.percentile(amp, 90)
+    p95 = np.percentile(amp, 95)
+    p99 = np.percentile(amp, 99)
+    p999 = np.percentile(amp, 99.9)
+
+    if p95 > 3 * p90:
+        print("[WARN] Biên độ tăng đột ngột từ p90 lên p95 -> có nhiều burst/spike mạnh.")
+
+    if p99 > 5 * p90:
+        print("[WARN] p99 lớn hơn nhiều so với p90 -> spike có thể gây sọc dọc.")
+
+    print("=" * 60 + "\n")
+
+def clip_iq_amplitude(iq_data: np.ndarray, percentile: float = 95.0) -> np.ndarray:
+    """
+    Giới hạn biên độ IQ để giảm spike mạnh gây sọc dọc.
+    Không đổi pha, chỉ giảm magnitude của các mẫu quá lớn.
+    """
+    amp = np.abs(iq_data)
+    threshold = np.percentile(amp, percentile)
+
+    iq_clipped = iq_data.copy()
+    mask = amp > threshold
+
+    iq_clipped[mask] = iq_clipped[mask] / (amp[mask] + 1e-12) * threshold
+
+    return iq_clipped
+def limit_iq_amplitude(iq_data: np.ndarray, percentile: float = 95.0) -> np.ndarray:
+    amp = np.abs(iq_data)
+    threshold = np.percentile(amp, percentile)
+
+    iq_out = iq_data.copy()
+    mask = amp > threshold
+
+    iq_out[mask] = iq_out[mask] / (amp[mask] + 1e-12) * threshold
+
+    return iq_out
+
+def repair_clipped_iq(iq_data: np.ndarray,
+                      adc_min: int = -2048,
+                      adc_max: int = 2047) -> np.ndarray:
+    """
+    Thay các mẫu IQ bị clipping bằng nội suy tuyến tính.
+    Chỉ dùng cho xử lý spectrogram, không khôi phục được tín hiệu gốc hoàn hảo.
+    """
+    i = iq_data.real.copy()
+    q = iq_data.imag.copy()
+
+    i_bad = (i <= adc_min) | (i >= adc_max)
+    q_bad = (q <= adc_min) | (q >= adc_max)
+
+    x = np.arange(len(iq_data))
+
+    if np.any(i_bad) and np.any(~i_bad):
+        i[i_bad] = np.interp(x[i_bad], x[~i_bad], i[~i_bad])
+
+    if np.any(q_bad) and np.any(~q_bad):
+        q[q_bad] = np.interp(x[q_bad], x[~q_bad], q[~q_bad])
+
+    return i + 1j * q
 
 def convert_bin_to_spectrograms(
     bin_path: str,
@@ -216,6 +308,12 @@ def convert_bin_to_spectrograms(
             print(f"[SKIP] Chunk {index}: only {iq_chunk.size} samples, need {min_samples_needed}")
             continue
 
+        # check_iq_amplitude(iq_chunk, index=index)
+        # Xử lý trước khi STFT
+        # iq_chunk = iq_chunk - np.mean(iq_chunk)
+        # iq_chunk = clip_iq_amplitude(iq_chunk, percentile=95.0)
+        # iq_chunk = limit_iq_amplitude(iq_chunk, percentile=85.0)
+        # iq_chunk = repair_clipped_iq(iq_chunk)
         try:
             frequencies, times, spectrum = compute_spectrogram(
                 iq_chunk,
