@@ -42,7 +42,7 @@ for ii = length(files):-1:1
             end
             datanoise = awgn1(dataIQ,noise,rawSnr);
 
-            
+
             snr_esti = snrEsti(datanoise,fs,NFFT,f1,f2,idx1,idx2,idx3,idx4);
             disp("SNR"+snr_esti);
         end

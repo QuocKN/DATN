@@ -34,9 +34,8 @@ title("Signal: Carrier correction")
 
 subplot(313)
 pxx3 = db(pxx3);
-plot(fvec3, pxx3);    
+plot(fvec3, pxx3);
 xline(fvec3(idx1), 'r');  xline(fvec3(idx2), 'r');
 xline(fvec3(idx3), 'k');  xline(fvec3(idx4), 'k');
 title("Signal: Downsampling")
 end
-

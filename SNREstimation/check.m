@@ -3,8 +3,8 @@ clc;clear;
 filein = ""; % path
 files = dir(fullfile(filein,'*.dat'));
 
-[~, idx] = sort([files.datenum]); 
-sortedFiles = files(idx); 
+[~, idx] = sort([files.datenum]);
+sortedFiles = files(idx);
 figure
 nfft = 4096;
 for ii = 1:length(files)

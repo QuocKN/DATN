@@ -1,0 +1,157 @@
+{
+  "summary": {
+    "method": "linear_probe_classifier",
+    "feature_extractor": "dinov2_vitb14_reg_imagenet_ssl",
+    "model_name": "logistic_regression",
+    "artifact_in": "linear_probe\\DINOv2_b14_reg\\trained_classifier.joblib",
+    "source_images": 22,
+    "detected_drone_count": 22,
+    "detected_non_drone_count": 0,
+    "detected_drone_rate": 1.0,
+    "score_mean": 0.9631069153472374,
+    "score_std": 0.02796941209254034,
+    "train_summary": {
+      "feature_extractor": "dinov2_vitb14_reg_imagenet_ssl",
+      "image_size": 224,
+      "device": "cpu",
+      "n_total": 3087,
+      "n_drone": 1700,
+      "n_non_drone": 1387,
+      "val_size": 0.2,
+      "seed": 42,
+      "models": {
+        "logistic_regression": {
+          "macro_f1": 1.0,
+          "drone_precision": 1.0,
+          "drone_recall": 1.0,
+          "drone_f1": 1.0,
+          "non_drone_precision": 1.0,
+          "non_drone_recall": 1.0,
+          "non_drone_f1": 1.0
+        },
+        "linear_svm": {
+          "macro_f1": 1.0,
+          "drone_precision": 1.0,
+          "drone_recall": 1.0,
+          "drone_f1": 1.0,
+          "non_drone_precision": 1.0,
+          "non_drone_recall": 1.0,
+          "non_drone_f1": 1.0
+        }
+      },
+      "selected_model": "logistic_regression"
+    }
+  },
+  "predictions": [
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000001.png",
+      "prediction": "drone",
+      "drone_score": 0.9682780498905357
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000002.png",
+      "prediction": "drone",
+      "drone_score": 0.9871634921497668
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000003.png",
+      "prediction": "drone",
+      "drone_score": 0.9889306886048056
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.9897545392394461
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.9888474548416978
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000006.png",
+      "prediction": "drone",
+      "drone_score": 0.9719130713268652
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000007.png",
+      "prediction": "drone",
+      "drone_score": 0.9848633458021059
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000008.png",
+      "prediction": "drone",
+      "drone_score": 0.9663096154791254
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000009.png",
+      "prediction": "drone",
+      "drone_score": 0.9946515035722758
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_inspire_2_2G_000010.png",
+      "prediction": "drone",
+      "drone_score": 0.9670379928604121
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000001.png",
+      "prediction": "drone",
+      "drone_score": 0.884538482416608
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000002.png",
+      "prediction": "drone",
+      "drone_score": 0.9539548093785813
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000003.png",
+      "prediction": "drone",
+      "drone_score": 0.9553880304513984
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.9126872158085734
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.9629503675355653
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000006.png",
+      "prediction": "drone",
+      "drone_score": 0.9485356887471879
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000007.png",
+      "prediction": "drone",
+      "drone_score": 0.9441764275638276
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000008.png",
+      "prediction": "drone",
+      "drone_score": 0.9693098736780307
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000009.png",
+      "prediction": "drone",
+      "drone_score": 0.9225829912894831
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000010.png",
+      "prediction": "drone",
+      "drone_score": 0.944948350711544
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000011.png",
+      "prediction": "drone",
+      "drone_score": 0.9942388635437518
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms\\DJI_mavic_pro_2G_000012.png",
+      "prediction": "drone",
+      "drone_score": 0.9872912827476268
+    }
+  ]
+}

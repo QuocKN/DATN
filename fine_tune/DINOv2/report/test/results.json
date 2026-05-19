@@ -1,0 +1,314 @@
+{
+  "summary": {
+    "method": "dinov2_finetuned_classifier",
+    "model_name": "dinov2_vits14_binary_finetuned",
+    "checkpoint_in": "fine_tune\\DINOv2\\dinov2_binary_runs\\rf_tuthu__dinov2_vits14_binary.pt",
+    "source_images": 58,
+    "detected_drone_count": 58,
+    "detected_non_drone_count": 0,
+    "detected_drone_rate": 1.0,
+    "score_mean": 0.9831268191337585,
+    "score_std": 0.07020021229982376,
+    "class_names": [
+      "non_drone",
+      "drone"
+    ],
+    "class_to_idx": {
+      "non_drone": 0,
+      "drone": 1
+    },
+    "best_valid_macro_f1": 1.0
+  },
+  "predictions": [
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000001.png",
+      "prediction": "drone",
+      "drone_score": 0.9998459815979004
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000002.png",
+      "prediction": "drone",
+      "drone_score": 0.9998268485069275
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000003.png",
+      "prediction": "drone",
+      "drone_score": 0.9998290538787842
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.9997454285621643
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.9998621940612793
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000006.png",
+      "prediction": "drone",
+      "drone_score": 0.9993096590042114
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000007.png",
+      "prediction": "drone",
+      "drone_score": 0.9951667785644531
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000008.png",
+      "prediction": "drone",
+      "drone_score": 0.9996476173400879
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000009.png",
+      "prediction": "drone",
+      "drone_score": 0.9995436072349548
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000010.png",
+      "prediction": "drone",
+      "drone_score": 0.9998569488525391
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000001.png",
+      "prediction": "drone",
+      "drone_score": 0.9751802682876587
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000002.png",
+      "prediction": "drone",
+      "drone_score": 0.8441887497901917
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000003.png",
+      "prediction": "drone",
+      "drone_score": 0.9973646998405457
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.5357768535614014
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.9901677370071411
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000006.png",
+      "prediction": "drone",
+      "drone_score": 0.9969786405563354
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000007.png",
+      "prediction": "drone",
+      "drone_score": 0.9955920577049255
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000008.png",
+      "prediction": "drone",
+      "drone_score": 0.9918808341026306
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000009.png",
+      "prediction": "drone",
+      "drone_score": 0.9893959164619446
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000010.png",
+      "prediction": "drone",
+      "drone_score": 0.9993239641189575
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000001.png",
+      "prediction": "drone",
+      "drone_score": 0.999953031539917
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000002.png",
+      "prediction": "drone",
+      "drone_score": 0.9999548196792603
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000003.png",
+      "prediction": "drone",
+      "drone_score": 0.9999815225601196
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.9999814033508301
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.9999831914901733
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000006.png",
+      "prediction": "drone",
+      "drone_score": 0.9999463558197021
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000007.png",
+      "prediction": "drone",
+      "drone_score": 0.999985933303833
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000008.png",
+      "prediction": "drone",
+      "drone_score": 0.9999251365661621
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000009.png",
+      "prediction": "drone",
+      "drone_score": 0.9999867677688599
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000010.png",
+      "prediction": "drone",
+      "drone_score": 0.9997493624687195
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000001.png",
+      "prediction": "drone",
+      "drone_score": 0.999974250793457
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000002.png",
+      "prediction": "drone",
+      "drone_score": 0.9999923706054688
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000003.png",
+      "prediction": "drone",
+      "drone_score": 0.9999963045120239
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.9999966621398926
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.9999885559082031
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000006.png",
+      "prediction": "drone",
+      "drone_score": 0.9999940395355225
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000007.png",
+      "prediction": "drone",
+      "drone_score": 0.9999949932098389
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000008.png",
+      "prediction": "drone",
+      "drone_score": 0.9999909400939941
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000009.png",
+      "prediction": "drone",
+      "drone_score": 0.9999905824661255
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000010.png",
+      "prediction": "drone",
+      "drone_score": 0.9999911785125732
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000011.png",
+      "prediction": "drone",
+      "drone_score": 0.9999971389770508
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000012.png",
+      "prediction": "drone",
+      "drone_score": 0.9999921321868896
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000013.png",
+      "prediction": "drone",
+      "drone_score": 0.9999836683273315
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000014.png",
+      "prediction": "drone",
+      "drone_score": 0.999988317489624
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000015.png",
+      "prediction": "drone",
+      "drone_score": 0.9999963045120239
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000016.png",
+      "prediction": "drone",
+      "drone_score": 0.9999929666519165
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000017.png",
+      "prediction": "drone",
+      "drone_score": 0.9999898672103882
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000018.png",
+      "prediction": "drone",
+      "drone_score": 0.9999974966049194
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000019.png",
+      "prediction": "drone",
+      "drone_score": 0.9999934434890747
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000020.png",
+      "prediction": "drone",
+      "drone_score": 0.9999960660934448
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000001.png",
+      "prediction": "drone",
+      "drone_score": 0.9620827436447144
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000002.png",
+      "prediction": "drone",
+      "drone_score": 0.754720151424408
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000003.png",
+      "prediction": "drone",
+      "drone_score": 0.9969446063041687
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.999962568283081
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.9999266862869263
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000006.png",
+      "prediction": "drone",
+      "drone_score": 0.999954342842102
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000007.png",
+      "prediction": "drone",
+      "drone_score": 0.9999953508377075
+    },
+    {
+      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000008.png",
+      "prediction": "drone",
+      "drone_score": 0.9999964237213135
+    }
+  ]
+}

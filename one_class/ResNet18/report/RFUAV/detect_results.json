@@ -1,0 +1,197 @@
+{
+  "summary": {
+    "method": "one_class_centroid",
+    "embedding_backbone": "resnet18_penultimate",
+    "artifact_in": "oneclass_artifact.joblib",
+    "source_images": 30,
+    "threshold_percentile": 95.0,
+    "threshold": 28.598876953125,
+    "detected_drone_count": 17,
+    "detected_non_drone_count": 13,
+    "detected_drone_rate": 0.5666666666666667,
+    "mean_distance": 28.488603591918945,
+    "std_distance": 1.7282090187072754
+  },
+  "predictions": [
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_0-1_000001.png",
+      "distance": 28.35210609436035,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_0-1_000002.png",
+      "distance": 26.17477035522461,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_0-1_000003.png",
+      "distance": 26.374343872070312,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_0-1_000004.png",
+      "distance": 25.60995864868164,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_0-1_000005.png",
+      "distance": 27.573360443115234,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_0-1_000006.png",
+      "distance": 27.69676971435547,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_0-1_000007.png",
+      "distance": 29.411848068237305,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_0-1_000008.png",
+      "distance": 27.29572296142578,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_0-1_000009.png",
+      "distance": 26.112598419189453,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_0-1_000010.png",
+      "distance": 29.7385196685791,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_000001.png",
+      "distance": 26.979576110839844,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_000002.png",
+      "distance": 26.548606872558594,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_000003.png",
+      "distance": 30.877544403076172,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_000004.png",
+      "distance": 28.43439483642578,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_000005.png",
+      "distance": 25.919857025146484,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_000006.png",
+      "distance": 30.75486946105957,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_000007.png",
+      "distance": 27.64419174194336,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_000008.png",
+      "distance": 27.54235076904297,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_000009.png",
+      "distance": 31.59166717529297,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_000010.png",
+      "distance": 29.147119522094727,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_1-2_000001.png",
+      "distance": 27.34503936767578,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_1-2_000002.png",
+      "distance": 29.6885929107666,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_1-2_000003.png",
+      "distance": 29.977468490600586,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_1-2_000004.png",
+      "distance": 30.787975311279297,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_1-2_000005.png",
+      "distance": 28.455503463745117,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_1-2_000006.png",
+      "distance": 29.89966583251953,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_1-2_000007.png",
+      "distance": 30.927988052368164,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_1-2_000008.png",
+      "distance": 27.4224853515625,
+      "threshold": 28.598876953125,
+      "prediction": "drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_1-2_000009.png",
+      "distance": 29.81870460510254,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/spectrograms/spectrogram_1-2_000010.png",
+      "distance": 30.554521560668945,
+      "threshold": 28.598876953125,
+      "prediction": "non_drone"
+    }
+  ]
+}

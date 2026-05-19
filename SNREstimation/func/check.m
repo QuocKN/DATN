@@ -13,4 +13,3 @@ function [] = check(filein,nfft,fs,time,datatype)
     dataIQ = data(1:2:end) +  1j*data(2:2:end);
     stft(dataIQ,fs,"FFTLength",nfft);
 end
-
