@@ -12,18 +12,13 @@ from snr_core import add_common_snr_args, run_snr_estimation
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Estimate SNR from one interleaved IQ .bin/.dat/.iq file. "
-            "Use estimate_bin_snr.py or estimate_dat_float32_snr.py for format-specific entrypoints."
-        )
-    )
+    parser = argparse.ArgumentParser(description="Estimate SNR from one interleaved IQ .bin file.")
     add_common_snr_args(parser)
     parser.add_argument(
         "--dtype",
         choices=["float32_iq", "int16_iq"],
         default="float32_iq",
-        help="Sample format: interleaved I,Q values (default: float32_iq)",
+        help="Binary sample format: interleaved I,Q values (default: float32_iq)",
     )
     parser.add_argument(
         "--normalize",
