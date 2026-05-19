@@ -21,7 +21,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
 ARTIFACT_IN = "linear_probe/ConvNext_Tiny/trained_classifier.joblib"
-SOURCE_DIR = "E:\\DATN_DATA\\RF\\spectrograms\\2toanbin"
+SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
 OUTPUT_JSON = "linear_probe/ConvNext_Tiny/report/Tu_thu/2toan/results.json"
 OUTPUT_CHART = "linear_probe/ConvNext_Tiny/report/Tu_thu/2toan/results_chart.png"
 IMAGE_SIZE = 224

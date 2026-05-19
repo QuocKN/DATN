@@ -21,9 +21,9 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
 ARTIFACT_IN = "linear_probe/ResNet50/trained_classifier.joblib"
-SOURCE_DIR = "E:\\DATN_DATA\\RF\\RF Control and Video Signal\\spectrograms"
-OUTPUT_JSON = "linear_probe/ResNet50/report/Inspire/results.json"
-OUTPUT_CHART = "linear_probe/ResNet50/report/Inspire/results_chart.png"
+SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
+OUTPUT_JSON = "linear_probe/ResNet50/report/Tu_thu/2toan/results.json"
+OUTPUT_CHART = "linear_probe/ResNet50/report/Tu_thu/2toan/results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 128

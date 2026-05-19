@@ -21,13 +21,13 @@ from scipy.signal import stft
 # ========================
 # INPUT_BIN_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone/2toan.bin"
 # OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone/spectrograms"
-INPUT_BIN_PATH ="/home/quocnk/Documents/NKQuoc/Data/RF/Noisy_Drone_RF_Signal_v2_kaggle"
-OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/IQdata_sample10000_target4_snr20/spectrograms"
+INPUT_BIN_PATH ="/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/1toan.bin"
+OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms"
 
 
-SAMPLE_RATE = 60_000_000  # Hz (adjust as needed)
+SAMPLE_RATE = 28_000_000  # Hz (adjust as needed)
 STFT_POINT = 2048
-DURATION_TIME = 0.03  # seconds per spectrogram
+DURATION_TIME = 0.05  # seconds per spectrogram
 CHUNK_SIZE = 4096  # IQ samples per chunk
 OUTPUT_PREFIX = "spectrogram"
 IMAGE_SIZE = 224
