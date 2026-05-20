@@ -53,16 +53,107 @@ def validate_iq_samples(iq: np.ndarray) -> None:
         raise ValueError("No IQ samples were read. Check the input file and sample format.")
     if not np.iscomplexobj(iq):
         raise ValueError("Expected complex IQ samples.")
+    if (not np.all(np.isfinite(iq.real))) or (not np.all(np.isfinite(iq.imag))):
+        raise ValueError(
+            "IQ data contains NaN/Inf. Likely wrong input dtype. "
+            "Try --dtype int16_iq for int16 .bin files or --dtype float32_iq for float32 files."
+        )
 
 
 def pwelch_shifted(x: np.ndarray, fs: float, nfft: int):
     use_nfft = int(min(nfft, MAX_NFFT))
     nperseg = max(256, min(int(len(x) / 10), use_nfft, 8192))
     f, pxx = welch(x, fs=fs, window="hann", nperseg=nperseg, nfft=use_nfft, return_onesided=False)
-    idx = np.argsort(f)
-    f = f[idx]
-    pxx = pxx[idx]
+    # welch(..., return_onesided=False) returns bins in FFT order; fftshift centers DC.
     return np.fft.fftshift(f), np.fft.fftshift(pxx)
+
+
+def _robust_noise_density(pxx: np.ndarray) -> float:
+    eps = np.finfo(np.float64).tiny
+    pxx = np.maximum(np.asarray(pxx, dtype=np.float64), eps)
+    pxx_db = 10.0 * np.log10(pxx)
+
+    noise_db = float(np.median(pxx_db))
+    for _ in range(3):
+        keep = pxx_db <= (noise_db + 3.0)
+        if not np.any(keep):
+            break
+        noise_db = float(np.median(pxx_db[keep]))
+    return float(10.0 ** (noise_db / 10.0))
+
+
+def _find_runs(mask: np.ndarray) -> list[tuple[int, int]]:
+    runs: list[tuple[int, int]] = []
+    start = None
+    for i, v in enumerate(mask.astype(bool)):
+        if v and start is None:
+            start = i
+        elif (not v) and start is not None:
+            runs.append((start, i))
+            start = None
+    if start is not None:
+        runs.append((start, int(mask.size)))
+    return runs
+
+
+def _find_signal_band(
+    pxx: np.ndarray,
+    df: float,
+    noise_density: float,
+    bandwidth_hint_hz: float | None = None,
+    fs: float | None = None,
+) -> tuple[int, int]:
+    eps = np.finfo(np.float64).tiny
+    pxx = np.maximum(np.asarray(pxx, dtype=np.float64), eps)
+    pxx_db = 10.0 * np.log10(pxx)
+    noise_db = 10.0 * np.log10(max(noise_density, eps))
+
+    # Light smoothing to reduce isolated spikes while preserving the occupied band.
+    smooth_bins = 9
+    kernel = np.ones(smooth_bins, dtype=np.float64) / smooth_bins
+    pxx_db_smooth = np.convolve(pxx_db, kernel, mode="same")
+
+    sig_mask = pxx_db_smooth > (noise_db + 6.0)
+    runs = _find_runs(sig_mask)
+    if not runs:
+        peak = int(np.argmax(pxx))
+        half = max(1, int(round(1e6 / df)) // 2)
+        return max(0, peak - half), min(pxx.size, peak + half)
+
+    gap_bins = max(1, int(round(0.3e6 / df)))
+    merged: list[tuple[int, int]] = []
+    cur_s, cur_e = runs[0]
+    for s, e in runs[1:]:
+        if s - cur_e <= gap_bins:
+            cur_e = e
+        else:
+            merged.append((cur_s, cur_e))
+            cur_s, cur_e = s, e
+    merged.append((cur_s, cur_e))
+
+    # Choose the run with the largest excess power above the noise floor.
+    best_run = merged[0]
+    best_excess = -1.0
+    for s, e in merged:
+        excess = float(np.sum(np.maximum(pxx[s:e] - noise_density, 0.0)))
+        if excess > best_excess:
+            best_excess = excess
+            best_run = (s, e)
+
+    # Use bandwidth hint only when it is clearly meaningful (not near full-band).
+    if fs is not None and bandwidth_hint_hz is not None:
+        bw = float(bandwidth_hint_hz)
+        if (3.0 * df) <= bw <= (0.8 * fs):
+            hint_bins = int(round(bw / df))
+            if hint_bins > 0 and hint_bins < pxx.size:
+                peak = int(np.argmax(pxx))
+                start_min = max(0, peak - hint_bins + 1)
+                start_max = min(peak, pxx.size - hint_bins)
+                if start_max >= start_min:
+                    energy = np.convolve(pxx, np.ones(hint_bins, dtype=np.float64), mode="valid")
+                    local_start = start_min + int(np.argmax(energy[start_min : start_max + 1]))
+                    return local_start, local_start + hint_bins
+    return best_run
 
 
 def estimate_snr_from_psd(x: np.ndarray, fs: float, bandwidth: float, nfft: int) -> dict:
@@ -76,14 +167,18 @@ def estimate_snr_from_psd(x: np.ndarray, fs: float, bandwidth: float, nfft: int)
     if df <= 0:
         raise ValueError("Invalid PSD frequency spacing.")
 
-    max_bandwidth = fs * 0.95
-    bandwidth = float(min(max(bandwidth, df), max_bandwidth))
-    band_bins = max(1, int(round(bandwidth / df)))
-    band_bins = min(band_bins, pxx.size)
-
-    band_energy = np.convolve(pxx, np.ones(band_bins, dtype=np.float64), mode="valid")
-    start = int(np.argmax(band_energy))
-    end = start + band_bins
+    # Estimate noise first, then detect occupied signal band robustly from PSD.
+    pre_noise_density = _robust_noise_density(pxx)
+    start, end = _find_signal_band(
+        pxx,
+        df,
+        pre_noise_density,
+        bandwidth_hint_hz=bandwidth,
+        fs=fs,
+    )
+    band_bins = int(end - start)
+    if band_bins <= 0:
+        raise ValueError("Failed to detect a valid signal band.")
 
     f1 = float(fvec[start])
     f2 = float(fvec[end - 1] + df)
@@ -91,7 +186,7 @@ def estimate_snr_from_psd(x: np.ndarray, fs: float, bandwidth: float, nfft: int)
     signal_mask = np.zeros_like(pxx, dtype=bool)
     signal_mask[start:end] = True
 
-    guard_bins = max(1, band_bins // 10)
+    guard_bins = max(1, int(round(0.5e6 / df)))
     guard_start = max(0, start - guard_bins)
     guard_end = min(pxx.size, end + guard_bins)
     noise_mask = np.ones_like(pxx, dtype=bool)
@@ -101,10 +196,14 @@ def estimate_snr_from_psd(x: np.ndarray, fs: float, bandwidth: float, nfft: int)
     if not np.any(noise_mask):
         raise ValueError("Not enough off-band bins to estimate noise. Use a smaller --bandwidth.")
 
-    noise_density = float(np.median(pxx[noise_mask]))
-    total_band_power = float(np.sum(pxx[signal_mask]) * df)
+    noise_region = pxx[noise_mask]
+    noise_density = _robust_noise_density(noise_region)
     noise_power = float(noise_density * band_bins * df)
-    signal_power = max(total_band_power - noise_power, np.finfo(np.float64).tiny)
+
+    # Estimate signal power as excess above noise floor to avoid catastrophic cancellation
+    # when requested signal bandwidth is close to full Nyquist bandwidth.
+    signal_psd_excess = np.maximum(pxx[signal_mask] - noise_density, 0.0)
+    signal_power = max(float(np.sum(signal_psd_excess) * df), np.finfo(np.float64).tiny)
     snr_db = float(10.0 * np.log10(signal_power / max(noise_power, np.finfo(np.float64).tiny)))
 
     return {

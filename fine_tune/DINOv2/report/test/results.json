@@ -2,13 +2,13 @@
   "summary": {
     "method": "dinov2_finetuned_classifier",
     "model_name": "dinov2_vits14_binary_finetuned",
-    "checkpoint_in": "fine_tune\\DINOv2\\dinov2_binary_runs\\rf_tuthu__dinov2_vits14_binary.pt",
-    "source_images": 58,
-    "detected_drone_count": 58,
+    "checkpoint_in": "fine_tune/DINOv2/dinov2_binary_runs/rf_tuthu__dinov2_vits14_binary.pt",
+    "source_images": 48,
+    "detected_drone_count": 48,
     "detected_non_drone_count": 0,
     "detected_drone_rate": 1.0,
-    "score_mean": 0.9831268191337585,
-    "score_std": 0.07020021229982376,
+    "score_mean": 0.9604527354240417,
+    "score_std": 0.0429537296295166,
     "class_names": [
       "non_drone",
       "drone"
@@ -21,294 +21,244 @@
   },
   "predictions": [
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000001.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000001.png",
       "prediction": "drone",
-      "drone_score": 0.9998459815979004
+      "drone_score": 0.9277796745300293
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000002.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000002.png",
       "prediction": "drone",
-      "drone_score": 0.9998268485069275
+      "drone_score": 0.9796516299247742
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000003.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000003.png",
       "prediction": "drone",
-      "drone_score": 0.9998290538787842
+      "drone_score": 0.9915540814399719
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000004.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000004.png",
       "prediction": "drone",
-      "drone_score": 0.9997454285621643
+      "drone_score": 0.9619508981704712
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000005.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000005.png",
       "prediction": "drone",
-      "drone_score": 0.9998621940612793
+      "drone_score": 0.8482512831687927
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000006.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000006.png",
       "prediction": "drone",
-      "drone_score": 0.9993096590042114
+      "drone_score": 0.9353245496749878
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000007.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000007.png",
       "prediction": "drone",
-      "drone_score": 0.9951667785644531
+      "drone_score": 0.9137258529663086
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000008.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000008.png",
       "prediction": "drone",
-      "drone_score": 0.9996476173400879
+      "drone_score": 0.9847264885902405
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000009.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000009.png",
       "prediction": "drone",
-      "drone_score": 0.9995436072349548
+      "drone_score": 0.9042040109634399
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0000_01_000010.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000010.png",
       "prediction": "drone",
-      "drone_score": 0.9998569488525391
+      "drone_score": 0.9419261813163757
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000001.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000011.png",
       "prediction": "drone",
-      "drone_score": 0.9751802682876587
+      "drone_score": 0.9644125699996948
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000002.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000012.png",
       "prediction": "drone",
-      "drone_score": 0.8441887497901917
+      "drone_score": 0.9113754630088806
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000003.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000013.png",
       "prediction": "drone",
-      "drone_score": 0.9973646998405457
+      "drone_score": 0.9634560942649841
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000004.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000014.png",
       "prediction": "drone",
-      "drone_score": 0.5357768535614014
+      "drone_score": 0.9895596504211426
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000005.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000015.png",
       "prediction": "drone",
-      "drone_score": 0.9901677370071411
+      "drone_score": 0.9997112154960632
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000006.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_0-1_000016.png",
       "prediction": "drone",
-      "drone_score": 0.9969786405563354
+      "drone_score": 0.990991473197937
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000007.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000001.png",
       "prediction": "drone",
-      "drone_score": 0.9955920577049255
+      "drone_score": 0.9608369469642639
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000008.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000002.png",
       "prediction": "drone",
-      "drone_score": 0.9918808341026306
+      "drone_score": 0.9990665316581726
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000009.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000003.png",
       "prediction": "drone",
-      "drone_score": 0.9893959164619446
+      "drone_score": 0.9849144816398621
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\AIR_0010_00_000010.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000004.png",
       "prediction": "drone",
-      "drone_score": 0.9993239641189575
+      "drone_score": 0.9603710770606995
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000001.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000005.png",
       "prediction": "drone",
-      "drone_score": 0.999953031539917
+      "drone_score": 0.9753271341323853
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000002.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000006.png",
       "prediction": "drone",
-      "drone_score": 0.9999548196792603
+      "drone_score": 0.9219081997871399
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000003.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000007.png",
       "prediction": "drone",
-      "drone_score": 0.9999815225601196
+      "drone_score": 0.8081415891647339
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000004.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000008.png",
       "prediction": "drone",
-      "drone_score": 0.9999814033508301
+      "drone_score": 0.9289947748184204
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000005.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000009.png",
       "prediction": "drone",
-      "drone_score": 0.9999831914901733
+      "drone_score": 0.8794112205505371
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000006.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000010.png",
       "prediction": "drone",
-      "drone_score": 0.9999463558197021
+      "drone_score": 0.945536732673645
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000007.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000011.png",
       "prediction": "drone",
-      "drone_score": 0.999985933303833
+      "drone_score": 0.9353065490722656
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000008.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000012.png",
       "prediction": "drone",
-      "drone_score": 0.9999251365661621
+      "drone_score": 0.9267994165420532
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000009.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000013.png",
       "prediction": "drone",
-      "drone_score": 0.9999867677688599
+      "drone_score": 0.9133736491203308
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MA1_0000_00_000010.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000014.png",
       "prediction": "drone",
-      "drone_score": 0.9997493624687195
+      "drone_score": 0.9769846200942993
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000001.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000015.png",
       "prediction": "drone",
-      "drone_score": 0.999974250793457
+      "drone_score": 0.9411622285842896
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000002.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_1-2_000016.png",
       "prediction": "drone",
-      "drone_score": 0.9999923706054688
+      "drone_score": 0.9146167635917664
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000003.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000001.png",
       "prediction": "drone",
-      "drone_score": 0.9999963045120239
+      "drone_score": 0.9895455241203308
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000004.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000002.png",
       "prediction": "drone",
-      "drone_score": 0.9999966621398926
+      "drone_score": 0.9969103932380676
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000005.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000003.png",
       "prediction": "drone",
-      "drone_score": 0.9999885559082031
+      "drone_score": 0.9986034035682678
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000006.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000004.png",
       "prediction": "drone",
-      "drone_score": 0.9999940395355225
+      "drone_score": 0.9967368245124817
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000007.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000005.png",
       "prediction": "drone",
-      "drone_score": 0.9999949932098389
+      "drone_score": 0.9987006187438965
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000008.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000006.png",
       "prediction": "drone",
-      "drone_score": 0.9999909400939941
+      "drone_score": 0.9962683320045471
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000009.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000007.png",
       "prediction": "drone",
-      "drone_score": 0.9999905824661255
+      "drone_score": 0.9946783781051636
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000010.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000008.png",
       "prediction": "drone",
-      "drone_score": 0.9999911785125732
+      "drone_score": 0.9827978610992432
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000011.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000009.png",
       "prediction": "drone",
-      "drone_score": 0.9999971389770508
+      "drone_score": 0.9930521249771118
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000012.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000010.png",
       "prediction": "drone",
-      "drone_score": 0.9999921321868896
+      "drone_score": 0.9933552742004395
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000013.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000011.png",
       "prediction": "drone",
-      "drone_score": 0.9999836683273315
+      "drone_score": 0.9969333410263062
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000014.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000012.png",
       "prediction": "drone",
-      "drone_score": 0.999988317489624
+      "drone_score": 0.9984719157218933
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000015.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000013.png",
       "prediction": "drone",
-      "drone_score": 0.9999963045120239
+      "drone_score": 0.9958702921867371
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000016.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000014.png",
       "prediction": "drone",
-      "drone_score": 0.9999929666519165
+      "drone_score": 0.9913350939750671
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000017.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000015.png",
       "prediction": "drone",
-      "drone_score": 0.9999898672103882
+      "drone_score": 0.9989657402038574
     },
     {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000018.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/spectrograms/spectrogram_2-3_000016.png",
       "prediction": "drone",
-      "drone_score": 0.9999974966049194
-    },
-    {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000019.png",
-      "prediction": "drone",
-      "drone_score": 0.9999934434890747
-    },
-    {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\MAV_0000_01_000020.png",
-      "prediction": "drone",
-      "drone_score": 0.9999960660934448
-    },
-    {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000001.png",
-      "prediction": "drone",
-      "drone_score": 0.9620827436447144
-    },
-    {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000002.png",
-      "prediction": "drone",
-      "drone_score": 0.754720151424408
-    },
-    {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000003.png",
-      "prediction": "drone",
-      "drone_score": 0.9969446063041687
-    },
-    {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000004.png",
-      "prediction": "drone",
-      "drone_score": 0.999962568283081
-    },
-    {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000005.png",
-      "prediction": "drone",
-      "drone_score": 0.9999266862869263
-    },
-    {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000006.png",
-      "prediction": "drone",
-      "drone_score": 0.999954342842102
-    },
-    {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000007.png",
-      "prediction": "drone",
-      "drone_score": 0.9999953508377075
-    },
-    {
-      "image": "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms\\spectrogram_MA1_0000_03_000008.png",
-      "prediction": "drone",
-      "drone_score": 0.9999964237213135
+      "drone_score": 0.9981514811515808
     }
   ]
 }

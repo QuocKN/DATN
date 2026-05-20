@@ -1,13 +1,10 @@
 {
   "model_name": "dinov2_vits14_binary_finetuned",
   "dino_model": "dinov2_vits14",
-  "drone_root": "/home/quocnk/Documents/NKQuoc/Data/Spectrum/Drone",
+  "drone_root": "/home/quocnk/Documents/NKQuoc/Data/Spectrum/Drone", // gồm cả tín hiệu tự thu
   "non_drone_root": "/home/quocnk/Documents/NKQuoc/Data/Spectrum/Non_drone/dataset",
   "checkpoint": "fine_tune/dinov2_binary_runs/rf_tuthu__dinov2_vits14_binary.pt",
-  "class_names": [
-    "non_drone",
-    "drone"
-  ],
+  "class_names": ["non_drone", "drone"],
   "class_to_idx": {
     "non_drone": 0,
     "drone": 1
@@ -58,14 +55,8 @@
     }
   },
   "confusion_matrix": [
-    [
-      174,
-      0
-    ],
-    [
-      4,
-      620
-    ]
+    [174, 0],
+    [4, 620]
   ],
   "history": [
     {
@@ -75,118 +66,88 @@
       "valid_loss": 0.0019820096347409537,
       "valid_acc": 1.0,
       "valid_macro_f1": 1.0,
-      "lr": [
-        9.755282581475769e-06,
-        9.755282581475769e-05
-      ]
+      "lr": [9.755282581475769e-6, 9.755282581475769e-5]
     },
     {
       "epoch": 2,
       "train_loss": 0.0002638932980713451,
       "train_acc": 1.0,
-      "valid_loss": 1.8256957798412874e-05,
+      "valid_loss": 1.8256957798412874e-5,
       "valid_acc": 1.0,
       "valid_macro_f1": 1.0,
-      "lr": [
-        9.045084971874738e-06,
-        9.045084971874737e-05
-      ]
+      "lr": [9.045084971874738e-6, 9.045084971874737e-5]
     },
     {
       "epoch": 3,
       "train_loss": 0.00015095648059254357,
       "train_acc": 1.0,
-      "valid_loss": 1.1665801583384453e-05,
+      "valid_loss": 1.1665801583384453e-5,
       "valid_acc": 1.0,
       "valid_macro_f1": 1.0,
-      "lr": [
-        7.938926261462366e-06,
-        7.938926261462366e-05
-      ]
+      "lr": [7.938926261462366e-6, 7.938926261462366e-5]
     },
     {
       "epoch": 4,
-      "train_loss": 1.0308989077878271e-05,
+      "train_loss": 1.0308989077878271e-5,
       "train_acc": 1.0,
-      "valid_loss": 8.415790000513591e-06,
+      "valid_loss": 8.415790000513591e-6,
       "valid_acc": 1.0,
       "valid_macro_f1": 1.0,
-      "lr": [
-        6.545084971874738e-06,
-        6.545084971874737e-05
-      ]
+      "lr": [6.545084971874738e-6, 6.545084971874737e-5]
     },
     {
       "epoch": 5,
-      "train_loss": 7.039519334798648e-06,
+      "train_loss": 7.039519334798648e-6,
       "train_acc": 1.0,
-      "valid_loss": 6.889567875315304e-06,
+      "valid_loss": 6.889567875315304e-6,
       "valid_acc": 1.0,
       "valid_macro_f1": 1.0,
-      "lr": [
-        5e-06,
-        4.9999999999999996e-05
-      ]
+      "lr": [5e-6, 4.9999999999999996e-5]
     },
     {
       "epoch": 6,
-      "train_loss": 7.468190601225053e-06,
+      "train_loss": 7.468190601225053e-6,
       "train_acc": 1.0,
-      "valid_loss": 5.798225408673175e-06,
+      "valid_loss": 5.798225408673175e-6,
       "valid_acc": 1.0,
       "valid_macro_f1": 1.0,
-      "lr": [
-        3.4549150281252635e-06,
-        3.454915028125263e-05
-      ]
+      "lr": [3.4549150281252635e-6, 3.454915028125263e-5]
     },
     {
       "epoch": 7,
-      "train_loss": 5.672194175170175e-06,
+      "train_loss": 5.672194175170175e-6,
       "train_acc": 1.0,
-      "valid_loss": 5.310832054621844e-06,
+      "valid_loss": 5.310832054621844e-6,
       "valid_acc": 1.0,
       "valid_macro_f1": 1.0,
-      "lr": [
-        2.061073738537635e-06,
-        2.0610737385376345e-05
-      ]
+      "lr": [2.061073738537635e-6, 2.0610737385376345e-5]
     },
     {
       "epoch": 8,
-      "train_loss": 5.7618957848439495e-06,
+      "train_loss": 5.7618957848439495e-6,
       "train_acc": 1.0,
-      "valid_loss": 5.038619208988881e-06,
+      "valid_loss": 5.038619208988881e-6,
       "valid_acc": 1.0,
       "valid_macro_f1": 1.0,
-      "lr": [
-        9.549150281252633e-07,
-        9.549150281252631e-06
-      ]
+      "lr": [9.549150281252633e-7, 9.549150281252631e-6]
     },
     {
       "epoch": 9,
-      "train_loss": 5.0008033463331115e-06,
+      "train_loss": 5.0008033463331115e-6,
       "train_acc": 1.0,
-      "valid_loss": 4.935191760734038e-06,
+      "valid_loss": 4.935191760734038e-6,
       "valid_acc": 1.0,
       "valid_macro_f1": 1.0,
-      "lr": [
-        2.4471741852423233e-07,
-        2.447174185242323e-06
-      ]
+      "lr": [2.4471741852423233e-7, 2.447174185242323e-6]
     },
     {
       "epoch": 10,
-      "train_loss": 5.17904402098004e-06,
+      "train_loss": 5.17904402098004e-6,
       "train_acc": 1.0,
-      "valid_loss": 4.920494180500858e-06,
+      "valid_loss": 4.920494180500858e-6,
       "valid_acc": 1.0,
       "valid_macro_f1": 1.0,
-      "lr": [
-        0.0,
-        0.0
-      ]
+      "lr": [0.0, 0.0]
     }
   ]
 }
