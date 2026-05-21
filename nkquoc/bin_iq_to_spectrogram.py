@@ -15,14 +15,13 @@ import numpy as np
 from PIL import Image
 from scipy.signal import stft
 
-
 # ========================
 # CONFIG
 # ========================
-# INPUT_BIN_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone/2toan.bin"
-# OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone/spectrograms"
-INPUT_BIN_PATH ="E:\\DATN_DATA\\RF\\1toan.bin"
-OUTPUT_DIR = "E:\\DATN_DATA\\RF\\1toan_spectrograms"
+INPUT_BIN_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/1toan.bin"
+OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms"
+# INPUT_BIN_PATH ="E:\\DATN_DATA\\RF\\1toan.bin"
+# OUTPUT_DIR = "E:\\DATN_DATA\\RF\\1toan_spectrograms"
 
 
 SAMPLE_RATE = 28_000_000  # Hz (adjust as needed)
@@ -37,6 +36,9 @@ MAX_DURATION_SECONDS = 500  # Read only first 500 seconds
 
 # Set to True to normalize int16 to [-1, 1] range, False to keep raw values
 NORMALIZE = False
+ENABLE_DESPIKE = True
+DESPIKE_PERCENTILE = 99.5
+ENABLE_REPAIR_CLIPPED = False
 
 def STFT(data,
          onside: bool = True,
@@ -222,23 +224,18 @@ def check_iq_amplitude(iq_data: np.ndarray, index: int | None = None) -> None:
 
     print("=" * 60 + "\n")
 
-def clip_iq_amplitude(iq_data: np.ndarray, percentile: float = 95.0) -> np.ndarray:
+def despike_iq(iq_data: np.ndarray, percentile: float = 99.5) -> np.ndarray:
     """
-    Giới hạn biên độ IQ để giảm spike mạnh gây sọc dọc.
-    Không đổi pha, chỉ giảm magnitude của các mẫu quá lớn.
+    Giảm spike bằng cách giới hạn biên độ |IQ| theo percentile.
+    Giữ nguyên pha, chỉ nén biên độ các mẫu outlier.
     """
+    if not 0 < percentile < 100:
+        raise ValueError("percentile must be in (0, 100)")
+
     amp = np.abs(iq_data)
     threshold = np.percentile(amp, percentile)
-
-    iq_clipped = iq_data.copy()
-    mask = amp > threshold
-
-    iq_clipped[mask] = iq_clipped[mask] / (amp[mask] + 1e-12) * threshold
-
-    return iq_clipped
-def limit_iq_amplitude(iq_data: np.ndarray, percentile: float = 95.0) -> np.ndarray:
-    amp = np.abs(iq_data)
-    threshold = np.percentile(amp, percentile)
+    if threshold <= 0:
+        return iq_data
 
     iq_out = iq_data.copy()
     mask = amp > threshold
@@ -311,9 +308,17 @@ def convert_bin_to_spectrograms(
         # check_iq_amplitude(iq_chunk, index=index)
         # Xử lý trước khi STFT
         # iq_chunk = iq_chunk - np.mean(iq_chunk)
-        # iq_chunk = clip_iq_amplitude(iq_chunk, percentile=95.0)
-        # iq_chunk = limit_iq_amplitude(iq_chunk, percentile=85.0)
-        # iq_chunk = repair_clipped_iq(iq_chunk)
+        if ENABLE_DESPIKE:
+            iq_chunk = despike_iq(iq_chunk, percentile=DESPIKE_PERCENTILE)
+             plot_waveform(
+                iq=iq,
+                sample_rate=SAMPLE_RATE,
+                out_path=OUTPUT_PATH,
+                title=title,
+                max_points=MAX_POINTS,
+            )
+        if ENABLE_REPAIR_CLIPPED:
+            iq_chunk = repair_clipped_iq(iq_chunk)
         try:
             frequencies, times, spectrum = compute_spectrogram(
                 iq_chunk,

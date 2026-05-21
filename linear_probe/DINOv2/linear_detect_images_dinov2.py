@@ -22,9 +22,9 @@ FEATURE_EXTRACTOR = f"{DINO_MODEL}_imagenet_ssl"
 
 # Edit these values directly.
 ARTIFACT_IN = "linear_probe/DINOv2/trained_classifier.joblib"
-SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
-OUTPUT_JSON = "linear_probe/DINOv2/report/Tu_thu/2toan/results.json"
-OUTPUT_CHART = "linear_probe/DINOv2/report/Tu_thu/2toan/results_chart.png"
+SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/Non_drone/dataset/test"
+OUTPUT_JSON = "linear_probe/DINOv2/report/Tu_thu/non_drone/results.json"
+OUTPUT_CHART = "linear_probe/DINOv2/report/Tu_thu/non_drone/results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 64
