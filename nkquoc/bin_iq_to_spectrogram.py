@@ -18,18 +18,21 @@ from scipy.signal import stft
 # ========================
 # CONFIG
 # ========================
-INPUT_BIN_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/1toan.bin"
-OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms"
+INPUT_BIN_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/2toan.bin"
+OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
 # INPUT_BIN_PATH ="E:\\DATN_DATA\\RF\\1toan.bin"
 # OUTPUT_DIR = "E:\\DATN_DATA\\RF\\1toan_spectrograms"
 
 
 SAMPLE_RATE = 28_000_000  # Hz (adjust as needed)
-STFT_POINT = 2048
+STFT_POINT = 1024
 DURATION_TIME = 0.05  # seconds per spectrogram
 CHUNK_SIZE = 4096  # IQ samples per chunk
 OUTPUT_PREFIX = "spectrogram"
 IMAGE_SIZE = 224
+WAVEFORM_PREFIX = "waveform"
+WAVEFORM_MAX_POINTS = 20_000
+SAVE_WAVEFORM = True
 
 # Set to None to read entire file, or set to N seconds to read only first N seconds
 MAX_DURATION_SECONDS = 500  # Read only first 500 seconds
@@ -37,8 +40,12 @@ MAX_DURATION_SECONDS = 500  # Read only first 500 seconds
 # Set to True to normalize int16 to [-1, 1] range, False to keep raw values
 NORMALIZE = False
 ENABLE_DESPIKE = True
-DESPIKE_PERCENTILE = 99.5
+DESPIKE_PERCENTILE = 99
 ENABLE_REPAIR_CLIPPED = False
+ENABLE_IMPULSE_BLANKER = False
+BLANKER_MEDIAN_KERNEL = 129
+BLANKER_THRESHOLD_SIGMA = 6.0
+BLANKER_MAX_SPIKE_WIDTH = 100
 
 def STFT(data,
          onside: bool = True,
@@ -179,6 +186,50 @@ def save_spectrogram_image(
         image = image.resize((IMAGE_SIZE, IMAGE_SIZE), Image.Resampling.BILINEAR)
         image.save(output_path)
 
+
+def downsample_for_plot(x: np.ndarray, max_points: int) -> np.ndarray:
+    if max_points <= 0 or x.size <= max_points:
+        return x
+    step = int(np.ceil(x.size / max_points))
+    return x[::step]
+
+
+def save_waveform_image(
+    iq: np.ndarray,
+    sample_rate: float,
+    output_path: str,
+    title: str,
+    max_points: int = 20_000,
+) -> None:
+    i = downsample_for_plot(iq.real, max_points)
+    q = downsample_for_plot(iq.imag, max_points)
+    amp = downsample_for_plot(np.abs(iq), max_points)
+
+    n = min(i.size, q.size, amp.size)
+    i = i[:n]
+    q = q[:n]
+    amp = amp[:n]
+    t = np.arange(n, dtype=np.float32) / sample_rate
+
+    fig, axes = plt.subplots(3, 1, figsize=(12, 8), sharex=True)
+    axes[0].plot(t, i, linewidth=0.7)
+    axes[0].set_ylabel("I")
+    axes[0].grid(alpha=0.25)
+
+    axes[1].plot(t, q, linewidth=0.7, color="tab:orange")
+    axes[1].set_ylabel("Q")
+    axes[1].grid(alpha=0.25)
+
+    axes[2].plot(t, amp, linewidth=0.7, color="tab:green")
+    axes[2].set_ylabel("|IQ|")
+    axes[2].set_xlabel("Time (s)")
+    axes[2].grid(alpha=0.25)
+
+    fig.suptitle(title)
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=150)
+    plt.close(fig)
+
 def check_iq_amplitude(iq_data: np.ndarray, index: int | None = None) -> None:
     amp = np.abs(iq_data)
     i = iq_data.real
@@ -244,6 +295,69 @@ def despike_iq(iq_data: np.ndarray, percentile: float = 99.5) -> np.ndarray:
 
     return iq_out
 
+
+def blank_impulsive_spikes(
+    iq_data: np.ndarray,
+    median_kernel: int = 129,
+    threshold_sigma: float = 8.0,
+    max_spike_width: int = 8,
+) -> np.ndarray:
+    """
+    Khử spike hẹp theo thời gian để giảm sọc dọc spectrogram.
+    Burst FHSS rộng hơn max_spike_width sẽ được giữ nguyên.
+    """
+    if iq_data.size < 3:
+        return iq_data
+    if median_kernel < 3:
+        median_kernel = 3
+    if median_kernel % 2 == 0:
+        median_kernel += 1
+    if max_spike_width < 1:
+        return iq_data
+
+    amp = np.abs(iq_data)
+    kernel = np.ones(median_kernel, dtype=np.float32) / median_kernel
+    baseline = np.convolve(amp, kernel, mode="same")
+    resid = amp - baseline
+    mad = np.median(np.abs(resid - np.median(resid))) + 1e-12
+    sigma = 1.4826 * mad
+    threshold = baseline + threshold_sigma * sigma
+    candidate = amp > threshold
+
+    idx = np.flatnonzero(candidate)
+    if idx.size == 0:
+        return iq_data
+
+    spike_mask = np.zeros_like(candidate, dtype=bool)
+    run_start = idx[0]
+    run_prev = idx[0]
+    for k in idx[1:]:
+        if k == run_prev + 1:
+            run_prev = k
+            continue
+        run_len = run_prev - run_start + 1
+        if run_len <= max_spike_width:
+            spike_mask[run_start : run_prev + 1] = True
+        run_start = k
+        run_prev = k
+    run_len = run_prev - run_start + 1
+    if run_len <= max_spike_width:
+        spike_mask[run_start : run_prev + 1] = True
+
+    if not np.any(spike_mask):
+        return iq_data
+
+    i = iq_data.real.copy()
+    q = iq_data.imag.copy()
+    x = np.arange(iq_data.size)
+    good = ~spike_mask
+    if np.sum(good) < 2:
+        return iq_data
+
+    i[spike_mask] = np.interp(x[spike_mask], x[good], i[good])
+    q[spike_mask] = np.interp(x[spike_mask], x[good], q[good])
+    return i + 1j * q
+
 def repair_clipped_iq(iq_data: np.ndarray,
                       adc_min: int = -2048,
                       adc_max: int = 2047) -> np.ndarray:
@@ -283,6 +397,9 @@ def convert_bin_to_spectrograms(
         raise FileNotFoundError(f"Binary file not found: {bin_path}")
 
     os.makedirs(output_dir, exist_ok=True)
+    waveform_dir = os.path.join(output_dir, "waveforms")
+    if SAVE_WAVEFORM:
+        os.makedirs(waveform_dir, exist_ok=True)
 
     # Calculate max IQ samples to read if duration limit is set
     max_iq_samples = None
@@ -308,15 +425,22 @@ def convert_bin_to_spectrograms(
         # check_iq_amplitude(iq_chunk, index=index)
         # Xử lý trước khi STFT
         # iq_chunk = iq_chunk - np.mean(iq_chunk)
+        if ENABLE_IMPULSE_BLANKER:
+            iq_chunk = blank_impulsive_spikes(
+                iq_chunk,
+                median_kernel=BLANKER_MEDIAN_KERNEL,
+                threshold_sigma=BLANKER_THRESHOLD_SIGMA,
+                max_spike_width=BLANKER_MAX_SPIKE_WIDTH,
+            )
         if ENABLE_DESPIKE:
             iq_chunk = despike_iq(iq_chunk, percentile=DESPIKE_PERCENTILE)
-             plot_waveform(
-                iq=iq,
-                sample_rate=SAMPLE_RATE,
-                out_path=OUTPUT_PATH,
-                title=title,
-                max_points=MAX_POINTS,
-            )
+            #  plot_waveform(
+            #     iq=iq,
+            #     sample_rate=SAMPLE_RATE,
+            #     out_path=OUTPUT_PATH,
+            #     title=title,
+            #     max_points=MAX_POINTS,
+            # )
         if ENABLE_REPAIR_CLIPPED:
             iq_chunk = repair_clipped_iq(iq_chunk)
         try:
@@ -334,6 +458,21 @@ def convert_bin_to_spectrograms(
                 spectrum=spectrum,
                 output_path=output_path,
             )
+            if SAVE_WAVEFORM:
+                waveform_path = os.path.join(
+                    waveform_dir, f"{WAVEFORM_PREFIX}_{index:06d}.png"
+                )
+                waveform_title = (
+                    f"{os.path.basename(bin_path)} | chunk={index} | "
+                    f"samples={iq_chunk.size}"
+                )
+                save_waveform_image(
+                    iq=iq_chunk,
+                    sample_rate=sample_rate,
+                    output_path=waveform_path,
+                    title=waveform_title,
+                    max_points=WAVEFORM_MAX_POINTS,
+                )
             saved_count += 1
             print(f"[OK] Saved {output_path}")
         except Exception as e:

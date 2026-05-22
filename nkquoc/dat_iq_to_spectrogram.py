@@ -15,22 +15,29 @@ from typing import Generator
 
 import numpy as np
 
-from bin_iq_to_spectrogram import compute_spectrogram, save_spectrogram_image
+from bin_iq_to_spectrogram import (
+    compute_spectrogram,
+    save_spectrogram_image,
+    save_waveform_image,
+)
 
 
 # ========================
 # CONFIG
 # ========================
-INPUT_DAT_PATH = "E:\\DATN_DATA\\RF\\DroneDetect\\MA1_0000_00.dat"
-OUTPUT_DIR = "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms"
+INPUT_DAT_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/MA1_0010_03.dat"
+OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/spectrograms"
 SAMPLE_RATE = 28_000_000  # Hz (adjust as needed)
 STFT_POINT = 2048
 DURATION_TIME = 0.1  # seconds per spectrogram
 CHUNK_SIZE = 1_000_000  # IQ samples per chunk (will auto-increase if needed)
-OUTPUT_PREFIX = "spectrogram_MA1_0000_03"
+OUTPUT_PREFIX = "spectrogram_MA1_0010_03"
+WAVEFORM_PREFIX = "waveform_MA1_0010_03"
+SAVE_WAVEFORM = True
+WAVEFORM_MAX_POINTS = 20_000
 
 # Set to None to read entire file, or set to N seconds to read only first N seconds
-MAX_DURATION_SECONDS = 2
+MAX_DURATION_SECONDS = 5
 
 # Supported values: "float32_iq" or "int16_iq"
 DAT_FORMAT = "float32_iq"
@@ -112,6 +119,9 @@ def convert_dat_to_spectrograms(
         raise FileNotFoundError(f"DAT file not found: {dat_path}")
 
     os.makedirs(output_dir, exist_ok=True)
+    waveform_dir = os.path.join(output_dir, "waveforms")
+    if SAVE_WAVEFORM:
+        os.makedirs(waveform_dir, exist_ok=True)
 
     max_iq_samples = None
     if max_duration_seconds is not None:
@@ -156,6 +166,21 @@ def convert_dat_to_spectrograms(
                 spectrum=spectrum,
                 output_path=output_path,
             )
+            if SAVE_WAVEFORM:
+                waveform_path = os.path.join(
+                    waveform_dir, f"{WAVEFORM_PREFIX}_{index:06d}.png"
+                )
+                waveform_title = (
+                    f"{os.path.basename(dat_path)} | chunk={index} | "
+                    f"samples={iq_chunk.size}"
+                )
+                save_waveform_image(
+                    iq=iq_chunk,
+                    sample_rate=sample_rate,
+                    output_path=waveform_path,
+                    title=waveform_title,
+                    max_points=WAVEFORM_MAX_POINTS,
+                )
             saved_count += 1
             print(f"[OK] Saved {output_path}")
         except Exception as e:
