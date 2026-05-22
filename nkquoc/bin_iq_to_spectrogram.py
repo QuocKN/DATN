@@ -39,13 +39,26 @@ MAX_DURATION_SECONDS = 500  # Read only first 500 seconds
 
 # Set to True to normalize int16 to [-1, 1] range, False to keep raw values
 NORMALIZE = False
-ENABLE_DESPIKE = True
-DESPIKE_PERCENTILE = 99
+ENABLE_DESPIKE = False
+DESPIKE_PERCENTILE = 99.5
 ENABLE_REPAIR_CLIPPED = False
 ENABLE_IMPULSE_BLANKER = False
 BLANKER_MEDIAN_KERNEL = 129
 BLANKER_THRESHOLD_SIGMA = 6.0
-BLANKER_MAX_SPIKE_WIDTH = 100
+BLANKER_MAX_SPIKE_WIDTH = 10
+ENABLE_PEAK_THINNING = False
+THIN_PERCENTILE = 99.2
+THIN_TARGET_WIDTH = 2
+THIN_APPLY_MAX_RUN = 48
+ENABLE_SATURATION_THINNING = False
+SATURATION_LEVEL = 1850.0
+SAT_TARGET_WIDTH = 1
+SAT_MAX_RUN = 256
+ENABLE_SPEC_COLUMN_DENOISE = True
+SPEC_COLUMN_QUANTILE = 60.0
+ENABLE_SPEC_DB_CLIP = False
+SPEC_CLIP_DB_MIN = -80.0
+SPEC_CLIP_DB_MAX = 15.0
 
 def STFT(data,
          onside: bool = True,
@@ -169,6 +182,12 @@ def save_spectrogram_image(
 ) -> None:
     """Save a spectrogram image without axes or labels."""
     magnitude_db = 10 * np.log10(np.abs(spectrum) + 1e-12)
+    if ENABLE_SPEC_COLUMN_DENOISE:
+        # Remove per-time-column background to suppress vertical striping.
+        col_bg = np.percentile(magnitude_db, SPEC_COLUMN_QUANTILE, axis=0, keepdims=True)
+        magnitude_db = magnitude_db - col_bg
+    if ENABLE_SPEC_DB_CLIP:
+        magnitude_db = np.clip(magnitude_db, SPEC_CLIP_DB_MIN, SPEC_CLIP_DB_MAX)
     extent = (times.min(), times.max(), frequencies.min(), frequencies.max())
 
     dpi = 100
@@ -358,6 +377,133 @@ def blank_impulsive_spikes(
     q[spike_mask] = np.interp(x[spike_mask], x[good], q[good])
     return i + 1j * q
 
+
+def thin_high_amplitude_runs(
+    iq_data: np.ndarray,
+    percentile: float = 99.2,
+    target_width: int = 2,
+    max_run_len: int = 48,
+) -> np.ndarray:
+    """
+    Làm mảnh các cụm biên độ cao theo trục thời gian:
+    - Tìm các đoạn liên tiếp có |IQ| vượt ngưỡng percentile.
+    - Với đoạn có độ dài > target_width và <= max_run_len:
+      giữ lại phần lõi giữa đoạn, phần còn lại thay bằng nội suy I/Q.
+    Mục tiêu là giảm "độ dày" xung gây sọc dọc trên spectrogram.
+    """
+    if iq_data.size < 3:
+        return iq_data
+    if not 0 < percentile < 100:
+        raise ValueError("percentile must be in (0, 100)")
+    if target_width < 1:
+        target_width = 1
+    if max_run_len < target_width:
+        return iq_data
+
+    amp = np.abs(iq_data)
+    threshold = np.percentile(amp, percentile)
+    hot = amp > threshold
+    idx = np.flatnonzero(hot)
+    if idx.size == 0:
+        return iq_data
+
+    remove_mask = np.zeros_like(hot, dtype=bool)
+    run_start = idx[0]
+    run_prev = idx[0]
+    for k in idx[1:]:
+        if k == run_prev + 1:
+            run_prev = k
+            continue
+        run_len = run_prev - run_start + 1
+        if target_width < run_len <= max_run_len:
+            keep_start = run_start + (run_len - target_width) // 2
+            keep_end = keep_start + target_width - 1
+            remove_mask[run_start:keep_start] = True
+            remove_mask[keep_end + 1 : run_prev + 1] = True
+        run_start = k
+        run_prev = k
+    run_len = run_prev - run_start + 1
+    if target_width < run_len <= max_run_len:
+        keep_start = run_start + (run_len - target_width) // 2
+        keep_end = keep_start + target_width - 1
+        remove_mask[run_start:keep_start] = True
+        remove_mask[keep_end + 1 : run_prev + 1] = True
+
+    if not np.any(remove_mask):
+        return iq_data
+
+    i = iq_data.real.copy()
+    q = iq_data.imag.copy()
+    x = np.arange(iq_data.size)
+    good = ~remove_mask
+    if np.sum(good) < 2:
+        return iq_data
+
+    i[remove_mask] = np.interp(x[remove_mask], x[good], i[good])
+    q[remove_mask] = np.interp(x[remove_mask], x[good], q[good])
+    return i + 1j * q
+
+
+def thin_saturation_runs(
+    iq_data: np.ndarray,
+    saturation_level: float = 1850.0,
+    target_width: int = 1,
+    max_run_len: int = 256,
+) -> np.ndarray:
+    """
+    Aggressive thinning for ADC-like saturated runs.
+    Detect samples where |I| or |Q| is near ADC rail, then keep only a narrow
+    center slice for each run and interpolate the removed edges.
+    """
+    if iq_data.size < 3:
+        return iq_data
+    if target_width < 1:
+        target_width = 1
+    if max_run_len < target_width:
+        return iq_data
+
+    i = iq_data.real
+    q = iq_data.imag
+    sat = (np.abs(i) >= saturation_level) | (np.abs(q) >= saturation_level)
+    idx = np.flatnonzero(sat)
+    if idx.size == 0:
+        return iq_data
+
+    remove_mask = np.zeros_like(sat, dtype=bool)
+    run_start = idx[0]
+    run_prev = idx[0]
+    for k in idx[1:]:
+        if k == run_prev + 1:
+            run_prev = k
+            continue
+        run_len = run_prev - run_start + 1
+        if target_width < run_len <= max_run_len:
+            keep_start = run_start + (run_len - target_width) // 2
+            keep_end = keep_start + target_width - 1
+            remove_mask[run_start:keep_start] = True
+            remove_mask[keep_end + 1 : run_prev + 1] = True
+        run_start = k
+        run_prev = k
+    run_len = run_prev - run_start + 1
+    if target_width < run_len <= max_run_len:
+        keep_start = run_start + (run_len - target_width) // 2
+        keep_end = keep_start + target_width - 1
+        remove_mask[run_start:keep_start] = True
+        remove_mask[keep_end + 1 : run_prev + 1] = True
+
+    if not np.any(remove_mask):
+        return iq_data
+
+    io = i.copy()
+    qo = q.copy()
+    x = np.arange(iq_data.size)
+    good = ~remove_mask
+    if np.sum(good) < 2:
+        return iq_data
+    io[remove_mask] = np.interp(x[remove_mask], x[good], io[good])
+    qo[remove_mask] = np.interp(x[remove_mask], x[good], qo[good])
+    return io + 1j * qo
+
 def repair_clipped_iq(iq_data: np.ndarray,
                       adc_min: int = -2048,
                       adc_max: int = 2047) -> np.ndarray:
@@ -425,6 +571,20 @@ def convert_bin_to_spectrograms(
         # check_iq_amplitude(iq_chunk, index=index)
         # Xử lý trước khi STFT
         # iq_chunk = iq_chunk - np.mean(iq_chunk)
+        if ENABLE_SATURATION_THINNING:
+            iq_chunk = thin_saturation_runs(
+                iq_chunk,
+                saturation_level=SATURATION_LEVEL,
+                target_width=SAT_TARGET_WIDTH,
+                max_run_len=SAT_MAX_RUN,
+            )
+        if ENABLE_PEAK_THINNING:
+            iq_chunk = thin_high_amplitude_runs(
+                iq_chunk,
+                percentile=THIN_PERCENTILE,
+                target_width=THIN_TARGET_WIDTH,
+                max_run_len=THIN_APPLY_MAX_RUN,
+            )
         if ENABLE_IMPULSE_BLANKER:
             iq_chunk = blank_impulsive_spikes(
                 iq_chunk,
