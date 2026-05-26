@@ -266,7 +266,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine-tune DINOv2 for binary drone/non-drone spectrogram detection")
     parser.add_argument("--drone-root", type=str, default=DRONE_ROOT)
     parser.add_argument("--non-drone-root", type=str, default=NON_DRONE_ROOT)
-    parser.add_argument("--out-dir", type=str, default="fine_tune/dinov2_binary_runs")
+    parser.add_argument("--out-dir", type=str, default="fine_tune/DINOv2/dinov2_binary_runs")
     parser.add_argument("--dino-model", type=str, default="dinov2_vits14")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=32)
@@ -364,7 +364,7 @@ def main() -> None:
     criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
 
     best_valid_macro_f1 = -1.0
-    best_path = out_dir / f"rf_tuthu__{args.dino_model}_binary.pt"
+    best_path = out_dir / f"balanced_{args.dino_model}_binary.pt"
     history = []
     epochs_without_improvement = 0
     stopped_early = False

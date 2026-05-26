@@ -17,8 +17,8 @@ from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 from torchvision import models, transforms
 from tqdm import tqdm
 
-DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/DroneDetect_spectrogram_dataset"
-NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/Non_drone/dataset"
+DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/drone"
+NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/non_drone"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 IMAGE_SIZE = 224
 CLASS_NAMES = ["non_drone", "drone"]
@@ -324,7 +324,7 @@ def main() -> None:
     criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
 
     best_valid_macro_f1 = -1.0
-    best_path = out_dir / "full_dataset_resnet50_binary.pt"
+    best_path = out_dir / "balanced_resnet50_binary.pt"
     history = []
     epochs_without_improvement = 0
     stopped_early = False
