@@ -16,8 +16,8 @@ from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 from torchvision import transforms
 from tqdm import tqdm
 
-DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/Drone"
-NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/Non_drone/dataset"
+DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/drone"
+NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/non_drone"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 IMAGE_SIZE = 224
 CLASS_NAMES = ["non_drone", "drone"]
@@ -268,7 +268,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--non-drone-root", type=str, default=NON_DRONE_ROOT)
     parser.add_argument("--out-dir", type=str, default="fine_tune/dinov2_binary_runs")
     parser.add_argument("--dino-model", type=str, default="dinov2_vits14")
-    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--image-size", type=int, default=IMAGE_SIZE)
@@ -285,6 +285,8 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Use WeightedRandomSampler on train set to reduce class imbalance.",
     )
+    parser.add_argument("--early-stop-patience", type=int, default=7, help="Stop if no valid_macro_f1 improvement for N epochs")
+    parser.add_argument("--early-stop-min-delta", type=float, default=0.001, help="Minimum valid_macro_f1 gain to count as improvement")
     return parser.parse_args()
 
 
@@ -364,6 +366,9 @@ def main() -> None:
     best_valid_macro_f1 = -1.0
     best_path = out_dir / f"rf_tuthu__{args.dino_model}_binary.pt"
     history = []
+    epochs_without_improvement = 0
+    stopped_early = False
+    best_epoch = 0
 
     for epoch in range(1, args.epochs + 1):
         print(f"\nEpoch {epoch}/{args.epochs}")
@@ -384,8 +389,11 @@ def main() -> None:
         history.append(row)
         print(json.dumps(row, indent=2))
 
-        if valid_macro_f1 > best_valid_macro_f1:
+        improvement = valid_macro_f1 - best_valid_macro_f1
+        if improvement > args.early_stop_min_delta:
             best_valid_macro_f1 = valid_macro_f1
+            best_epoch = epoch
+            epochs_without_improvement = 0
             torch.save(
                 {
                     "model_name": f"{args.dino_model}_binary_finetuned",
@@ -400,6 +408,15 @@ def main() -> None:
                 best_path,
             )
             print(f"Saved best checkpoint: {best_path}")
+        else:
+            epochs_without_improvement += 1
+            if args.early_stop_patience > 0 and epochs_without_improvement >= args.early_stop_patience:
+                stopped_early = True
+                print(
+                    f"Early stopping at epoch {epoch}: no valid_macro_f1 improvement "
+                    f"> {args.early_stop_min_delta} for {args.early_stop_patience} epochs."
+                )
+                break
 
     checkpoint = torch.load(best_path, map_location=device)
     model.load_state_dict(checkpoint["state_dict"])
@@ -410,6 +427,7 @@ def main() -> None:
     summary = {
         "model_name": f"{args.dino_model}_binary_finetuned",
         "dino_model": args.dino_model,
+        "args": vars(args),
         "drone_root": args.drone_root,
         "non_drone_root": args.non_drone_root,
         "checkpoint": str(best_path),
@@ -421,6 +439,10 @@ def main() -> None:
             "test": count_labels(test_samples),
         },
         "best_valid_macro_f1": best_valid_macro_f1,
+        "best_epoch": best_epoch,
+        "stopped_early": stopped_early,
+        "early_stop_patience": args.early_stop_patience,
+        "early_stop_min_delta": args.early_stop_min_delta,
         "test_loss": test_loss,
         "test_acc": test_acc,
         "test_macro_f1": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),

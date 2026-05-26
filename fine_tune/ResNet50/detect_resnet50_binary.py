@@ -19,8 +19,8 @@ from tqdm import tqdm
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = "fine_tune/resnet50_binary_runs/rf_tuthu_resnet50_binary.pt"
-SOURCE_DIR = "e:\\DATN_DATA\\RF\\RF Control and Video Signal\\DJI_mavic_pro_2G_spectrograms"
+CHECKPOINT_IN = "fine_tune/ResNet50/resnet50_binary_runs/full_dataset_resnet50_binary.pt"
+SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
 OUTPUT_JSON = "fine_tune/ResNet50/report/Tu_thu/2toan/results_nhap.json"
 OUTPUT_CHART = "fine_tune/ResNet50/report/Tu_thu/2toan/results_chart_nhap.png"
 IMAGE_SIZE = 224

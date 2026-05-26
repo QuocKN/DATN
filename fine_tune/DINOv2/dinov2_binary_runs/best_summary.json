@@ -1,0 +1,192 @@
+{
+  "model_name": "dinov2_vits14_binary_finetuned",
+  "dino_model": "dinov2_vits14",
+  "drone_root": "/home/quocnk/Documents/NKQuoc/Data/Spectrum/DroneDetect_spectrogram_dataset",
+  "non_drone_root": "/home/quocnk/Documents/NKQuoc/Data/Spectrum/Non_drone/dataset",
+  "checkpoint": "fine_tune/dinov2_binary_runs/best_dinov2_vits14_binary.pt",
+  "class_names": [
+    "non_drone",
+    "drone"
+  ],
+  "class_to_idx": {
+    "non_drone": 0,
+    "drone": 1
+  },
+  "sample_counts": {
+    "train": {
+      "non_drone": 1387,
+      "drone": 7977
+    },
+    "valid": {
+      "non_drone": 173,
+      "drone": 2767
+    },
+    "test": {
+      "non_drone": 174,
+      "drone": 2535
+    }
+  },
+  "best_valid_macro_f1": 1.0,
+  "test_loss": 5.858874762639617e-05,
+  "test_acc": 1.0,
+  "test_macro_f1": 1.0,
+  "classification_report": {
+    "non_drone": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 174.0
+    },
+    "drone": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 2535.0
+    },
+    "accuracy": 1.0,
+    "macro avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 2709.0
+    },
+    "weighted avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 2709.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      174,
+      0
+    ],
+    [
+      0,
+      2535
+    ]
+  ],
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.009438953847584398,
+      "train_acc": 0.9935924818453652,
+      "valid_loss": 6.641923202588092e-05,
+      "valid_acc": 1.0,
+      "valid_macro_f1": 1.0,
+      "lr": [
+        9.755282581475769e-06,
+        9.755282581475769e-05
+      ]
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.0313601395196837e-05,
+      "train_acc": 1.0,
+      "valid_loss": 2.1886009243935156e-05,
+      "valid_acc": 1.0,
+      "valid_macro_f1": 1.0,
+      "lr": [
+        9.045084971874738e-06,
+        9.045084971874737e-05
+      ]
+    },
+    {
+      "epoch": 3,
+      "train_loss": 4.506023947127585e-06,
+      "train_acc": 1.0,
+      "valid_loss": 1.4013909183981336e-05,
+      "valid_acc": 1.0,
+      "valid_macro_f1": 1.0,
+      "lr": [
+        7.938926261462366e-06,
+        7.938926261462366e-05
+      ]
+    },
+    {
+      "epoch": 4,
+      "train_loss": 2.835340290407772e-06,
+      "train_acc": 1.0,
+      "valid_loss": 9.699266296806576e-06,
+      "valid_acc": 1.0,
+      "valid_macro_f1": 1.0,
+      "lr": [
+        6.545084971874738e-06,
+        6.545084971874737e-05
+      ]
+    },
+    {
+      "epoch": 5,
+      "train_loss": 1.9920438232961934e-06,
+      "train_acc": 1.0,
+      "valid_loss": 7.483115593820875e-06,
+      "valid_acc": 1.0,
+      "valid_macro_f1": 1.0,
+      "lr": [
+        5e-06,
+        4.9999999999999996e-05
+      ]
+    },
+    {
+      "epoch": 6,
+      "train_loss": 1.6583803741912986e-06,
+      "train_acc": 1.0,
+      "valid_loss": 6.1467694592920456e-06,
+      "valid_acc": 1.0,
+      "valid_macro_f1": 1.0,
+      "lr": [
+        3.4549150281252635e-06,
+        3.454915028125263e-05
+      ]
+    },
+    {
+      "epoch": 7,
+      "train_loss": 1.5776609663685974e-06,
+      "train_acc": 1.0,
+      "valid_loss": 5.182542752727139e-06,
+      "valid_acc": 1.0,
+      "valid_macro_f1": 1.0,
+      "lr": [
+        2.061073738537635e-06,
+        2.0610737385376345e-05
+      ]
+    },
+    {
+      "epoch": 8,
+      "train_loss": 1.2308874054882705e-06,
+      "train_acc": 1.0,
+      "valid_loss": 4.8316000217499736e-06,
+      "valid_acc": 1.0,
+      "valid_macro_f1": 1.0,
+      "lr": [
+        9.549150281252633e-07,
+        9.549150281252631e-06
+      ]
+    },
+    {
+      "epoch": 9,
+      "train_loss": 1.1820136261898287e-06,
+      "train_acc": 1.0,
+      "valid_loss": 4.697715060302119e-06,
+      "valid_acc": 1.0,
+      "valid_macro_f1": 1.0,
+      "lr": [
+        2.4471741852423233e-07,
+        2.447174185242323e-06
+      ]
+    },
+    {
+      "epoch": 10,
+      "train_loss": 1.1924271671053518e-06,
+      "train_acc": 1.0,
+      "valid_loss": 4.6788553512604784e-06,
+      "valid_acc": 1.0,
+      "valid_macro_f1": 1.0,
+      "lr": [
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

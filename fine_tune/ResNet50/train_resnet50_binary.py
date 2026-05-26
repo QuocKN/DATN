@@ -17,8 +17,8 @@ from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 from torchvision import models, transforms
 from tqdm import tqdm
 
-DRONE_ROOT = "E:\\DATN_DATA\\Spectrum\\DroneDetect_spectrogram_dataset"
-NON_DRONE_ROOT = "E:\\DATN_DATA\\Spectrum\\non_drone"
+DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/DroneDetect_spectrogram_dataset"
+NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/Non_drone/dataset"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 IMAGE_SIZE = 224
 CLASS_NAMES = ["non_drone", "drone"]
@@ -148,6 +148,13 @@ def count_labels(samples: Sequence[Sample]) -> dict:
     return {CLASS_NAMES[label]: int(labels.count(label)) for label in range(len(CLASS_NAMES))}
 
 
+def count_unique_images_by_class(samples: Sequence[Sample]) -> dict:
+    unique_paths_by_label = {label: set() for label in range(len(CLASS_NAMES))}
+    for sample in samples:
+        unique_paths_by_label[sample.label].add(str(sample.path.resolve()))
+    return {CLASS_NAMES[label]: len(unique_paths_by_label[label]) for label in range(len(CLASS_NAMES))}
+
+
 def make_class_weights(samples: Sequence[Sample], device: torch.device) -> torch.Tensor:
     labels = np.array([s.label for s in samples], dtype=np.int64)
     counts = np.bincount(labels, minlength=len(CLASS_NAMES)).astype(np.float32)
@@ -237,7 +244,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine-tune ResNet50 for binary drone/non-drone spectrogram detection")
     parser.add_argument("--drone-root", type=str, default=DRONE_ROOT)
     parser.add_argument("--non-drone-root", type=str, default=NON_DRONE_ROOT)
-    parser.add_argument("--out-dir", type=str, default="fine_tune/resnet50_binary_runs")
+    parser.add_argument("--out-dir", type=str, default="fine_tune/ResNet50/resnet50_binary_runs")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-workers", type=int, default=4)
@@ -254,8 +261,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--early-stop-patience", type=int, default=5, help="Stop if no valid_macro_f1 improvement for N epochs")
-    parser.add_argument("--early-stop-min-delta", type=float, default=0.0, help="Minimum valid_macro_f1 gain to count as improvement")
+    parser.add_argument("--early-stop-patience", type=int, default=7, help="Stop if no valid_macro_f1 improvement for N epochs")
+    parser.add_argument("--early-stop-min-delta", type=float, default=0.001, help="Minimum valid_macro_f1 gain to count as improvement")
     return parser.parse_args()
 
 
@@ -317,7 +324,7 @@ def main() -> None:
     criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
 
     best_valid_macro_f1 = -1.0
-    best_path = out_dir / "rf_tuthu_resnet50_binary.pt"
+    best_path = out_dir / "full_dataset_resnet50_binary.pt"
     history = []
     epochs_without_improvement = 0
     stopped_early = False
@@ -376,17 +383,34 @@ def main() -> None:
 
     report = classification_report(y_true, y_pred, target_names=CLASS_NAMES, output_dict=True, zero_division=0)
     cm = confusion_matrix(y_true, y_pred).tolist()
+    train_counts = count_labels(train_samples)
+    valid_counts = count_labels(valid_samples)
+    test_counts = count_labels(test_samples)
+    used_image_counts = {
+        "train": count_unique_images_by_class(train_samples),
+        "valid": count_unique_images_by_class(valid_samples),
+        "test": count_unique_images_by_class(test_samples),
+    }
     summary = {
         "model_name": "resnet50_binary_finetuned",
+        "args": vars(args),
         "drone_root": args.drone_root,
         "non_drone_root": args.non_drone_root,
         "checkpoint": str(best_path),
         "class_names": CLASS_NAMES,
         "class_to_idx": {"non_drone": 0, "drone": 1},
+        "used_image_counts": used_image_counts,
+        "train_images_used_total": len(train_samples),
+        "train_images_used_by_class": train_counts,
         "sample_counts": {
-            "train": count_labels(train_samples),
-            "valid": count_labels(valid_samples),
-            "test": count_labels(test_samples),
+            "train": train_counts,
+            "valid": valid_counts,
+            "test": test_counts,
+        },
+        "sample_totals": {
+            "train": len(train_samples),
+            "valid": len(valid_samples),
+            "test": len(test_samples),
         },
         "best_valid_macro_f1": best_valid_macro_f1,
         "best_epoch": best_epoch,
