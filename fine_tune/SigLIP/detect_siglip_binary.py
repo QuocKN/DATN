@@ -25,7 +25,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
 CHECKPOINT_IN = "fine_tune/SigLIP/siglip_binary_runs/siglip_binary_best.pt"
-SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms"
+SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms"
 OUTPUT_JSON = "fine_tune/SigLIP/report/test/results.json"
 OUTPUT_CHART = "fine_tune/SigLIP/report/test/results_chart.png"
 IMAGE_SIZE = 224
@@ -194,7 +194,7 @@ def visualize_detection_results(
         ax4.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + max(total * 0.015, 0.5), text, ha="center", fontweight="bold")
 
     fig.suptitle(
-        f"{drone_name}\\n\\n"
+        f"{drone_name}\n\n"
         f"Fine-tuned SigLIP Detection Results | Model: {model_name or 'unknown'} | "
         f"Drone: {drone_count}/{total} ({100 * drone_count / max(total, 1):.1f}%)\\n",
         fontsize=14,

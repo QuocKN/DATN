@@ -17,15 +17,15 @@ from bin_iq_to_spectrogram import compute_spectrogram, save_spectrogram_image
 # ========================
 # CONFIG
 # ========================
-INPUT_MAT_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2.mat"
-OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms"
+INPUT_MAT_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/DRFF_R2/evn/outdoor_environment.mat"
+OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/DRFF_R2/evn/spectrograms"
 
 # Set to a variable name inside .mat if you know it, else None to auto-detect
 MAT_IQ_KEY: str | None = None
 
-SAMPLE_RATE = 20_000_000  # Hz
+SAMPLE_RATE = 100_000_000  # Hz
 STFT_POINT = 1024
-DURATION_TIME = 0.3  # seconds per spectrogram
+DURATION_TIME = 0.03  # seconds per spectrogram
 CHUNK_SIZE = 1_000_000  # IQ samples per chunk
 OUTPUT_PREFIX = "spectrogram"
 WAVEFORM_PREFIX = "waveform"
