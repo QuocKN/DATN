@@ -20,9 +20,9 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
 CHECKPOINT_IN = "fine_tune/ResNet18/resnet18_binary_runs/best_resnet18_binary.pt"
-SOURCE_DIR = "/home/quocnk/Downloads/1toan_spectrograms"
-OUTPUT_JSON = "fine_tune/ResNet18/report/Tu_thu/1toan/results.json"
-OUTPUT_CHART = "fine_tune/ResNet18/report/Tu_thu/1toan/results_chart.png"
+SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms"
+OUTPUT_JSON = "fine_tune/ResNet18/report/test/results.json"
+OUTPUT_CHART = "fine_tune/ResNet18/report/test/results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 128

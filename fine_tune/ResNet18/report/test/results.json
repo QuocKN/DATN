@@ -1,0 +1,199 @@
+{
+  "summary": {
+    "method": "resnet18_finetuned_classifier",
+    "model_name": "resnet18_binary_finetuned",
+    "checkpoint_in": "fine_tune/ResNet18/resnet18_binary_runs/best_resnet18_binary.pt",
+    "source_images": 35,
+    "detected_drone_count": 35,
+    "detected_non_drone_count": 0,
+    "detected_drone_rate": 1.0,
+    "score_mean": 0.9990500211715698,
+    "score_std": 0.0010901972418650985,
+    "class_names": [
+      "non_drone",
+      "drone"
+    ],
+    "class_to_idx": {
+      "non_drone": 0,
+      "drone": 1
+    },
+    "best_valid_macro_f1": 1.0
+  },
+  "predictions": [
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000001.png",
+      "prediction": "drone",
+      "drone_score": 0.9996104836463928
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000002.png",
+      "prediction": "drone",
+      "drone_score": 0.9933791160583496
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000003.png",
+      "prediction": "drone",
+      "drone_score": 0.9992653727531433
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.997787594795227
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.9990748167037964
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000006.png",
+      "prediction": "drone",
+      "drone_score": 0.9991028308868408
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000007.png",
+      "prediction": "drone",
+      "drone_score": 0.9998335838317871
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000008.png",
+      "prediction": "drone",
+      "drone_score": 0.999295711517334
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000009.png",
+      "prediction": "drone",
+      "drone_score": 0.9991851449012756
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000010.png",
+      "prediction": "drone",
+      "drone_score": 0.9993815422058105
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000011.png",
+      "prediction": "drone",
+      "drone_score": 0.9994602799415588
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000012.png",
+      "prediction": "drone",
+      "drone_score": 0.998187243938446
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000013.png",
+      "prediction": "drone",
+      "drone_score": 0.9989866614341736
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000014.png",
+      "prediction": "drone",
+      "drone_score": 0.9993100166320801
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000015.png",
+      "prediction": "drone",
+      "drone_score": 0.9990504384040833
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000016.png",
+      "prediction": "drone",
+      "drone_score": 0.9994503855705261
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000017.png",
+      "prediction": "drone",
+      "drone_score": 0.9995920062065125
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000018.png",
+      "prediction": "drone",
+      "drone_score": 0.9979386925697327
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000019.png",
+      "prediction": "drone",
+      "drone_score": 0.9994449019432068
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000020.png",
+      "prediction": "drone",
+      "drone_score": 0.9993730187416077
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000021.png",
+      "prediction": "drone",
+      "drone_score": 0.998748779296875
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000022.png",
+      "prediction": "drone",
+      "drone_score": 0.9995403289794922
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000023.png",
+      "prediction": "drone",
+      "drone_score": 0.9990469813346863
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000024.png",
+      "prediction": "drone",
+      "drone_score": 0.9990654587745667
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000025.png",
+      "prediction": "drone",
+      "drone_score": 0.9987245202064514
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000026.png",
+      "prediction": "drone",
+      "drone_score": 0.9993402361869812
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000027.png",
+      "prediction": "drone",
+      "drone_score": 0.9997884631156921
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000028.png",
+      "prediction": "drone",
+      "drone_score": 0.9997761845588684
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000029.png",
+      "prediction": "drone",
+      "drone_score": 0.999607503414154
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000030.png",
+      "prediction": "drone",
+      "drone_score": 0.9994763731956482
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000031.png",
+      "prediction": "drone",
+      "drone_score": 0.9998018145561218
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000032.png",
+      "prediction": "drone",
+      "drone_score": 0.9992647767066956
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000033.png",
+      "prediction": "drone",
+      "drone_score": 0.9985302686691284
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000034.png",
+      "prediction": "drone",
+      "drone_score": 0.9995573163032532
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/DDRFv2/mavic3C_1_Ascend_c17_u1_d2_spectrograms/spectrogram_000035.png",
+      "prediction": "drone",
+      "drone_score": 0.9997711777687073
+    }
+  ]
+}

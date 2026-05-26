@@ -4,12 +4,12 @@
     "model_name": "siglip_binary_finetuned",
     "siglip_model": "google/siglip-base-patch16-224",
     "checkpoint_in": "fine_tune/SigLIP/siglip_binary_runs/siglip_binary_best.pt",
-    "source_images": 20,
-    "detected_drone_count": 1,
-    "detected_non_drone_count": 19,
-    "detected_drone_rate": 0.05,
-    "score_mean": 0.09198331087827682,
-    "score_std": 0.19937559962272644,
+    "source_images": 33,
+    "detected_drone_count": 9,
+    "detected_non_drone_count": 24,
+    "detected_drone_rate": 0.2727272727272727,
+    "score_mean": 0.2975405752658844,
+    "score_std": 0.36861106753349304,
     "class_names": [
       "non_drone",
       "drone"
@@ -22,104 +22,169 @@
   },
   "predictions": [
     {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000001.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000001.png",
       "prediction": "non_drone",
-      "drone_score": 0.014546498656272888
+      "drone_score": 0.16276045143604279
     },
     {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000002.png",
-      "prediction": "non_drone",
-      "drone_score": 0.03882218524813652
-    },
-    {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000003.png",
-      "prediction": "non_drone",
-      "drone_score": 0.002701750723645091
-    },
-    {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000004.png",
-      "prediction": "non_drone",
-      "drone_score": 0.007227438036352396
-    },
-    {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000005.png",
-      "prediction": "non_drone",
-      "drone_score": 0.01249194610863924
-    },
-    {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000006.png",
-      "prediction": "non_drone",
-      "drone_score": 0.0038459021598100662
-    },
-    {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000007.png",
-      "prediction": "non_drone",
-      "drone_score": 0.0043961419723927975
-    },
-    {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000008.png",
-      "prediction": "non_drone",
-      "drone_score": 0.004758789669722319
-    },
-    {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000009.png",
-      "prediction": "non_drone",
-      "drone_score": 0.04417506605386734
-    },
-    {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000010.png",
-      "prediction": "non_drone",
-      "drone_score": 0.0028051959816366434
-    },
-    {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000011.png",
-      "prediction": "non_drone",
-      "drone_score": 0.010873954743146896
-    },
-    {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000012.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000002.png",
       "prediction": "drone",
-      "drone_score": 0.857919454574585
+      "drone_score": 0.8490036725997925
     },
     {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000013.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000003.png",
       "prediction": "non_drone",
-      "drone_score": 0.01774371974170208
+      "drone_score": 0.0024454521480947733
     },
     {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000014.png",
-      "prediction": "non_drone",
-      "drone_score": 0.031277745962142944
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.6806950569152832
     },
     {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000015.png",
-      "prediction": "non_drone",
-      "drone_score": 0.012965375557541847
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.9889355301856995
     },
     {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000016.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000006.png",
       "prediction": "non_drone",
-      "drone_score": 0.02262570895254612
+      "drone_score": 0.09955628961324692
     },
     {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000017.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000007.png",
       "prediction": "non_drone",
-      "drone_score": 0.013895561918616295
+      "drone_score": 0.002118163276463747
     },
     {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000018.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000008.png",
       "prediction": "non_drone",
-      "drone_score": 0.11492593586444855
+      "drone_score": 0.0008846257114782929
     },
     {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000019.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000009.png",
       "prediction": "non_drone",
-      "drone_score": 0.39894503355026245
+      "drone_score": 0.0026817494072020054
     },
     {
-      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000020.png",
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000010.png",
       "prediction": "non_drone",
-      "drone_score": 0.2227228581905365
+      "drone_score": 0.010447412729263306
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000011.png",
+      "prediction": "non_drone",
+      "drone_score": 0.025341715663671494
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000012.png",
+      "prediction": "non_drone",
+      "drone_score": 0.003976107109338045
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000013.png",
+      "prediction": "non_drone",
+      "drone_score": 0.1623641550540924
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000014.png",
+      "prediction": "non_drone",
+      "drone_score": 0.00038364765350706875
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000015.png",
+      "prediction": "drone",
+      "drone_score": 0.823768675327301
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000016.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0003354918153490871
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000017.png",
+      "prediction": "non_drone",
+      "drone_score": 0.37058737874031067
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000018.png",
+      "prediction": "drone",
+      "drone_score": 0.9490112066268921
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000019.png",
+      "prediction": "drone",
+      "drone_score": 0.9712523221969604
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000020.png",
+      "prediction": "non_drone",
+      "drone_score": 0.07695670425891876
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000021.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3064360022544861
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000022.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0006410338100977242
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000023.png",
+      "prediction": "non_drone",
+      "drone_score": 0.021971270442008972
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000024.png",
+      "prediction": "non_drone",
+      "drone_score": 0.18443942070007324
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000025.png",
+      "prediction": "drone",
+      "drone_score": 0.7317194938659668
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000026.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0003335957298986614
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000027.png",
+      "prediction": "non_drone",
+      "drone_score": 0.03229305520653725
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000028.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0006828727782703936
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000029.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3278881907463074
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000030.png",
+      "prediction": "non_drone",
+      "drone_score": 0.006589440628886223
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000031.png",
+      "prediction": "drone",
+      "drone_score": 0.93763667345047
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000032.png",
+      "prediction": "drone",
+      "drone_score": 0.9124726057052612
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms/spectrogram_000033.png",
+      "prediction": "non_drone",
+      "drone_score": 0.17222946882247925
     }
   ]
 }

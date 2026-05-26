@@ -25,7 +25,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
 CHECKPOINT_IN = "fine_tune/SigLIP/siglip_binary_runs/siglip_binary_best.pt"
-SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms"
+SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms"
 OUTPUT_JSON = "fine_tune/SigLIP/report/test/results.json"
 OUTPUT_CHART = "fine_tune/SigLIP/report/test/results_chart.png"
 IMAGE_SIZE = 224
