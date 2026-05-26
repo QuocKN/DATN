@@ -1,0 +1,125 @@
+{
+  "summary": {
+    "method": "siglip_finetuned_classifier",
+    "model_name": "siglip_binary_finetuned",
+    "siglip_model": "google/siglip-base-patch16-224",
+    "checkpoint_in": "fine_tune/SigLIP/siglip_binary_runs/siglip_binary_best.pt",
+    "source_images": 20,
+    "detected_drone_count": 1,
+    "detected_non_drone_count": 19,
+    "detected_drone_rate": 0.05,
+    "score_mean": 0.09198331087827682,
+    "score_std": 0.19937559962272644,
+    "class_names": [
+      "non_drone",
+      "drone"
+    ],
+    "class_to_idx": {
+      "non_drone": 0,
+      "drone": 1
+    },
+    "best_valid_macro_f1": 1.0
+  },
+  "predictions": [
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000001.png",
+      "prediction": "non_drone",
+      "drone_score": 0.014546498656272888
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000002.png",
+      "prediction": "non_drone",
+      "drone_score": 0.03882218524813652
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000003.png",
+      "prediction": "non_drone",
+      "drone_score": 0.002701750723645091
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000004.png",
+      "prediction": "non_drone",
+      "drone_score": 0.007227438036352396
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000005.png",
+      "prediction": "non_drone",
+      "drone_score": 0.01249194610863924
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000006.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0038459021598100662
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000007.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0043961419723927975
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000008.png",
+      "prediction": "non_drone",
+      "drone_score": 0.004758789669722319
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000009.png",
+      "prediction": "non_drone",
+      "drone_score": 0.04417506605386734
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000010.png",
+      "prediction": "non_drone",
+      "drone_score": 0.0028051959816366434
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000011.png",
+      "prediction": "non_drone",
+      "drone_score": 0.010873954743146896
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000012.png",
+      "prediction": "drone",
+      "drone_score": 0.857919454574585
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000013.png",
+      "prediction": "non_drone",
+      "drone_score": 0.01774371974170208
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000014.png",
+      "prediction": "non_drone",
+      "drone_score": 0.031277745962142944
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000015.png",
+      "prediction": "non_drone",
+      "drone_score": 0.012965375557541847
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000016.png",
+      "prediction": "non_drone",
+      "drone_score": 0.02262570895254612
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000017.png",
+      "prediction": "non_drone",
+      "drone_score": 0.013895561918616295
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000018.png",
+      "prediction": "non_drone",
+      "drone_score": 0.11492593586444855
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000019.png",
+      "prediction": "non_drone",
+      "drone_score": 0.39894503355026245
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms/spectrogram_000020.png",
+      "prediction": "non_drone",
+      "drone_score": 0.2227228581905365
+    }
+  ]
+}

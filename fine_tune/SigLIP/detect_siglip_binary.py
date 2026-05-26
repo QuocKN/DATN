@@ -16,38 +16,44 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 from tqdm import tqdm
 
+try:
+    from transformers import AutoImageProcessor, SiglipVisionModel
+except Exception as exc:  # pragma: no cover
+    raise RuntimeError("Missing dependency 'transformers'. Install it first: pip install transformers") from exc
+
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = "fine_tune/DINOv2/dinov2_binary_runs/balanced_dinov2_vits14_binary.pt"
-SOURCE_DIR ="/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms"
-OUTPUT_JSON = "fine_tune/DINOv2/report/test/results.json"
-OUTPUT_CHART = "fine_tune/DINOv2/report/test/results_chart.png"
+CHECKPOINT_IN = "fine_tune/SigLIP/siglip_binary_runs/siglip_binary_best.pt"
+SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/spectrograms"
+OUTPUT_JSON = "fine_tune/SigLIP/report/test/results.json"
+OUTPUT_CHART = "fine_tune/SigLIP/report/test/results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 NUM_WORKERS = 4
 
 
-class DINOv2Classifier(nn.Module):
+class SigLIPClassifier(nn.Module):
     def __init__(self, backbone: nn.Module, feature_dim: int, num_classes: int) -> None:
         super().__init__()
         self.backbone = backbone
         self.head = nn.Linear(feature_dim, num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        features = self.backbone(x)
+        outputs = self.backbone(pixel_values=x)
+        features = outputs.pooler_output
         return self.head(features)
 
 
 class SpectrogramDataset(Dataset):
-    def __init__(self, image_paths: Sequence[Path], image_size: int) -> None:
+    def __init__(self, image_paths: Sequence[Path], image_size: int, mean: Sequence[float], std: Sequence[float]) -> None:
         self.image_paths = list(image_paths)
         self.transform = transforms.Compose(
             [
                 transforms.Resize((image_size, image_size)),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                transforms.Normalize(mean=mean, std=std),
             ]
         )
 
@@ -65,34 +71,23 @@ def collect_image_paths(root: Path) -> List[Path]:
     return sorted([p for p in root.rglob("*") if p.is_file() and p.suffix.lower() in IMAGE_EXTS])
 
 
-def load_dinov2_backbone(model_name: str, device: torch.device) -> nn.Module:
-    backbone = torch.hub.load("facebookresearch/dinov2", model_name)
-    backbone.to(device)
-    return backbone
-
-
-@torch.no_grad()
-def infer_feature_dim(backbone: nn.Module, image_size: int, device: torch.device) -> int:
-    backbone.eval()
-    dummy = torch.zeros(1, 3, image_size, image_size, device=device)
-    features = backbone(dummy)
-    if features.ndim != 2:
-        features = features.flatten(1)
-    return int(features.shape[1])
-
-
-def build_model(checkpoint: dict, device: torch.device) -> tuple[nn.Module, List[str], dict, int]:
-    dino_model = checkpoint["dino_model"]
+def build_model(checkpoint: dict, device: torch.device) -> tuple[nn.Module, List[str], dict, int, List[float], List[float], str]:
+    siglip_model = checkpoint.get("siglip_model", "google/siglip-base-patch16-224")
     class_names = checkpoint.get("class_names", ["non_drone", "drone"])
     class_to_idx = checkpoint.get("class_to_idx", {name: idx for idx, name in enumerate(class_names)})
     image_size = int(checkpoint.get("image_size", IMAGE_SIZE))
 
-    backbone = load_dinov2_backbone(dino_model, device)
-    feature_dim = infer_feature_dim(backbone, image_size, device)
-    model = DINOv2Classifier(backbone=backbone, feature_dim=feature_dim, num_classes=len(class_names)).to(device)
+    image_processor = AutoImageProcessor.from_pretrained(siglip_model)
+    mean = list(image_processor.image_mean)
+    std = list(image_processor.image_std)
+
+    backbone = SiglipVisionModel.from_pretrained(siglip_model).to(device)
+    feature_dim = int(backbone.config.hidden_size)
+    model = SigLIPClassifier(backbone=backbone, feature_dim=feature_dim, num_classes=len(class_names)).to(device)
     model.load_state_dict(checkpoint["state_dict"], strict=True)
     model.eval()
-    return model, class_names, class_to_idx, image_size
+
+    return model, class_names, class_to_idx, image_size, mean, std, siglip_model
 
 
 @torch.no_grad()
@@ -101,10 +96,12 @@ def infer(
     model: nn.Module,
     device: torch.device,
     image_size: int,
+    mean: Sequence[float],
+    std: Sequence[float],
     batch_size: int,
     num_workers: int,
 ) -> tuple[np.ndarray, np.ndarray]:
-    dataset = SpectrogramDataset(image_paths, image_size=image_size)
+    dataset = SpectrogramDataset(image_paths, image_size=image_size, mean=mean, std=std)
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
 
     probs_all: List[np.ndarray] = []
@@ -173,7 +170,7 @@ def visualize_detection_results(
         counts,
         labels=labels,
         colors=colors,
-        autopct=lambda pct: f"{pct:.1f}%\n({int(round(pct / 100 * total))})",
+        autopct=lambda pct: f"{pct:.1f}%\\n({int(round(pct / 100 * total))})",
         startangle=90,
         textprops={"fontsize": 11},
     )
@@ -195,10 +192,11 @@ def visualize_detection_results(
 
     for bar, text in zip(bars, display_values):
         ax4.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + max(total * 0.015, 0.5), text, ha="center", fontweight="bold")
+
     fig.suptitle(
-        f"{drone_name}\n\n"
-        f"Fine-tuned DINOv2 Detection Results | Model: {model_name or 'unknown'} | "
-        f"Drone: {drone_count}/{total} ({100 * drone_count / max(total, 1):.1f}%)\n",
+        f"{drone_name}\\n\\n"
+        f"Fine-tuned SigLIP Detection Results | Model: {model_name or 'unknown'} | "
+        f"Drone: {drone_count}/{total} ({100 * drone_count / max(total, 1):.1f}%)\\n",
         fontsize=14,
         fontweight="bold",
     )
@@ -218,7 +216,7 @@ def main() -> None:
 
     device = torch.device(DEVICE if torch.cuda.is_available() and DEVICE.startswith("cuda") else "cpu")
     checkpoint = torch.load(checkpoint_path, map_location=device)
-    model, class_names, class_to_idx, image_size = build_model(checkpoint, device)
+    model, class_names, class_to_idx, image_size, mean, std, siglip_model = build_model(checkpoint, device)
 
     if "drone" not in class_to_idx:
         raise ValueError("Checkpoint class_to_idx does not contain 'drone'")
@@ -230,6 +228,8 @@ def main() -> None:
         model=model,
         device=device,
         image_size=image_size,
+        mean=mean,
+        std=std,
         batch_size=BATCH_SIZE,
         num_workers=NUM_WORKERS,
     )
@@ -254,8 +254,9 @@ def main() -> None:
     non_drone_count = total - drone_count
 
     summary = {
-        "method": "dinov2_finetuned_classifier",
-        "model_name": checkpoint.get("model_name", "dinov2_binary_finetuned"),
+        "method": "siglip_finetuned_classifier",
+        "model_name": checkpoint.get("model_name", "siglip_binary_finetuned"),
+        "siglip_model": siglip_model,
         "checkpoint_in": str(checkpoint_path),
         "source_images": total,
         "detected_drone_count": drone_count,
@@ -289,4 +290,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
