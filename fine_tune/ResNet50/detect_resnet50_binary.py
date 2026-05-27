@@ -19,7 +19,7 @@ from tqdm import tqdm
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = "fine_tune/ResNet50/resnet50_binary_runs/full_dataset_resnet50_binary.pt"
+CHECKPOINT_IN = "fine_tune/ResNet50/resnet50_binary_runs/balanced_resnet50_binary.pt"
 SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/1toan_spectrograms_refactor"
 OUTPUT_JSON = "fine_tune/ResNet50/report/test/results_refactor.json"
 OUTPUT_CHART = "fine_tune/ResNet50/report/test/results_chart_refactor.png"

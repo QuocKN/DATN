@@ -24,8 +24,8 @@ except Exception as exc:  # pragma: no cover
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = "fine_tune/SigLIP/siglip_binary_runs/siglip_binary_best.pt"
-SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/1toan_spectrograms_refactor"
+CHECKPOINT_IN = "fine_tune/SigLIP/siglip_binary_runs/balanced_siglip_binary.pt"
+SOURCE_DIR ="/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms_refactor"
 OUTPUT_JSON = "fine_tune/SigLIP/report/test/results_refactor.json"
 OUTPUT_CHART = "fine_tune/SigLIP/report/test/results_chart_refactor.png"
 IMAGE_SIZE = 224
