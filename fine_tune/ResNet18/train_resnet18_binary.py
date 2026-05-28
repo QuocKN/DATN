@@ -13,12 +13,12 @@ import torch.nn as nn
 from PIL import Image
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 from sklearn.model_selection import train_test_split
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 from torchvision import models, transforms
 from tqdm import tqdm
 
 DRONE_ROOT = "E:\\DATN_DATA\\Spectrum\\DroneDetect_spectrogram_dataset"
-NON_DRONE_ROOT = "E:\\DATN_DATA\\Spectrum\\non_drone"
+NON_DRONE_ROOT = "E:\\DATN_DATA\\Spectrum\non_drone"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 IMAGE_SIZE = 224
 CLASS_NAMES = ["non_drone", "drone"]
@@ -156,6 +156,18 @@ def make_class_weights(samples: Sequence[Sample], device: torch.device) -> torch
     return torch.tensor(weights, dtype=torch.float32, device=device)
 
 
+def make_balanced_sampler(samples: Sequence[Sample]) -> WeightedRandomSampler:
+    labels = np.array([s.label for s in samples], dtype=np.int64)
+    counts = np.bincount(labels, minlength=len(CLASS_NAMES)).astype(np.float64)
+    class_weights = 1.0 / np.maximum(counts, 1.0)
+    sample_weights = class_weights[labels]
+    return WeightedRandomSampler(
+        weights=torch.from_numpy(sample_weights).double(),
+        num_samples=len(sample_weights),
+        replacement=True,
+    )
+
+
 def train_one_epoch(
     model: nn.Module,
     loader: DataLoader,
@@ -225,18 +237,25 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine-tune ResNet18 for binary drone/non-drone spectrogram detection")
     parser.add_argument("--drone-root", type=str, default=DRONE_ROOT)
     parser.add_argument("--non-drone-root", type=str, default=NON_DRONE_ROOT)
-    parser.add_argument("--out-dir", type=str, default="fine_tune/resnet18_binary_runs")
+    parser.add_argument("--out-dir", type=str, default="fine_tune/ResNet18/resnet18_binary_runs")
     parser.add_argument("--epochs", type=int, default=20)
-    parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--image-size", type=int, default=IMAGE_SIZE)
-    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--lr", type=float, default=1e-5)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
     parser.add_argument("--max-drone-train", type=int, default=0, help="0 means use all drone train images")
     parser.add_argument("--max-non-drone-train", type=int, default=0, help="0 means use all non-drone train images")
     parser.add_argument("--freeze-backbone", action="store_true", help="Train only the final classifier layer")
+    parser.add_argument(
+        "--use-balanced-sampler",
+        action="store_true",
+        help="Use WeightedRandomSampler for class-balanced mini-batches in training loader",
+    )
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--early-stop-patience", type=int, default=7, help="Stop if no valid_macro_f1 improvement for N epochs")
+    parser.add_argument("--early-stop-min-delta", type=float, default=0.001, help="Minimum valid_macro_f1 gain to count as improvement")
     return parser.parse_args()
 
 
@@ -257,11 +276,14 @@ def main() -> None:
     )
 
     train_tf, eval_tf = build_transforms(args.image_size)
+    train_dataset = BinarySpectrogramDataset(train_samples, train_tf)
+    train_sampler = make_balanced_sampler(train_samples) if args.use_balanced_sampler else None
     loaders = {
         "train": DataLoader(
-            BinarySpectrogramDataset(train_samples, train_tf),
+            train_dataset,
             batch_size=args.batch_size,
-            shuffle=True,
+            shuffle=train_sampler is None,
+            sampler=train_sampler,
             num_workers=args.num_workers,
             pin_memory=True,
         ),
@@ -282,8 +304,10 @@ def main() -> None:
     }
 
     print(f"Device: {device}")
+    print("Model: resnet18")
     print(f"Classes: {CLASS_NAMES}")
     print(f"train: {len(train_samples)} {count_labels(train_samples)}")
+    print(f"use_balanced_sampler: {args.use_balanced_sampler}")
     print(f"valid: {len(valid_samples)} {count_labels(valid_samples)}")
     print(f"test: {len(test_samples)} {count_labels(test_samples)}")
 
@@ -293,8 +317,11 @@ def main() -> None:
     criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
 
     best_valid_macro_f1 = -1.0
-    best_path = out_dir / "best_resnet18_binary.pt"
+    best_path = out_dir / "balanced_resnet18_binary.pt"
     history = []
+    epochs_without_improvement = 0
+    stopped_early = False
+    best_epoch = 0
 
     for epoch in range(1, args.epochs + 1):
         print(f"\nEpoch {epoch}/{args.epochs}")
@@ -315,8 +342,11 @@ def main() -> None:
         history.append(row)
         print(json.dumps(row, indent=2))
 
-        if valid_macro_f1 > best_valid_macro_f1:
+        improvement = valid_macro_f1 - best_valid_macro_f1
+        if improvement > args.early_stop_min_delta:
             best_valid_macro_f1 = valid_macro_f1
+            best_epoch = epoch
+            epochs_without_improvement = 0
             torch.save(
                 {
                     "model_name": "resnet18_binary_finetuned",
@@ -330,6 +360,15 @@ def main() -> None:
                 best_path,
             )
             print(f"Saved best checkpoint: {best_path}")
+        else:
+            epochs_without_improvement += 1
+            if args.early_stop_patience > 0 and epochs_without_improvement >= args.early_stop_patience:
+                stopped_early = True
+                print(
+                    f"Early stopping at epoch {epoch}: no valid_macro_f1 improvement "
+                    f"> {args.early_stop_min_delta} for {args.early_stop_patience} epochs."
+                )
+                break
 
     checkpoint = torch.load(best_path, map_location=device)
     model.load_state_dict(checkpoint["state_dict"])
@@ -350,6 +389,11 @@ def main() -> None:
             "test": count_labels(test_samples),
         },
         "best_valid_macro_f1": best_valid_macro_f1,
+        "best_epoch": best_epoch,
+        "stopped_early": stopped_early,
+        "early_stop_patience": args.early_stop_patience,
+        "early_stop_min_delta": args.early_stop_min_delta,
+        "use_balanced_sampler": args.use_balanced_sampler,
         "test_loss": test_loss,
         "test_acc": test_acc,
         "test_macro_f1": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),

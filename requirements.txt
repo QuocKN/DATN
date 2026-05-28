@@ -19,3 +19,5 @@ psutil
 colorama
 thop
 # pkg_resources
+
+timm

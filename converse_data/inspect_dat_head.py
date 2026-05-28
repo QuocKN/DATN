@@ -25,7 +25,7 @@ import numpy as np
 # ========================
 # CONFIG
 # ========================
-DAT_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_Mini/pack2_0-1s.iq"
+DAT_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Cage_Indoor/DJI_Mavic4_Mini/DJI_MavicMini4_20_2442_armed.dat"
 HEAD_BYTES = 512           # bytes to inspect from beginning of file
 HEX_PER_LINE = 16          # bytes per hex row
 PREVIEW_COUNT = 16         # number of values for numeric previews
@@ -91,12 +91,40 @@ def inspect_dat_head(path: str, head_bytes: int = 512, preview_count: int = 16) 
             preview_array("complex IQ from int16 pairs", complex_iq, preview_count)
 
     if len(raw) >= 4:
-        i32 = np.frombuffer(raw[: len(raw) - (len(raw) % 4)], dtype="<i4")
-        f32 = np.frombuffer(raw[: len(raw) - (len(raw) % 4)], dtype="<f4")
+        raw4 = raw[: len(raw) - (len(raw) % 4)]
+
+        i32 = np.frombuffer(raw4, dtype="<i4")
+        f32 = np.frombuffer(raw4, dtype="<f4")
+
         preview_array("int32 little-endian", i32, preview_count)
         preview_array("float32 little-endian", f32, preview_count)
+
+        # Preview float32 sau đoạn zero đầu file
+        nz = np.flatnonzero(f32 != 0)
+        if len(nz) > 0:
+            start = max(0, nz[0] - 4)
+            print(f"\nfloat32 first non-zero index: {nz[0]}")
+            preview_array(
+                f"float32 around first non-zero [{start}:{start + preview_count}]",
+                f32[start:start + preview_count],
+                preview_count,
+            )
+
+            # Nếu là I/Q interleaved float32
+            iq = f32[0::2] + 1j * f32[1::2]
+            nz_iq = np.flatnonzero(np.abs(iq) > 0)
+            if len(nz_iq) > 0:
+                iq_start = max(0, nz_iq[0] - 4)
+                print(f"\nIQ first non-zero sample index: {nz_iq[0]}")
+                preview_array(
+                    f"complex IQ around first non-zero [{iq_start}:{iq_start + preview_count}]",
+                    iq[iq_start:iq_start + preview_count],
+                    preview_count,
+                )
+        else:
+            print("\nfloat32: toàn bộ dữ liệu đang là 0")
+
     inspect_formats(raw)
-    
 
 def analyze_signal(iq: np.ndarray, name: str):
     print(f"=== ANALYZE: {name} ===")

@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 from typing import Generator
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from bin_iq_to_spectrogram import compute_spectrogram, save_spectrogram_image
@@ -21,22 +22,63 @@ from bin_iq_to_spectrogram import compute_spectrogram, save_spectrogram_image
 # ========================
 # CONFIG
 # ========================
-INPUT_DAT_PATH = "E:\\DATN_DATA\\RF\\DroneDetect\\MA1_0000_00.dat"
-OUTPUT_DIR = "E:\\DATN_DATA\\RF\\DroneDetect\\spectrograms"
-SAMPLE_RATE = 28_000_000  # Hz (adjust as needed)
-STFT_POINT = 2048
-DURATION_TIME = 0.1  # seconds per spectrogram
+INPUT_DAT_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/DJI_Mavic2_2422.5_10_2412.5_30_50_hovering_14.0.dat"
+OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/CDRF/Rowan_Outdoor/mavic2/spectrograms"
+SAMPLE_RATE = 60_000_000  # Hz (adjust as needed)
+STFT_POINT = 1024
+DURATION_TIME = 0.05  # seconds per spectrogram
 CHUNK_SIZE = 1_000_000  # IQ samples per chunk (will auto-increase if needed)
-OUTPUT_PREFIX = "spectrogram_MA1_0000_03"
+OUTPUT_PREFIX = "spectrogram"
+WAVEFORM_PREFIX = "waveform"
 
 # Set to None to read entire file, or set to N seconds to read only first N seconds
-MAX_DURATION_SECONDS = 2
+MAX_DURATION_SECONDS = 20
 
 # Supported values: "float32_iq" or "int16_iq"
 DAT_FORMAT = "float32_iq"
 
 # Set to True only when DAT_FORMAT == "int16_iq"
 NORMALIZE_INT16 = False
+SAVE_WAVEFORM = True
+
+
+def save_waveform_image(
+    iq_data: np.ndarray,
+    sample_rate: int,
+    output_path: str,
+    source_name: str,
+    chunk_index: int,
+    title: str | None = None,
+) -> None:
+    """Save 3-panel waveform image: I, Q, and |IQ|."""
+    time_axis = np.arange(iq_data.size) / sample_rate
+    i_values = iq_data.real
+    q_values = iq_data.imag
+    iq_magnitude = np.abs(iq_data)
+
+    figure, axes = plt.subplots(3, 1, figsize=(10, 7), dpi=120, sharex=True)
+
+    axes[0].plot(time_axis, i_values, linewidth=0.8, color="tab:blue")
+    axes[0].set_ylabel("I")
+    axes[0].grid(True, alpha=0.25)
+
+    axes[1].plot(time_axis, q_values, linewidth=0.8, color="tab:orange")
+    axes[1].set_ylabel("Q")
+    axes[1].grid(True, alpha=0.25)
+
+    axes[2].plot(time_axis, iq_magnitude, linewidth=0.8, color="tab:green")
+    axes[2].set_ylabel("|IQ|")
+    axes[2].set_xlabel("Time (s)")
+    axes[2].grid(True, alpha=0.25)
+
+    if title:
+        figure.suptitle(title)
+    else:
+        figure.suptitle(f"{source_name} | chunk={chunk_index} | samples={iq_data.size}")
+
+    figure.tight_layout()
+    figure.savefig(output_path, dpi=120)
+    plt.close(figure)
 
 
 def iter_iq_chunks_from_dat(
@@ -126,6 +168,10 @@ def convert_dat_to_spectrograms(
         )
         chunk_size = min_samples_needed
 
+    waveform_dir = os.path.join(output_dir, "waveforms")
+    if SAVE_WAVEFORM:
+        os.makedirs(waveform_dir, exist_ok=True)
+
     saved_count = 0
     for index, iq_chunk in enumerate(
         iter_iq_chunks_from_dat(
@@ -156,6 +202,15 @@ def convert_dat_to_spectrograms(
                 spectrum=spectrum,
                 output_path=output_path,
             )
+            if SAVE_WAVEFORM:
+                waveform_path = os.path.join(waveform_dir, f"{WAVEFORM_PREFIX}_{index:06d}.png")
+                save_waveform_image(
+                    iq_data=iq_chunk[: int(sample_rate * duration_time)],
+                    sample_rate=sample_rate,
+                    output_path=waveform_path,
+                    source_name=os.path.basename(dat_path),
+                    chunk_index=index,
+                )
             saved_count += 1
             print(f"[OK] Saved {output_path}")
         except Exception as e:

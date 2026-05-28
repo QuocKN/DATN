@@ -21,8 +21,8 @@ from scipy.signal import stft
 # ========================
 # INPUT_BIN_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone/2toan.bin"
 # OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone/spectrograms"
-INPUT_BIN_PATH ="E:\\DATN_DATA\\RF\\1toan.bin"
-OUTPUT_DIR = "E:\\DATN_DATA\\RF\\1toan_spectrograms"
+INPUT_BIN_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/1toan.bin"
+OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms"
 
 
 SAMPLE_RATE = 28_000_000  # Hz (adjust as needed)

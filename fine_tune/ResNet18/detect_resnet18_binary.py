@@ -19,8 +19,8 @@ from tqdm import tqdm
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = "fine_tune/ResNet18/resnet18_binary_runs/best_resnet18_binary.pt"
-SOURCE_DIR = "/home/quocnk/Downloads/1toan_spectrograms"
+CHECKPOINT_IN = "fine_tune/ResNet18/resnet18_binary_runs/full_dataset_resnet18_binary.pt"
+SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms"
 OUTPUT_JSON = "fine_tune/ResNet18/report/Tu_thu/1toan/results.json"
 OUTPUT_CHART = "fine_tune/ResNet18/report/Tu_thu/1toan/results_chart.png"
 IMAGE_SIZE = 224
