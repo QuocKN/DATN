@@ -126,7 +126,7 @@ def train_and_eval(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train linear classifiers on ResNet50 embeddings for drone spectrogram detection")
     parser.add_argument("--drone-root", type=str, help="Path to drone spectrogram images", default="E:\\DATN_DATA\\Spectrum\\DroneDetect_spectrogram_dataset\\train")
-    parser.add_argument("--non-drone-root", type=str, help="Path to non-drone spectrogram images", default="E:\\DATN_DATA\\Spectrum\\non_drone\\train")
+    parser.add_argument("--non-drone-root", type=str, help="Path to non-drone spectrogram images", default="E:\\DATN_DATA\\Spectrum\non_drone\\train")
     parser.add_argument("--artifact-out", type=str, help="Output .joblib for trained classifier", default="linear_probe/ResNet50/trained_classifier.joblib")
     parser.add_argument("--max-drone", type=int, default=1700, help="Max number of drone images used")
     parser.add_argument("--max-non-drone", type=int, default=1700, help="Max number of non-drone images used")

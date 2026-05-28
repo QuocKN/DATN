@@ -18,7 +18,7 @@ from torchvision import models, transforms
 from tqdm import tqdm
 
 DRONE_ROOT = "E:\\DATN_DATA\\Spectrum\\DroneDetect_spectrogram_dataset"
-NON_DRONE_ROOT = "E:\\DATN_DATA\\Spectrum\\non_drone"
+NON_DRONE_ROOT = "E:\\DATN_DATA\\Spectrum\non_drone"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 IMAGE_SIZE = 224
 CLASS_NAMES = ["non_drone", "drone"]

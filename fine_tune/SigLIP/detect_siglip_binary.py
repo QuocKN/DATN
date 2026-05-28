@@ -25,9 +25,9 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
 CHECKPOINT_IN = "fine_tune/SigLIP/siglip_binary_runs/balanced_siglip_binary.pt"
-SOURCE_DIR ="/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms_refactor"
-OUTPUT_JSON = "fine_tune/SigLIP/report/test/results_refactor.json"
-OUTPUT_CHART = "fine_tune/SigLIP/report/test/results_chart_refactor.png"
+SOURCE_DIR ="/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
+OUTPUT_JSON = "fine_tune/SigLIP/report/Tu_thu/2toan/results.json"
+OUTPUT_CHART = "fine_tune/SigLIP/report/Tu_thu/2toan/results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 64
@@ -170,7 +170,7 @@ def visualize_detection_results(
         counts,
         labels=labels,
         colors=colors,
-        autopct=lambda pct: f"{pct:.1f}%\\n({int(round(pct / 100 * total))})",
+        autopct=lambda pct: f"{pct:.1f}%\n({int(round(pct / 100 * total))})",
         startangle=90,
         textprops={"fontsize": 11},
     )
@@ -196,7 +196,7 @@ def visualize_detection_results(
     fig.suptitle(
         f"{drone_name}\n\n"
         f"Fine-tuned SigLIP Detection Results | Model: {model_name or 'unknown'} | "
-        f"Drone: {drone_count}/{total} ({100 * drone_count / max(total, 1):.1f}%)\\n",
+        f"Drone: {drone_count}/{total} ({100 * drone_count / max(total, 1):.1f}%)\n",
         fontsize=14,
         fontweight="bold",
     )

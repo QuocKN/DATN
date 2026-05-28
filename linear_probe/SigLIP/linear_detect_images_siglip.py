@@ -122,7 +122,7 @@ def visualize_detection_results(
         counts,
         labels=labels,
         colors=colors,
-        autopct=lambda pct: f"{pct:.1f}%\\n({int(round(pct / 100 * total))})",
+        autopct=lambda pct: f"{pct:.1f}%\n({int(round(pct / 100 * total))})",
         startangle=90,
         textprops={"fontsize": 11},
     )

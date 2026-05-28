@@ -146,14 +146,35 @@ def build_model(
     model_name: str,
     image_size: int,
     freeze_backbone: bool,
+    fine_tune_last_n_stages: int,
     device: torch.device,
 ) -> DINOv2Classifier:
     backbone = load_dinov2_backbone(model_name, device)
     feature_dim = infer_feature_dim(backbone, image_size, device)
 
+    if freeze_backbone and fine_tune_last_n_stages > 0:
+        raise ValueError("--freeze-backbone cannot be used together with --fine-tune-last-n-stages > 0")
+
     if freeze_backbone:
         for param in backbone.parameters():
             param.requires_grad = False
+    elif fine_tune_last_n_stages > 0:
+        if not hasattr(backbone, "blocks") or not isinstance(backbone.blocks, nn.ModuleList):
+            raise ValueError("Backbone does not expose `blocks`; cannot apply stage-wise fine-tuning.")
+        total_blocks = len(backbone.blocks)
+        if fine_tune_last_n_stages > total_blocks:
+            raise ValueError(
+                f"--fine-tune-last-n-stages={fine_tune_last_n_stages} exceeds total blocks ({total_blocks})."
+            )
+
+        for param in backbone.parameters():
+            param.requires_grad = False
+        for block in backbone.blocks[-fine_tune_last_n_stages:]:
+            for param in block.parameters():
+                param.requires_grad = True
+        if hasattr(backbone, "norm"):
+            for param in backbone.norm.parameters():
+                param.requires_grad = True
 
     model = DINOv2Classifier(backbone=backbone, feature_dim=feature_dim, num_classes=len(CLASS_NAMES))
     model.to(device)
@@ -278,6 +299,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-drone-train", type=int, default=0, help="0 means use all drone train images")
     parser.add_argument("--max-non-drone-train", type=int, default=0, help="0 means use all non-drone train images")
     parser.add_argument("--freeze-backbone", action="store_true", help="Train only the classifier head")
+    parser.add_argument(
+        "--fine-tune-last-n-stages",
+        type=int,
+        default=0,
+        help="If > 0, freeze backbone and train only the last N transformer blocks (stages).",
+    )
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
@@ -348,6 +375,7 @@ def main() -> None:
     print(f"Device: {device}")
     print(f"DINOv2 model: {args.dino_model}")
     print(f"Balanced sampler: {args.use_balanced_sampler}")
+    print(f"Fine-tune last N stages: {args.fine_tune_last_n_stages}")
     print(f"Classes: {CLASS_NAMES}")
     print(f"train: {len(train_samples)} {count_labels(train_samples)}")
     print(f"valid: {len(valid_samples)} {count_labels(valid_samples)}")
@@ -357,6 +385,7 @@ def main() -> None:
         model_name=args.dino_model,
         image_size=args.image_size,
         freeze_backbone=args.freeze_backbone,
+        fine_tune_last_n_stages=args.fine_tune_last_n_stages,
         device=device,
     )
     optimizer = build_optimizer(model, args.backbone_lr, args.head_lr, args.weight_decay)
@@ -364,7 +393,7 @@ def main() -> None:
     criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
 
     best_valid_macro_f1 = -1.0
-    best_path = out_dir / f"balanced_{args.dino_model}_binary.pt"
+    best_path = out_dir / f"balanced_{args.dino_model}_binary_3_stage.pt"
     history = []
     epochs_without_improvement = 0
     stopped_early = False
@@ -451,7 +480,7 @@ def main() -> None:
         "history": history,
     }
 
-    summary_path = out_dir / "summary.json"
+    summary_path = out_dir / "summary_3_stage.json"
     with summary_path.open("w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2, ensure_ascii=True)
 

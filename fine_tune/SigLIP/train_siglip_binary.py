@@ -346,7 +346,7 @@ def main() -> None:
     best_epoch = 0
 
     for epoch in range(1, args.epochs + 1):
-        print(f"\\nEpoch {epoch}/{args.epochs}")
+        print(f"\nEpoch {epoch}/{args.epochs}")
         train_loss, train_acc = train_one_epoch(model, loaders["train"], criterion, optimizer, device)
         valid_loss, valid_acc, y_true_valid, y_pred_valid = evaluate(model, loaders["valid"], criterion, device)
         valid_macro_f1 = float(f1_score(y_true_valid, y_pred_valid, average="macro", zero_division=0))
@@ -430,7 +430,7 @@ def main() -> None:
     with summary_path.open("w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2, ensure_ascii=True)
 
-    print("\\nTest summary")
+    print("\nTest summary")
     print(json.dumps({"test_loss": test_loss, "test_acc": test_acc, "summary": str(summary_path)}, indent=2))
 
 

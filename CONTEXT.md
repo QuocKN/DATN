@@ -72,3 +72,7 @@ Dev: "For this experiment, should we run **Binary Classification** or **One-Clas
 Domain Expert: "Use **Binary Classification** when both classes are labeled; use **One-Class Detection** when we model only **Drone Signal**."
 Dev: "We also trained a **Linear Probe** on frozen embeddings. How do we compare it?"
 Domain Expert: "Compare all approaches by **Macro F1** and inspect each **Detection Result** for confidence behavior."
+
+**Backbone Stage Unfreezing**:
+A fine-tuning strategy that freezes all backbone parameters and re-enables training only for the last N backbone stages (for ConvNeXt V2, N in [1..4]).
+_Avoid_: block unfreezing for non-block architectures, implicit partial training
