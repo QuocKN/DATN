@@ -26,7 +26,7 @@ NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_da
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 IMAGE_SIZE = 224
 CLASS_NAMES = ["non_drone", "drone"]
-CONVNEXTV2_MODEL = "convnextv2_base.fcmae_ft_in22k_in1k"
+CONVNEXTV2_MODEL = "convnextv2_tiny.fcmae_ft_in22k_in1k"
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
 
@@ -47,7 +47,9 @@ class BinarySpectrogramDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int]:
         sample = self.samples[idx]
-        image = Image.open(sample.path).convert("RGB")
+        # Ensure file handles are closed promptly to avoid worker/file-descriptor issues across epochs.
+        with Image.open(sample.path) as img:
+            image = img.convert("RGB")
         return self.transform(image), sample.label
 
 
@@ -126,10 +128,29 @@ def build_samples(
 
 
 def load_convnextv2_backbone(model_name: str, device: torch.device) -> nn.Module:
-    try:
-        backbone = timm.create_model(model_name, pretrained=True, num_classes=0, global_pool="avg")
-    except Exception:
-        backbone = timm.create_model(model_name, pretrained=False, num_classes=0, global_pool="avg")
+    model_candidates = [model_name]
+    # If a pretrained tag suffix is invalid for local timm version, retry with plain architecture name.
+    if "." in model_name:
+        model_candidates.append(model_name.split(".", 1)[0])
+
+    last_exc: Exception | None = None
+    backbone = None
+    for candidate in model_candidates:
+        for use_pretrained in (True, False):
+            try:
+                backbone = timm.create_model(candidate, pretrained=use_pretrained, num_classes=0, global_pool="avg")
+                if candidate != model_name:
+                    print(f"Fallback model name: {candidate} (from {model_name})")
+                if not use_pretrained:
+                    print(f"Using non-pretrained weights for model: {candidate}")
+                break
+            except Exception as exc:
+                last_exc = exc
+        if backbone is not None:
+            break
+
+    if backbone is None:
+        raise RuntimeError(f"Could not create ConvNeXtV2 model from '{model_name}'.") from last_exc
     backbone.to(device)
     return backbone
 
@@ -290,17 +311,17 @@ def evaluate(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Fine-tune ConvNeXt V2 Base for binary drone/non-drone spectrogram detection")
+    parser = argparse.ArgumentParser(description="Fine-tune ConvNeXt V2 for binary drone/non-drone spectrogram detection")
     parser.add_argument("--drone-root", type=str, default=DRONE_ROOT)
     parser.add_argument("--non-drone-root", type=str, default=NON_DRONE_ROOT)
     parser.add_argument("--out-dir", type=str, default="fine_tune/ConvNext_V2/convnextv2_binary_runs")
     parser.add_argument("--convnextv2-model", type=str, default=CONVNEXTV2_MODEL)
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=32)
-    parser.add_argument("--num-workers", type=int, default=4)
+    parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--image-size", type=int, default=IMAGE_SIZE)
-    parser.add_argument("--backbone-lr", type=float, default=1e-5)
-    parser.add_argument("--head-lr", type=float, default=1e-4)
+    parser.add_argument("--backbone-lr", type=float, default=1e-6)
+    parser.add_argument("--head-lr", type=float, default=1e-5)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
     parser.add_argument("--max-drone-train", type=int, default=0, help="0 means use all drone train images")
     parser.add_argument("--max-non-drone-train", type=int, default=0, help="0 means use all non-drone train images")
@@ -345,28 +366,31 @@ def main() -> None:
         sample_weights = make_sample_weights(train_samples)
         train_sampler = WeightedRandomSampler(weights=sample_weights, num_samples=len(sample_weights), replacement=True)
 
+    pin_memory = device.type == "cuda"
+    common_loader_kwargs = {
+        "num_workers": args.num_workers,
+        "pin_memory": pin_memory,
+    }
+
     loaders = {
         "train": DataLoader(
             train_dataset,
             batch_size=args.batch_size,
             shuffle=train_sampler is None,
             sampler=train_sampler,
-            num_workers=args.num_workers,
-            pin_memory=True,
+            **common_loader_kwargs,
         ),
         "valid": DataLoader(
             valid_dataset,
             batch_size=args.batch_size,
             shuffle=False,
-            num_workers=args.num_workers,
-            pin_memory=True,
+            **common_loader_kwargs,
         ),
         "test": DataLoader(
             test_dataset,
             batch_size=args.batch_size,
             shuffle=False,
-            num_workers=args.num_workers,
-            pin_memory=True,
+            **common_loader_kwargs,
         ),
     }
 

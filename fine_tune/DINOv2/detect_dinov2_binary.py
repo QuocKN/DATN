@@ -19,10 +19,10 @@ from tqdm import tqdm
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = "fine_tune/DINOv2/dinov2_binary_runs/balanced_dinov2_vits14_binary_1_block.pt"
-SOURCE_DIR ="/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms"
-OUTPUT_JSON = "fine_tune/DINOv2/report/Tu_thu/1toan/results.json"
-OUTPUT_CHART = "fine_tune/DINOv2/report/Tu_thu/1toan/results_chart.png"
+CHECKPOINT_IN = "fine_tune/DINOv2/dinov2_binary_runs/balanced_dinov2_vits14_binary.pt"
+SOURCE_DIR ="/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
+OUTPUT_JSON = "fine_tune/DINOv2/report/Tu_thu/2toan/results.json"
+OUTPUT_CHART = "fine_tune/DINOv2/report/Tu_thu/2toan/results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 128
@@ -40,7 +40,7 @@ class DINOv2Classifier(nn.Module):
         return self.head(features)
 
 
-class SpectrogramDataset(Dataset):
+class SpectrogramDataset(Dataset[torch.Tensor]):
     def __init__(self, image_paths: Sequence[Path], image_size: int) -> None:
         self.image_paths = list(image_paths)
         self.transform = transforms.Compose(
@@ -54,8 +54,8 @@ class SpectrogramDataset(Dataset):
     def __len__(self) -> int:
         return len(self.image_paths)
 
-    def __getitem__(self, idx: int) -> torch.Tensor:
-        image = Image.open(self.image_paths[idx]).convert("RGB")
+    def __getitem__(self, index: int) -> torch.Tensor:
+        image = Image.open(self.image_paths[index]).convert("RGB")
         return self.transform(image)
 
 
@@ -283,10 +283,9 @@ def main() -> None:
         output_path=chart_path,
         drone_count=drone_count,
         total=total,
-        model_name=checkpoint.get("model_name"),
+        model_name=Path(CHECKPOINT_IN).stem,
     )
 
 
 if __name__ == "__main__":
     main()
-
