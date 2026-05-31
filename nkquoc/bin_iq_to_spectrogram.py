@@ -56,14 +56,14 @@ except ImportError:
 # ========================
 # CONFIG
 # ========================
-INPUT_BIN_PATH = "e:\\DATN_DATA\\RF\\Tu_thu\\2toan.bin"
-OUTPUT_DIR = "e:\\DATN_DATA\\RF\\Tu_thu\\2toan_spectrograms_refactor"
+INPUT_BIN_PATH = r"E:\DATN_DATA\RF\RF Control and Video Signal\DJI_inspire_2_2G.bin"
+OUTPUT_DIR = r"E:\DATN_DATA\RF\RF Control and Video Signal\DJI_inspire_2_2G_spectrograms_refac_30"
 # INPUT_BIN_PATH = "E:\\DATN_DATA\\RF\\1toan.bin"
 # OUTPUT_DIR = "E:\\DATN_DATA\\RF\\1toan_spectrograms"
 
-SAMPLE_RATE = 28_000_000
+SAMPLE_RATE = 60_000_000
 STFT_POINT = 1024
-DURATION_TIME = 0.05
+DURATION_TIME = 0.1
 CHUNK_SIZE = 4096
 OUTPUT_PREFIX = "spectrogram"
 IMAGE_SIZE = 224
@@ -90,7 +90,7 @@ SAT_TARGET_WIDTH = 1
 SAT_MAX_RUN = 256
 
 ENABLE_SPEC_COLUMN_DENOISE = True
-SPEC_COLUMN_QUANTILE = 60.0
+SPEC_COLUMN_QUANTILE = 30.0
 ENABLE_SPEC_DB_CLIP = False
 SPEC_CLIP_DB_MIN = -80.0
 SPEC_CLIP_DB_MAX = 15.0
