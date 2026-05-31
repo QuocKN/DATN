@@ -14,6 +14,7 @@ from __future__ import annotations
 import os
 from typing import Generator
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 try:
@@ -44,6 +45,46 @@ MAX_DURATION_SECONDS = 5
 
 DAT_FORMAT = "float32_iq"  # "float32_iq" | "int16_iq"
 NORMALIZE_INT16 = False
+SAVE_WAVEFORM = True
+
+
+def save_waveform_image(
+    iq_data: np.ndarray,
+    sample_rate: int,
+    output_path: str,
+    source_name: str,
+    chunk_index: int,
+    title: str | None = None,
+) -> None:
+    """Save 3-panel waveform image: I, Q, and |IQ|."""
+    time_axis = np.arange(iq_data.size) / sample_rate
+    i_values = iq_data.real
+    q_values = iq_data.imag
+    iq_magnitude = np.abs(iq_data)
+
+    figure, axes = plt.subplots(3, 1, figsize=(10, 7), dpi=120, sharex=True)
+
+    axes[0].plot(time_axis, i_values, linewidth=0.8, color="tab:blue")
+    axes[0].set_ylabel("I")
+    axes[0].grid(True, alpha=0.25)
+
+    axes[1].plot(time_axis, q_values, linewidth=0.8, color="tab:orange")
+    axes[1].set_ylabel("Q")
+    axes[1].grid(True, alpha=0.25)
+
+    axes[2].plot(time_axis, iq_magnitude, linewidth=0.8, color="tab:green")
+    axes[2].set_ylabel("|IQ|")
+    axes[2].set_xlabel("Time (s)")
+    axes[2].grid(True, alpha=0.25)
+
+    if title:
+        figure.suptitle(title)
+    else:
+        figure.suptitle(f"{source_name} | chunk={chunk_index} | samples={iq_data.size}")
+
+    figure.tight_layout()
+    figure.savefig(output_path, dpi=120)
+    plt.close(figure)
 
 ENABLE_DESPIKE = False
 DESPIKE_PERCENTILE = 99.5
@@ -193,6 +234,10 @@ def convert_dat_to_spectrograms(
             f"Using {min_samples_needed} instead."
         )
         chunk_size = min_samples_needed
+
+    waveform_dir = os.path.join(output_dir, "waveforms")
+    if SAVE_WAVEFORM:
+        os.makedirs(waveform_dir, exist_ok=True)
 
     saved_count = 0
     chunks = iter_iq_chunks_from_dat(

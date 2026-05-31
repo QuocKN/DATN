@@ -18,7 +18,7 @@ from torchvision import models, transforms
 from tqdm import tqdm
 
 DRONE_ROOT = "E:\\DATN_DATA\\Spectrum\\DroneDetect_spectrogram_dataset"
-NON_DRONE_ROOT = "E:\\DATN_DATA\\Spectrum\\non_drone"
+NON_DRONE_ROOT = "E:\\DATN_DATA\\Spectrum\non_drone"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 IMAGE_SIZE = 224
 CLASS_NAMES = ["non_drone", "drone"]
@@ -237,9 +237,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine-tune ResNet18 for binary drone/non-drone spectrogram detection")
     parser.add_argument("--drone-root", type=str, default=DRONE_ROOT)
     parser.add_argument("--non-drone-root", type=str, default=NON_DRONE_ROOT)
-    parser.add_argument("--out-dir", type=str, default="fine_tune/resnet18_binary_runs")
+    parser.add_argument("--out-dir", type=str, default="fine_tune/ResNet18/resnet18_binary_runs")
     parser.add_argument("--epochs", type=int, default=20)
-    parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--image-size", type=int, default=IMAGE_SIZE)
     parser.add_argument("--lr", type=float, default=1e-5)
@@ -254,8 +254,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--early-stop-patience", type=int, default=5, help="Stop if no valid_macro_f1 improvement for N epochs")
-    parser.add_argument("--early-stop-min-delta", type=float, default=0.0, help="Minimum valid_macro_f1 gain to count as improvement")
+    parser.add_argument("--early-stop-patience", type=int, default=7, help="Stop if no valid_macro_f1 improvement for N epochs")
+    parser.add_argument("--early-stop-min-delta", type=float, default=0.001, help="Minimum valid_macro_f1 gain to count as improvement")
     return parser.parse_args()
 
 
@@ -304,6 +304,7 @@ def main() -> None:
     }
 
     print(f"Device: {device}")
+    print("Model: resnet18")
     print(f"Classes: {CLASS_NAMES}")
     print(f"train: {len(train_samples)} {count_labels(train_samples)}")
     print(f"use_balanced_sampler: {args.use_balanced_sampler}")
@@ -316,7 +317,7 @@ def main() -> None:
     criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
 
     best_valid_macro_f1 = -1.0
-    best_path = out_dir / "rf_tuthu_resnet18_binary.pt"
+    best_path = out_dir / "balanced_resnet18_binary.pt"
     history = []
     epochs_without_improvement = 0
     stopped_early = False
@@ -392,6 +393,7 @@ def main() -> None:
         "stopped_early": stopped_early,
         "early_stop_patience": args.early_stop_patience,
         "early_stop_min_delta": args.early_stop_min_delta,
+        "use_balanced_sampler": args.use_balanced_sampler,
         "test_loss": test_loss,
         "test_acc": test_acc,
         "test_macro_f1": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),

@@ -16,8 +16,8 @@ from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 from torchvision import transforms
 from tqdm import tqdm
 
-DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/Drone"
-NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/Non_drone/dataset"
+DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/drone"
+NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/non_drone"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 IMAGE_SIZE = 224
 CLASS_NAMES = ["non_drone", "drone"]
@@ -146,14 +146,35 @@ def build_model(
     model_name: str,
     image_size: int,
     freeze_backbone: bool,
+    fine_tune_last_n_stages: int,
     device: torch.device,
 ) -> DINOv2Classifier:
     backbone = load_dinov2_backbone(model_name, device)
     feature_dim = infer_feature_dim(backbone, image_size, device)
 
+    if freeze_backbone and fine_tune_last_n_stages > 0:
+        raise ValueError("--freeze-backbone cannot be used together with --fine-tune-last-n-stages > 0")
+
     if freeze_backbone:
         for param in backbone.parameters():
             param.requires_grad = False
+    elif fine_tune_last_n_stages > 0:
+        if not hasattr(backbone, "blocks") or not isinstance(backbone.blocks, nn.ModuleList):
+            raise ValueError("Backbone does not expose `blocks`; cannot apply stage-wise fine-tuning.")
+        total_blocks = len(backbone.blocks)
+        if fine_tune_last_n_stages > total_blocks:
+            raise ValueError(
+                f"--fine-tune-last-n-stages={fine_tune_last_n_stages} exceeds total blocks ({total_blocks})."
+            )
+
+        for param in backbone.parameters():
+            param.requires_grad = False
+        for block in backbone.blocks[-fine_tune_last_n_stages:]:
+            for param in block.parameters():
+                param.requires_grad = True
+        if hasattr(backbone, "norm"):
+            for param in backbone.norm.parameters():
+                param.requires_grad = True
 
     model = DINOv2Classifier(backbone=backbone, feature_dim=feature_dim, num_classes=len(CLASS_NAMES))
     model.to(device)
@@ -266,9 +287,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine-tune DINOv2 for binary drone/non-drone spectrogram detection")
     parser.add_argument("--drone-root", type=str, default=DRONE_ROOT)
     parser.add_argument("--non-drone-root", type=str, default=NON_DRONE_ROOT)
-    parser.add_argument("--out-dir", type=str, default="fine_tune/dinov2_binary_runs")
+    parser.add_argument("--out-dir", type=str, default="fine_tune/DINOv2/dinov2_binary_runs")
     parser.add_argument("--dino-model", type=str, default="dinov2_vits14")
-    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--image-size", type=int, default=IMAGE_SIZE)
@@ -278,6 +299,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-drone-train", type=int, default=0, help="0 means use all drone train images")
     parser.add_argument("--max-non-drone-train", type=int, default=0, help="0 means use all non-drone train images")
     parser.add_argument("--freeze-backbone", action="store_true", help="Train only the classifier head")
+    parser.add_argument(
+        "--fine-tune-last-n-stages",
+        type=int,
+        default=0,
+        help="If > 0, freeze backbone and train only the last N transformer blocks (stages).",
+    )
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
@@ -285,6 +312,8 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Use WeightedRandomSampler on train set to reduce class imbalance.",
     )
+    parser.add_argument("--early-stop-patience", type=int, default=7, help="Stop if no valid_macro_f1 improvement for N epochs")
+    parser.add_argument("--early-stop-min-delta", type=float, default=0.001, help="Minimum valid_macro_f1 gain to count as improvement")
     return parser.parse_args()
 
 
@@ -346,6 +375,7 @@ def main() -> None:
     print(f"Device: {device}")
     print(f"DINOv2 model: {args.dino_model}")
     print(f"Balanced sampler: {args.use_balanced_sampler}")
+    print(f"Fine-tune last N stages: {args.fine_tune_last_n_stages}")
     print(f"Classes: {CLASS_NAMES}")
     print(f"train: {len(train_samples)} {count_labels(train_samples)}")
     print(f"valid: {len(valid_samples)} {count_labels(valid_samples)}")
@@ -355,6 +385,7 @@ def main() -> None:
         model_name=args.dino_model,
         image_size=args.image_size,
         freeze_backbone=args.freeze_backbone,
+        fine_tune_last_n_stages=args.fine_tune_last_n_stages,
         device=device,
     )
     optimizer = build_optimizer(model, args.backbone_lr, args.head_lr, args.weight_decay)
@@ -362,8 +393,11 @@ def main() -> None:
     criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
 
     best_valid_macro_f1 = -1.0
-    best_path = out_dir / f"rf_tuthu__{args.dino_model}_binary.pt"
+    best_path = out_dir / f"balanced_{args.dino_model}_binary_3_stage.pt"
     history = []
+    epochs_without_improvement = 0
+    stopped_early = False
+    best_epoch = 0
 
     for epoch in range(1, args.epochs + 1):
         print(f"\nEpoch {epoch}/{args.epochs}")
@@ -384,8 +418,11 @@ def main() -> None:
         history.append(row)
         print(json.dumps(row, indent=2))
 
-        if valid_macro_f1 > best_valid_macro_f1:
+        improvement = valid_macro_f1 - best_valid_macro_f1
+        if improvement > args.early_stop_min_delta:
             best_valid_macro_f1 = valid_macro_f1
+            best_epoch = epoch
+            epochs_without_improvement = 0
             torch.save(
                 {
                     "model_name": f"{args.dino_model}_binary_finetuned",
@@ -400,6 +437,15 @@ def main() -> None:
                 best_path,
             )
             print(f"Saved best checkpoint: {best_path}")
+        else:
+            epochs_without_improvement += 1
+            if args.early_stop_patience > 0 and epochs_without_improvement >= args.early_stop_patience:
+                stopped_early = True
+                print(
+                    f"Early stopping at epoch {epoch}: no valid_macro_f1 improvement "
+                    f"> {args.early_stop_min_delta} for {args.early_stop_patience} epochs."
+                )
+                break
 
     checkpoint = torch.load(best_path, map_location=device)
     model.load_state_dict(checkpoint["state_dict"])
@@ -410,6 +456,7 @@ def main() -> None:
     summary = {
         "model_name": f"{args.dino_model}_binary_finetuned",
         "dino_model": args.dino_model,
+        "args": vars(args),
         "drone_root": args.drone_root,
         "non_drone_root": args.non_drone_root,
         "checkpoint": str(best_path),
@@ -421,6 +468,10 @@ def main() -> None:
             "test": count_labels(test_samples),
         },
         "best_valid_macro_f1": best_valid_macro_f1,
+        "best_epoch": best_epoch,
+        "stopped_early": stopped_early,
+        "early_stop_patience": args.early_stop_patience,
+        "early_stop_min_delta": args.early_stop_min_delta,
         "test_loss": test_loss,
         "test_acc": test_acc,
         "test_macro_f1": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
@@ -429,7 +480,7 @@ def main() -> None:
         "history": history,
     }
 
-    summary_path = out_dir / "summary.json"
+    summary_path = out_dir / "summary_3_stage.json"
     with summary_path.open("w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2, ensure_ascii=True)
 
