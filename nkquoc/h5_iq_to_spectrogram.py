@@ -37,6 +37,9 @@ MAX_DATASETS: int | None = None
 # Optionally restrict to a list of dataset names (None = all)
 DATASET_NAMES: list[str] | None = None
 
+# Start processing from this dataset name after sorting (None = start from first)
+START_DATASET_NAME: str | None = "182400"
+
 # Set to None to read full dataset, or number of seconds to limit per dataset
 MAX_DURATION_SECONDS: int | None = None
 
@@ -102,6 +105,7 @@ def convert_h5_to_spectrograms(
     chunk_size: int,
     prefix: str,
     dataset_names: list[str] | None,
+    start_dataset_name: str | None,
     max_datasets: int | None,
     max_duration_seconds: int | None,
     normalize: bool,
@@ -136,6 +140,16 @@ def convert_h5_to_spectrograms(
                 print(f"[WARN] Missing datasets: {missing}")
         else:
             targets = available
+
+        if start_dataset_name is not None:
+            if start_dataset_name not in targets:
+                raise ValueError(
+                    f"START_DATASET_NAME={start_dataset_name!r} not found. "
+                    f"Available datasets include: {targets[:10]}..."
+                )
+            start_index = targets.index(start_dataset_name)
+            targets = targets[start_index:]
+            print(f"Starting from dataset: {start_dataset_name}")
 
         if max_datasets is not None:
             targets = targets[:max_datasets]
@@ -201,6 +215,7 @@ def main() -> None:
         chunk_size=CHUNK_SIZE,
         prefix=OUTPUT_PREFIX,
         dataset_names=DATASET_NAMES,
+        start_dataset_name=START_DATASET_NAME,
         max_datasets=MAX_DATASETS,
         max_duration_seconds=MAX_DURATION_SECONDS,
         normalize=NORMALIZE,
