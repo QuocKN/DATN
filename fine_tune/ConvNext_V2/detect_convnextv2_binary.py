@@ -25,7 +25,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
 CHECKPOINT_IN = "fine_tune/ConvNext_V2/convnextv2_binary_runs/convnextv2_binary_best.pt"
-SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms_refactor"
+SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
 OUTPUT_JSON = "fine_tune/ConvNext_V2/report/test/results.json"
 OUTPUT_CHART = "fine_tune/ConvNext_V2/report/test/results_chart.png"
 IMAGE_SIZE = 224
@@ -83,17 +83,35 @@ def infer_feature_dim(backbone: nn.Module, image_size: int, device: torch.device
 
 
 def build_model(checkpoint: dict, device: torch.device) -> tuple[nn.Module, List[str], dict, int, List[float], List[float], str]:
-    convnextv2_model = checkpoint.get("convnextv2_model", "convnextv2_base.fcmae_ft_in22k_in1k")
+    convnextv2_model = checkpoint.get("convnextv2_model", "convnextv2_tiny.fcmae_ft_in22k_in1k")
     class_names = checkpoint.get("class_names", ["non_drone", "drone"])
     class_to_idx = checkpoint.get("class_to_idx", {name: idx for idx, name in enumerate(class_names)})
     image_size = int(checkpoint.get("image_size", IMAGE_SIZE))
     mean = list(checkpoint.get("image_mean", DEFAULT_MEAN))
     std = list(checkpoint.get("image_std", DEFAULT_STD))
 
-    try:
-        backbone = timm.create_model(convnextv2_model, pretrained=True, num_classes=0, global_pool="avg")
-    except Exception:
-        backbone = timm.create_model(convnextv2_model, pretrained=False, num_classes=0, global_pool="avg")
+    model_candidates = [convnextv2_model]
+    if "." in convnextv2_model:
+        model_candidates.append(convnextv2_model.split(".", 1)[0])
+
+    last_exc: Exception | None = None
+    backbone = None
+    for candidate in model_candidates:
+        for use_pretrained in (True, False):
+            try:
+                backbone = timm.create_model(candidate, pretrained=use_pretrained, num_classes=0, global_pool="avg")
+                if candidate != convnextv2_model:
+                    print(f"Fallback model name: {candidate} (from {convnextv2_model})")
+                if not use_pretrained:
+                    print(f"Using non-pretrained weights for model: {candidate}")
+                break
+            except Exception as exc:
+                last_exc = exc
+        if backbone is not None:
+            break
+
+    if backbone is None:
+        raise RuntimeError(f"Could not create ConvNeXtV2 model from '{convnextv2_model}'.") from last_exc
     backbone.to(device)
 
     feature_dim = infer_feature_dim(backbone=backbone, image_size=image_size, device=device)
@@ -298,7 +316,7 @@ def main() -> None:
         output_path=chart_path,
         drone_count=drone_count,
         total=total,
-        model_name=checkpoint.get("model_name"),
+        model_name=Path(CHECKPOINT_IN).stem,
     )
 
 

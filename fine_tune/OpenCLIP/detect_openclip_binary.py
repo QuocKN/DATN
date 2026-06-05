@@ -295,7 +295,7 @@ def main() -> None:
         output_path=chart_path,
         drone_count=drone_count,
         total=total,
-        model_name=checkpoint.get("model_name"),
+        model_name=Path(CHECKPOINT_IN).stem,
     )
 
 
