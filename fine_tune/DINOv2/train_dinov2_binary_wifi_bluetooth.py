@@ -16,19 +16,13 @@ from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 from torchvision import transforms
 from tqdm import tqdm
 
-try:
-    import timm
-except Exception as exc:  # pragma: no cover
-    raise RuntimeError("Missing dependency 'timm'. Install it first: pip install timm") from exc
-
 DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/drone"
 NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/non_drone"
+WIFI_BLUETOOTH_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/wifi_blue"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 IMAGE_SIZE = 224
-CLASS_NAMES = ["non_drone", "drone"]
-CONVNEXTV2_MODEL = "convnextv2_tiny.fcmae_ft_in22k_in1k"
-IMAGENET_MEAN = [0.485, 0.456, 0.406]
-IMAGENET_STD = [0.229, 0.224, 0.225]
+CLASS_NAMES = ["non_drone", "drone", "wifi_blue"]
+SPLIT_NAMES = ("train", "valid", "test")
 
 
 @dataclass(frozen=True)
@@ -47,13 +41,11 @@ class BinarySpectrogramDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int]:
         sample = self.samples[idx]
-        # Ensure file handles are closed promptly to avoid worker/file-descriptor issues across epochs.
-        with Image.open(sample.path) as img:
-            image = img.convert("RGB")
+        image = Image.open(sample.path).convert("RGB")
         return self.transform(image), sample.label
 
 
-class ConvNextV2BinaryClassifier(nn.Module):
+class DINOv2Classifier(nn.Module):
     def __init__(self, backbone: nn.Module, feature_dim: int, num_classes: int) -> None:
         super().__init__()
         self.backbone = backbone
@@ -61,7 +53,7 @@ class ConvNextV2BinaryClassifier(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         features = self.backbone(x)
-        return self.head(features.float())
+        return self.head(features)
 
 
 def set_seed(seed: int) -> None:
@@ -86,21 +78,64 @@ def choose_subset(paths: Sequence[Path], max_count: int, seed: int) -> List[Path
     return [paths[i] for i in sorted(indices.tolist())]
 
 
+def split_paths(
+    paths: Sequence[Path],
+    train_ratio: float,
+    valid_ratio: float,
+    seed: int,
+) -> Tuple[List[Path], List[Path], List[Path]]:
+    if not 0.0 < train_ratio < 1.0:
+        raise ValueError("--wifi-blue-train-ratio must be between 0 and 1")
+    if not 0.0 <= valid_ratio < 1.0:
+        raise ValueError("--wifi-blue-valid-ratio must be between 0 and 1")
+    if train_ratio + valid_ratio >= 1.0:
+        raise ValueError("--wifi-blue-train-ratio + --wifi-blue-valid-ratio must be less than 1")
+
+    shuffled = list(paths)
+    rng = np.random.default_rng(seed)
+    rng.shuffle(shuffled)
+
+    train_end = int(len(shuffled) * train_ratio)
+    valid_end = train_end + int(len(shuffled) * valid_ratio)
+    return shuffled[:train_end], shuffled[train_end:valid_end], shuffled[valid_end:]
+
+
+def collect_split_or_random(
+    root: Path,
+    train_ratio: float,
+    valid_ratio: float,
+    seed: int,
+) -> Tuple[List[Path], List[Path], List[Path]]:
+    split_dirs = [root / split for split in SPLIT_NAMES]
+    if all(path.exists() for path in split_dirs):
+        return (
+            collect_images(root / "train"),
+            collect_images(root / "valid"),
+            collect_images(root / "test"),
+        )
+
+    paths = collect_images(root)
+    return split_paths(paths, train_ratio=train_ratio, valid_ratio=valid_ratio, seed=seed)
+
+
 def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Compose]:
     train_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
             transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomApply([transforms.ColorJitter(brightness=0.1, contrast=0.1)], p=0.3),
+            transforms.RandomApply(
+                [transforms.ColorJitter(brightness=0.1, contrast=0.1)],
+                p=0.3,
+            ),
             transforms.ToTensor(),
-            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ]
     )
     eval_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
             transforms.ToTensor(),
-            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ]
     )
     return train_tf, eval_tf
@@ -109,8 +144,12 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
 def build_samples(
     drone_root: Path,
     non_drone_root: Path,
+    wifi_blue_roots: Sequence[Path],
     max_drone_train: int,
     max_non_drone_train: int,
+    max_wifi_blue_train: int,
+    wifi_blue_train_ratio: float,
+    wifi_blue_valid_ratio: float,
     seed: int,
 ) -> Tuple[List[Sample], List[Sample], List[Sample]]:
     drone_train = choose_subset(collect_images(drone_root / "train"), max_drone_train, seed)
@@ -121,36 +160,47 @@ def build_samples(
     non_drone_valid = collect_images(non_drone_root / "valid")
     non_drone_test = collect_images(non_drone_root / "test")
 
-    train_samples = [Sample(p, 1) for p in drone_train] + [Sample(p, 0) for p in non_drone_train]
-    valid_samples = [Sample(p, 1) for p in drone_valid] + [Sample(p, 0) for p in non_drone_valid]
-    test_samples = [Sample(p, 1) for p in drone_test] + [Sample(p, 0) for p in non_drone_test]
+    wifi_blue_train: List[Path] = []
+    wifi_blue_valid: List[Path] = []
+    wifi_blue_test: List[Path] = []
+    for index, root in enumerate(wifi_blue_roots):
+        root_train, root_valid, root_test = collect_split_or_random(
+            root=root,
+            train_ratio=wifi_blue_train_ratio,
+            valid_ratio=wifi_blue_valid_ratio,
+            seed=seed + 100 + index,
+        )
+        root_train = choose_subset(root_train, max_wifi_blue_train, seed + 200 + index)
+        wifi_blue_train.extend(root_train)
+        wifi_blue_valid.extend(root_valid)
+        wifi_blue_test.extend(root_test)
+
+    train_samples = (
+        [Sample(p, 1) for p in drone_train]
+        + [Sample(p, 0) for p in non_drone_train]
+        + [Sample(p, 2) for p in wifi_blue_train]
+    )
+    valid_samples = (
+        [Sample(p, 1) for p in drone_valid]
+        + [Sample(p, 0) for p in non_drone_valid]
+        + [Sample(p, 2) for p in wifi_blue_valid]
+    )
+    test_samples = (
+        [Sample(p, 1) for p in drone_test]
+        + [Sample(p, 0) for p in non_drone_test]
+        + [Sample(p, 2) for p in wifi_blue_test]
+    )
     return train_samples, valid_samples, test_samples
 
 
-def load_convnextv2_backbone(model_name: str, device: torch.device) -> nn.Module:
-    model_candidates = [model_name]
-    # If a pretrained tag suffix is invalid for local timm version, retry with plain architecture name.
-    if "." in model_name:
-        model_candidates.append(model_name.split(".", 1)[0])
-
-    last_exc: Exception | None = None
-    backbone = None
-    for candidate in model_candidates:
-        for use_pretrained in (True, False):
-            try:
-                backbone = timm.create_model(candidate, pretrained=use_pretrained, num_classes=0, global_pool="avg")
-                if candidate != model_name:
-                    print(f"Fallback model name: {candidate} (from {model_name})")
-                if not use_pretrained:
-                    print(f"Using non-pretrained weights for model: {candidate}")
-                break
-            except Exception as exc:
-                last_exc = exc
-        if backbone is not None:
-            break
-
-    if backbone is None:
-        raise RuntimeError(f"Could not create ConvNeXtV2 model from '{model_name}'.") from last_exc
+def load_dinov2_backbone(model_name: str, device: torch.device) -> nn.Module:
+    try:
+        backbone = torch.hub.load("facebookresearch/dinov2", model_name)
+    except Exception as exc:
+        raise RuntimeError(
+            "Could not load DINOv2 from torch.hub. The first run needs internet access "
+            "to download facebookresearch/dinov2 weights."
+        ) from exc
     backbone.to(device)
     return backbone
 
@@ -165,47 +215,43 @@ def infer_feature_dim(backbone: nn.Module, image_size: int, device: torch.device
     return int(features.shape[1])
 
 
-def freeze_all_backbone_params(backbone: nn.Module) -> None:
-    for param in backbone.parameters():
-        param.requires_grad = False
-
-
-def unfreeze_last_n_stages(backbone: nn.Module, train_last_n_stages: int) -> int:
-    if train_last_n_stages <= 0:
-        return 0
-
-    if not hasattr(backbone, "stages"):
-        raise ValueError("Backbone does not expose 'stages'; cannot apply stage-based unfreezing")
-
-    stages = list(backbone.stages)
-    total_stages = len(stages)
-    n = min(train_last_n_stages, total_stages)
-    for stage in stages[-n:]:
-        for param in stage.parameters():
-            param.requires_grad = True
-    return n
-
-
 def build_model(
     model_name: str,
     image_size: int,
     freeze_backbone: bool,
-    train_last_n_stages: int,
+    fine_tune_last_n_stages: int,
     device: torch.device,
-) -> tuple[ConvNextV2BinaryClassifier, int]:
-    backbone = load_convnextv2_backbone(model_name=model_name, device=device)
-    feature_dim = infer_feature_dim(backbone=backbone, image_size=image_size, device=device)
+) -> DINOv2Classifier:
+    backbone = load_dinov2_backbone(model_name, device)
+    feature_dim = infer_feature_dim(backbone, image_size, device)
 
-    unfrozen_stages = 0
-    if train_last_n_stages > 0:
-        freeze_all_backbone_params(backbone)
-        unfrozen_stages = unfreeze_last_n_stages(backbone, train_last_n_stages)
-    elif freeze_backbone:
-        freeze_all_backbone_params(backbone)
+    if freeze_backbone and fine_tune_last_n_stages > 0:
+        raise ValueError("--freeze-backbone cannot be used together with --fine-tune-last-n-stages > 0")
 
-    model = ConvNextV2BinaryClassifier(backbone=backbone, feature_dim=feature_dim, num_classes=len(CLASS_NAMES))
+    if freeze_backbone:
+        for param in backbone.parameters():
+            param.requires_grad = False
+    elif fine_tune_last_n_stages > 0:
+        if not hasattr(backbone, "blocks") or not isinstance(backbone.blocks, nn.ModuleList):
+            raise ValueError("Backbone does not expose `blocks`; cannot apply stage-wise fine-tuning.")
+        total_blocks = len(backbone.blocks)
+        if fine_tune_last_n_stages > total_blocks:
+            raise ValueError(
+                f"--fine-tune-last-n-stages={fine_tune_last_n_stages} exceeds total blocks ({total_blocks})."
+            )
+
+        for param in backbone.parameters():
+            param.requires_grad = False
+        for block in backbone.blocks[-fine_tune_last_n_stages:]:
+            for param in block.parameters():
+                param.requires_grad = True
+        if hasattr(backbone, "norm"):
+            for param in backbone.norm.parameters():
+                param.requires_grad = True
+
+    model = DINOv2Classifier(backbone=backbone, feature_dim=feature_dim, num_classes=len(CLASS_NAMES))
     model.to(device)
-    return model, unfrozen_stages
+    return model
 
 
 def count_labels(samples: Sequence[Sample]) -> dict:
@@ -230,7 +276,7 @@ def make_sample_weights(samples: Sequence[Sample]) -> torch.Tensor:
 
 
 def build_optimizer(
-    model: ConvNextV2BinaryClassifier,
+    model: DINOv2Classifier,
     backbone_lr: float,
     head_lr: float,
     weight_decay: float,
@@ -311,30 +357,49 @@ def evaluate(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Fine-tune ConvNeXt V2 for binary drone/non-drone spectrogram detection")
+    parser = argparse.ArgumentParser(
+        description="Fine-tune DINOv2 for 3-class spectrogram classification: non_drone, drone, wifi_blue"
+    )
     parser.add_argument("--drone-root", type=str, default=DRONE_ROOT)
     parser.add_argument("--non-drone-root", type=str, default=NON_DRONE_ROOT)
-    parser.add_argument("--out-dir", type=str, default="fine_tune/ConvNext_V2/convnextv2_binary_runs")
-    parser.add_argument("--convnextv2-model", type=str, default=CONVNEXTV2_MODEL)
+    parser.add_argument(
+        "--wifi-blue-roots",
+        type=str,
+        nargs="*",
+        default=[WIFI_BLUETOOTH_ROOT],
+        help=(
+            "Wifi/bluetooth image roots for the wifi_blue class. Each root can contain train/valid/test folders, "
+            "or a flat/nested image tree that will be split randomly."
+        ),
+    )
+    parser.add_argument("--out-dir", type=str, default="fine_tune/DINOv2/dinov2_binary_runs")
+    parser.add_argument("--dino-model", type=str, default="dinov2_vits14")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=32)
-    parser.add_argument("--num-workers", type=int, default=0)
+    parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--image-size", type=int, default=IMAGE_SIZE)
-    parser.add_argument("--backbone-lr", type=float, default=1e-6)
-    parser.add_argument("--head-lr", type=float, default=1e-5)
+    parser.add_argument("--backbone-lr", type=float, default=1e-5)
+    parser.add_argument("--head-lr", type=float, default=1e-4)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
     parser.add_argument("--max-drone-train", type=int, default=0, help="0 means use all drone train images")
     parser.add_argument("--max-non-drone-train", type=int, default=0, help="0 means use all non-drone train images")
+    parser.add_argument("--max-wifi-blue-train", type=int, default=0, help="0 means use all wifi_blue train images")
+    parser.add_argument("--wifi-blue-train-ratio", type=float, default=0.8, help="Train split ratio for wifi_blue roots without train/valid/test")
+    parser.add_argument("--wifi-blue-valid-ratio", type=float, default=0.1, help="Valid split ratio for wifi_blue roots without train/valid/test")
     parser.add_argument("--freeze-backbone", action="store_true", help="Train only the classifier head")
     parser.add_argument(
-        "--train-last-n-stages",
+        "--fine-tune-last-n-stages",
         type=int,
         default=0,
-        help="Freeze backbone then unfreeze the last N stages (overrides --freeze-backbone when > 0).",
+        help="If > 0, freeze backbone and train only the last N transformer blocks (stages).",
     )
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--use-balanced-sampler", action="store_true", help="Use WeightedRandomSampler on train set.")
+    parser.add_argument(
+        "--use-balanced-sampler",
+        action="store_true",
+        help="Use WeightedRandomSampler on train set to reduce class imbalance.",
+    )
     parser.add_argument("--early-stop-patience", type=int, default=7, help="Stop if no valid_macro_f1 improvement for N epochs")
     parser.add_argument("--early-stop-min-delta", type=float, default=0.001, help="Minimum valid_macro_f1 gain to count as improvement")
     return parser.parse_args()
@@ -351,8 +416,12 @@ def main() -> None:
     train_samples, valid_samples, test_samples = build_samples(
         drone_root=Path(args.drone_root),
         non_drone_root=Path(args.non_drone_root),
+        wifi_blue_roots=[Path(root) for root in args.wifi_blue_roots],
         max_drone_train=args.max_drone_train,
         max_non_drone_train=args.max_non_drone_train,
+        max_wifi_blue_train=args.max_wifi_blue_train,
+        wifi_blue_train_ratio=args.wifi_blue_train_ratio,
+        wifi_blue_valid_ratio=args.wifi_blue_valid_ratio,
         seed=args.seed,
     )
 
@@ -364,13 +433,11 @@ def main() -> None:
     train_sampler = None
     if args.use_balanced_sampler:
         sample_weights = make_sample_weights(train_samples)
-        train_sampler = WeightedRandomSampler(weights=sample_weights, num_samples=len(sample_weights), replacement=True)
-
-    pin_memory = device.type == "cuda"
-    common_loader_kwargs = {
-        "num_workers": args.num_workers,
-        "pin_memory": pin_memory,
-    }
+        train_sampler = WeightedRandomSampler(
+            weights=sample_weights,
+            num_samples=len(sample_weights),
+            replacement=True,
+        )
 
     loaders = {
         "train": DataLoader(
@@ -378,48 +445,48 @@ def main() -> None:
             batch_size=args.batch_size,
             shuffle=train_sampler is None,
             sampler=train_sampler,
-            **common_loader_kwargs,
+            num_workers=args.num_workers,
+            pin_memory=True,
         ),
         "valid": DataLoader(
             valid_dataset,
             batch_size=args.batch_size,
             shuffle=False,
-            **common_loader_kwargs,
+            num_workers=args.num_workers,
+            pin_memory=True,
         ),
         "test": DataLoader(
             test_dataset,
             batch_size=args.batch_size,
             shuffle=False,
-            **common_loader_kwargs,
+            num_workers=args.num_workers,
+            pin_memory=True,
         ),
     }
 
     print(f"Device: {device}")
-    print(f"ConvNeXtV2 model: {args.convnextv2_model}")
+    print(f"DINOv2 model: {args.dino_model}")
     print(f"Balanced sampler: {args.use_balanced_sampler}")
+    print(f"Fine-tune last N stages: {args.fine_tune_last_n_stages}")
     print(f"Classes: {CLASS_NAMES}")
+    print(f"Wifi_blue roots: {args.wifi_blue_roots}")
     print(f"train: {len(train_samples)} {count_labels(train_samples)}")
     print(f"valid: {len(valid_samples)} {count_labels(valid_samples)}")
     print(f"test: {len(test_samples)} {count_labels(test_samples)}")
 
-    model, unfrozen_stages = build_model(
-        model_name=args.convnextv2_model,
+    model = build_model(
+        model_name=args.dino_model,
         image_size=args.image_size,
         freeze_backbone=args.freeze_backbone,
-        train_last_n_stages=args.train_last_n_stages,
+        fine_tune_last_n_stages=args.fine_tune_last_n_stages,
         device=device,
     )
-    if args.train_last_n_stages > 0:
-        print(f"Unfrozen last ConvNeXtV2 stages: {unfrozen_stages}")
-    else:
-        print(f"Freeze backbone: {args.freeze_backbone}")
-
     optimizer = build_optimizer(model, args.backbone_lr, args.head_lr, args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
     criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
 
     best_valid_macro_f1 = -1.0
-    best_path = out_dir / "convnextv2_binary_best.pt"
+    best_path = out_dir / f"balanced_{args.dino_model}_3class_wifi_blue.pt"
     history = []
     epochs_without_improvement = 0
     stopped_early = False
@@ -451,14 +518,12 @@ def main() -> None:
             epochs_without_improvement = 0
             torch.save(
                 {
-                    "model_name": "convnextv2_base_binary_finetuned",
-                    "convnextv2_model": args.convnextv2_model,
+                    "model_name": f"{args.dino_model}_3class_wifi_blue_finetuned",
+                    "dino_model": args.dino_model,
                     "state_dict": model.state_dict(),
                     "class_names": CLASS_NAMES,
-                    "class_to_idx": {"non_drone": 0, "drone": 1},
+                    "class_to_idx": {"non_drone": 0, "drone": 1, "wifi_blue": 2},
                     "image_size": args.image_size,
-                    "image_mean": IMAGENET_MEAN,
-                    "image_std": IMAGENET_STD,
                     "args": vars(args),
                     "best_valid_macro_f1": best_valid_macro_f1,
                 },
@@ -482,14 +547,15 @@ def main() -> None:
     report = classification_report(y_true, y_pred, target_names=CLASS_NAMES, output_dict=True, zero_division=0)
     cm = confusion_matrix(y_true, y_pred).tolist()
     summary = {
-        "model_name": "convnextv2_base_binary_finetuned",
-        "convnextv2_model": args.convnextv2_model,
+        "model_name": f"{args.dino_model}_3class_wifi_blue_finetuned",
+        "dino_model": args.dino_model,
         "args": vars(args),
         "drone_root": args.drone_root,
         "non_drone_root": args.non_drone_root,
+        "wifi_blue_roots": args.wifi_blue_roots,
         "checkpoint": str(best_path),
         "class_names": CLASS_NAMES,
-        "class_to_idx": {"non_drone": 0, "drone": 1},
+        "class_to_idx": {"non_drone": 0, "drone": 1, "wifi_blue": 2},
         "sample_counts": {
             "train": count_labels(train_samples),
             "valid": count_labels(valid_samples),
@@ -508,7 +574,7 @@ def main() -> None:
         "history": history,
     }
 
-    summary_path = out_dir / "summary.json"
+    summary_path = out_dir / "summary_3class_wifi_blue.json"
     with summary_path.open("w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2, ensure_ascii=True)
 
