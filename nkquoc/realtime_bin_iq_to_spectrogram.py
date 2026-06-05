@@ -36,11 +36,11 @@ except ImportError:
 
 try:
     from . import iq_spectrogram_core as spectrogram_core
-    from .bin_spectrogram_converter import ProcessingConfig, preprocess_iq_chunk
+    from .iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
     from .iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
 except ImportError:
     import iq_spectrogram_core as spectrogram_core
-    from bin_spectrogram_converter import ProcessingConfig, preprocess_iq_chunk
+    from iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
     from iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
 
 
@@ -70,17 +70,19 @@ def apply_spectrogram_config(args: argparse.Namespace) -> None:
     spectrogram_core.SPEC_CLIP_DB_MAX = args.db_max
 
 
-def build_processing_config(args: argparse.Namespace) -> ProcessingConfig:
-    return ProcessingConfig(
-        save_waveform=False,
-        enable_despike=args.despike,
-        despike_percentile=args.despike_percentile,
-        enable_repair_clipped=args.repair_clipped,
-        enable_impulse_blanker=args.impulse_blanker,
-        blanker_median_kernel=args.blanker_median_kernel,
-        blanker_threshold_sigma=args.blanker_threshold_sigma,
-        blanker_max_spike_width=args.blanker_max_spike_width,
-    )
+def preprocess_iq_chunk(iq_chunk: np.ndarray, args: argparse.Namespace) -> np.ndarray:
+    if args.impulse_blanker:
+        iq_chunk = blank_impulsive_spikes(
+            iq_chunk,
+            median_kernel=args.blanker_median_kernel,
+            threshold_sigma=args.blanker_threshold_sigma,
+            max_spike_width=args.blanker_max_spike_width,
+        )
+    if args.despike:
+        iq_chunk = despike_iq(iq_chunk, percentile=args.despike_percentile)
+    if args.repair_clipped:
+        iq_chunk = repair_clipped_iq(iq_chunk)
+    return iq_chunk
 
 
 def read_new_iq_samples(
@@ -301,7 +303,6 @@ def run_realtime_conversion(args: argparse.Namespace) -> int:
     if hop_samples <= 0:
         raise ValueError("hop_seconds must be positive")
 
-    processing = build_processing_config(args)
     buffer: deque[np.ndarray] = deque()
     buffered_samples = 0
     scalar_remainder = np.empty(0, dtype=np.int16)
@@ -341,7 +342,6 @@ def run_realtime_conversion(args: argparse.Namespace) -> int:
                 handle=handle,
                 args=args,
                 output_dir=output_dir,
-                processing=processing,
                 buffer=buffer,
                 buffered_samples=buffered_samples,
                 scalar_remainder=scalar_remainder,
@@ -360,7 +360,6 @@ def read_stream_to_spectrograms(
     handle,
     args: argparse.Namespace,
     output_dir: Path,
-    processing: ProcessingConfig,
     buffer: deque[np.ndarray],
     buffered_samples: int,
     scalar_remainder: np.ndarray,
@@ -378,7 +377,6 @@ def read_stream_to_spectrograms(
             handle=handle,
             args=args,
             output_dir=output_dir,
-            processing=processing,
             buffer=buffer,
             buffered_samples=buffered_samples,
             saved=saved,
@@ -411,7 +409,7 @@ def read_stream_to_spectrograms(
             window = pop_window(buffer, buffered_samples, window_samples)
             buffered_samples -= window_samples
 
-            processed = preprocess_iq_chunk(window, processing)
+            processed = preprocess_iq_chunk(window, args)
             frequencies, times, spectrum = compute_spectrogram(
                 processed,
                 sample_rate=args.sample_rate,
@@ -453,7 +451,6 @@ def process_iq_samples(
     iq_samples: np.ndarray,
     args: argparse.Namespace,
     output_dir: Path,
-    processing: ProcessingConfig,
     buffer: deque[np.ndarray],
     buffered_samples: int,
     saved: int,
@@ -470,7 +467,7 @@ def process_iq_samples(
         window = pop_window(buffer, buffered_samples, window_samples)
         buffered_samples -= window_samples
 
-        processed = preprocess_iq_chunk(window, processing)
+        processed = preprocess_iq_chunk(window, args)
         frequencies, times, spectrum = compute_spectrogram(
             processed,
             sample_rate=args.sample_rate,
@@ -565,7 +562,6 @@ def read_threaded_stream_to_spectrograms(
     handle,
     args: argparse.Namespace,
     output_dir: Path,
-    processing: ProcessingConfig,
     buffer: deque[np.ndarray],
     buffered_samples: int,
     saved: int,
@@ -607,7 +603,6 @@ def read_threaded_stream_to_spectrograms(
                 iq_samples=iq_samples,
                 args=args,
                 output_dir=output_dir,
-                processing=processing,
                 buffer=buffer,
                 buffered_samples=buffered_samples,
                 saved=saved,

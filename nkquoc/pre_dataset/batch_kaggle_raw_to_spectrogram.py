@@ -16,8 +16,7 @@ from pathlib import Path
 from typing import Generator
 
 import numpy as np
-from bin_iq_to_spectrogram import compute_spectrogram, save_spectrogram_image
-
+from nkquoc.base.iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
 
 def iter_iq_chunks_from_float32(
     path: Path,

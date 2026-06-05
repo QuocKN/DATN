@@ -44,11 +44,7 @@ from typing import Generator
 
 import numpy as np
 from tqdm import tqdm
-
-try:
-    from nkquoc.bin_iq_to_spectrogram import compute_spectrogram, save_spectrogram_image
-except ModuleNotFoundError:
-    from bin_iq_to_spectrogram import compute_spectrogram, save_spectrogram_image
+from nkquoc.base.iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
 
 
 # ========================
