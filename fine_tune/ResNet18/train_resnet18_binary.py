@@ -10,6 +10,10 @@ from typing import List, Sequence, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 from PIL import Image
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 from sklearn.model_selection import train_test_split
@@ -233,6 +237,34 @@ def evaluate(
     return total_loss / max(total_count, 1), total_correct / max(total_count, 1), y_true, y_pred
 
 
+def save_confusion_matrix(cm: np.ndarray, class_names: Sequence[str], output_path: Path) -> None:
+    fig, ax = plt.subplots(figsize=(6, 5))
+    im = ax.imshow(cm, interpolation="nearest", cmap="Blues")
+    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+
+    ax.set(
+        title="Confusion Matrix",
+        xlabel="Predicted label",
+        ylabel="True label",
+        xticks=np.arange(len(class_names)),
+        yticks=np.arange(len(class_names)),
+        xticklabels=class_names,
+        yticklabels=class_names,
+    )
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+    threshold = cm.max() / 2.0 if cm.size and cm.max() > 0 else 0.0
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            color = "white" if cm[i, j] > threshold else "black"
+            ax.text(j, i, str(int(cm[i, j])), ha="center", va="center", color=color)
+
+    fig.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine-tune ResNet18 for binary drone/non-drone spectrogram detection")
     parser.add_argument("--drone-root", type=str, default=DRONE_ROOT)
@@ -375,7 +407,10 @@ def main() -> None:
     test_loss, test_acc, y_true, y_pred = evaluate(model, loaders["test"], criterion, device)
 
     report = classification_report(y_true, y_pred, target_names=CLASS_NAMES, output_dict=True, zero_division=0)
-    cm = confusion_matrix(y_true, y_pred).tolist()
+    cm_array = confusion_matrix(y_true, y_pred, labels=list(range(len(CLASS_NAMES))))
+    cm = cm_array.tolist()
+    confusion_matrix_path = out_dir / "confusion_matrix.png"
+    save_confusion_matrix(cm_array, CLASS_NAMES, confusion_matrix_path)
     summary = {
         "model_name": "resnet18_binary_finetuned",
         "drone_root": args.drone_root,
@@ -399,6 +434,7 @@ def main() -> None:
         "test_macro_f1": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
         "classification_report": report,
         "confusion_matrix": cm,
+        "confusion_matrix_path": str(confusion_matrix_path),
         "history": history,
     }
 

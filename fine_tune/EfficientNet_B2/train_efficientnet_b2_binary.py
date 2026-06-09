@@ -7,13 +7,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Sequence, Tuple
 
-import numpy as np
-import torch
-import torch.nn as nn
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
+import torch.nn as nn
 from PIL import Image
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 from sklearn.model_selection import train_test_split
@@ -24,8 +24,10 @@ from tqdm import tqdm
 DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/drone"
 NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/non_drone"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
-IMAGE_SIZE = 224
+IMAGE_SIZE = 260
 CLASS_NAMES = ["non_drone", "drone"]
+IMAGENET_MEAN = [0.485, 0.456, 0.406]
+IMAGENET_STD = [0.229, 0.224, 0.225]
 
 
 @dataclass(frozen=True)
@@ -44,7 +46,8 @@ class BinarySpectrogramDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int]:
         sample = self.samples[idx]
-        image = Image.open(sample.path).convert("RGB")
+        with Image.open(sample.path) as img:
+            image = img.convert("RGB")
         return self.transform(image), sample.label
 
 
@@ -75,19 +78,16 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
         [
             transforms.Resize((image_size, image_size)),
             transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomApply(
-                [transforms.ColorJitter(brightness=0.1, contrast=0.1)],
-                p=0.3,
-            ),
+            transforms.RandomApply([transforms.ColorJitter(brightness=0.1, contrast=0.1)], p=0.3),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
     )
     eval_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
     )
     return train_tf, eval_tf
@@ -138,59 +138,36 @@ def freeze_all_backbone_params(model: nn.Module) -> None:
         param.requires_grad = False
 
 
-def _collect_swin_stages(model: nn.Module) -> List[nn.Module]:
-    if not hasattr(model, "features"):
-        raise ValueError("Backbone does not expose 'features'; cannot apply stage-based unfreezing")
-
-    features = list(model.features)
-    stages: List[nn.Module] = []
-    for module in features:
-        has_swin_block = any(
-            child.__class__.__name__.lower().startswith("swintransformerblock")
-            for child in module.modules()
-        )
-        if has_swin_block:
-            stages.append(module)
-
-    if stages:
-        return stages
-
-    # Fallback when internals differ across torchvision versions.
-    return features
-
-
-def unfreeze_last_n_stages(model: nn.Module, train_last_n_stages: int) -> int:
-    if train_last_n_stages <= 0:
+def unfreeze_last_n_feature_blocks(model: nn.Module, train_last_n_blocks: int) -> int:
+    if train_last_n_blocks <= 0:
         return 0
+    if not hasattr(model, "features"):
+        raise ValueError("EfficientNet model does not expose 'features'; cannot unfreeze feature blocks")
 
-    stages = _collect_swin_stages(model)
-    total_stages = len(stages)
-    n = min(train_last_n_stages, total_stages)
-    for stage in stages[-n:]:
-        for param in stage.parameters():
+    blocks = list(model.features)
+    n = min(train_last_n_blocks, len(blocks))
+    for block in blocks[-n:]:
+        for param in block.parameters():
             param.requires_grad = True
     return n
 
 
-def build_swin_small_model(
-    freeze_backbone: bool,
-    train_last_n_stages: int,
-) -> tuple[nn.Module, int]:
+def build_model(freeze_backbone: bool, train_last_n_blocks: int) -> tuple[nn.Module, int]:
     try:
-        model = models.swin_v2_s(weights=models.Swin_V2_S_Weights.IMAGENET1K_V1)
+        model = models.efficientnet_b2(weights=models.EfficientNet_B2_Weights.IMAGENET1K_V1)
     except Exception:
-        model = models.swin_v2_s(weights=None)
+        model = models.efficientnet_b2(weights=None)
 
-    unfrozen_stages = 0
-    if train_last_n_stages > 0:
+    unfrozen_blocks = 0
+    if train_last_n_blocks > 0:
         freeze_all_backbone_params(model)
-        unfrozen_stages = unfreeze_last_n_stages(model, train_last_n_stages)
+        unfrozen_blocks = unfreeze_last_n_feature_blocks(model, train_last_n_blocks)
     elif freeze_backbone:
         freeze_all_backbone_params(model)
 
-    in_features = model.head.in_features
-    model.head = nn.Linear(in_features, len(CLASS_NAMES))
-    return model, unfrozen_stages
+    in_features = model.classifier[1].in_features
+    model.classifier[1] = nn.Linear(in_features, len(CLASS_NAMES))
+    return model, unfrozen_blocks
 
 
 def count_labels(samples: Sequence[Sample]) -> dict:
@@ -231,8 +208,10 @@ def build_optimizer(
     head_lr: float,
     weight_decay: float,
 ) -> torch.optim.Optimizer:
-    backbone_params = [p for n, p in model.named_parameters() if p.requires_grad and not n.startswith("head.")]
-    head_params = [p for n, p in model.named_parameters() if p.requires_grad and n.startswith("head.")]
+    backbone_params = [
+        p for n, p in model.named_parameters() if p.requires_grad and not n.startswith("classifier.1.")
+    ]
+    head_params = [p for n, p in model.named_parameters() if p.requires_grad and n.startswith("classifier.1.")]
 
     param_groups = []
     if backbone_params:
@@ -340,10 +319,10 @@ def save_confusion_matrix(cm: np.ndarray, class_names: Sequence[str], output_pat
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Fine-tune Swin V2 Small for binary drone/non-drone spectrogram detection")
+    parser = argparse.ArgumentParser(description="Fine-tune EfficientNet-B2 for binary drone/non-drone spectrogram detection")
     parser.add_argument("--drone-root", type=str, default=DRONE_ROOT)
     parser.add_argument("--non-drone-root", type=str, default=NON_DRONE_ROOT)
-    parser.add_argument("--out-dir", type=str, default="fine_tune/Swin_Small/swin_small_binary_runs")
+    parser.add_argument("--out-dir", type=str, default="fine_tune/EfficientNet_B2/efficientnet_b2_binary_runs")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-workers", type=int, default=4)
@@ -355,10 +334,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-non-drone-train", type=int, default=0, help="0 means use all non-drone train images")
     parser.add_argument("--freeze-backbone", action="store_true", help="Train only the final classifier layer")
     parser.add_argument(
-        "--train-last-n-stages",
+        "--train-last-n-blocks",
         type=int,
         default=0,
-        help="Freeze backbone then unfreeze the last N Swin stages (overrides --freeze-backbone when > 0).",
+        help="Freeze backbone then unfreeze the last N EfficientNet feature blocks.",
     )
     parser.add_argument(
         "--use-balanced-sampler",
@@ -391,46 +370,46 @@ def main() -> None:
     train_tf, eval_tf = build_transforms(args.image_size)
     train_dataset = BinarySpectrogramDataset(train_samples, train_tf)
     train_sampler = make_balanced_sampler(train_samples) if args.use_balanced_sampler else None
+    pin_memory = device.type == "cuda"
+    common_loader_kwargs = {"num_workers": args.num_workers, "pin_memory": pin_memory}
+
     loaders = {
         "train": DataLoader(
             train_dataset,
             batch_size=args.batch_size,
             shuffle=train_sampler is None,
             sampler=train_sampler,
-            num_workers=args.num_workers,
-            pin_memory=True,
+            **common_loader_kwargs,
         ),
         "valid": DataLoader(
             BinarySpectrogramDataset(valid_samples, eval_tf),
             batch_size=args.batch_size,
             shuffle=False,
-            num_workers=args.num_workers,
-            pin_memory=True,
+            **common_loader_kwargs,
         ),
         "test": DataLoader(
             BinarySpectrogramDataset(test_samples, eval_tf),
             batch_size=args.batch_size,
             shuffle=False,
-            num_workers=args.num_workers,
-            pin_memory=True,
+            **common_loader_kwargs,
         ),
     }
 
     print(f"Device: {device}")
-    print("Model: swin_v2_s")
+    print("Model: efficientnet_b2")
     print(f"Classes: {CLASS_NAMES}")
     print(f"train: {len(train_samples)} {count_labels(train_samples)}")
     print(f"use_balanced_sampler: {args.use_balanced_sampler}")
     print(f"valid: {len(valid_samples)} {count_labels(valid_samples)}")
     print(f"test: {len(test_samples)} {count_labels(test_samples)}")
 
-    model, unfrozen_stages = build_swin_small_model(
+    model, unfrozen_blocks = build_model(
         freeze_backbone=args.freeze_backbone,
-        train_last_n_stages=args.train_last_n_stages,
+        train_last_n_blocks=args.train_last_n_blocks,
     )
     model = model.to(device)
-    if args.train_last_n_stages > 0:
-        print(f"Unfrozen last Swin stages: {unfrozen_stages}")
+    if args.train_last_n_blocks > 0:
+        print(f"Unfrozen last EfficientNet feature blocks: {unfrozen_blocks}")
     else:
         print(f"Freeze backbone: {args.freeze_backbone}")
 
@@ -439,7 +418,7 @@ def main() -> None:
     criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
 
     best_valid_macro_f1 = -1.0
-    best_path = out_dir / "balanced_swin_small_binary.pt"
+    best_path = out_dir / "balanced_efficientnet_b2_binary.pt"
     history = []
     epochs_without_improvement = 0
     stopped_early = False
@@ -471,12 +450,14 @@ def main() -> None:
             epochs_without_improvement = 0
             torch.save(
                 {
-                    "model_name": "swin_v2_s_binary_finetuned",
+                    "model_name": "efficientnet_b2_binary_finetuned",
                     "state_dict": model.state_dict(),
                     "class_names": CLASS_NAMES,
                     "class_to_idx": {"non_drone": 0, "drone": 1},
                     "image_size": args.image_size,
-                    "backbone_name": "swin_v2_s",
+                    "image_mean": IMAGENET_MEAN,
+                    "image_std": IMAGENET_STD,
+                    "backbone_name": "efficientnet_b2",
                     "args": vars(args),
                     "best_valid_macro_f1": best_valid_macro_f1,
                 },
@@ -511,13 +492,16 @@ def main() -> None:
         "test": count_unique_images_by_class(test_samples),
     }
     summary = {
-        "model_name": "swin_v2_s_binary_finetuned",
+        "model_name": "efficientnet_b2_binary_finetuned",
         "args": vars(args),
         "drone_root": args.drone_root,
         "non_drone_root": args.non_drone_root,
         "checkpoint": str(best_path),
         "class_names": CLASS_NAMES,
         "class_to_idx": {"non_drone": 0, "drone": 1},
+        "image_mean": IMAGENET_MEAN,
+        "image_std": IMAGENET_STD,
+        "backbone_name": "efficientnet_b2",
         "used_image_counts": used_image_counts,
         "train_images_used_total": len(train_samples),
         "train_images_used_by_class": train_counts,
