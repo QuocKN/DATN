@@ -20,9 +20,9 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
 CHECKPOINT_IN = "fine_tune/Swin_Small/swin_small_binary_runs/balanced_swin_small_binary.pt"
-SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms"
-OUTPUT_JSON = "fine_tune/Swin_Small/report/test/results.json"
-OUTPUT_CHART = "fine_tune/Swin_Small/report/test/results_chart.png"
+SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
+OUTPUT_JSON = "fine_tune/Swin_Small/report/Tu_thu/2toan_results.json"
+OUTPUT_CHART = "fine_tune/Swin_Small/report/Tu_thu/2toan_results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 128

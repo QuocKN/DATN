@@ -21,8 +21,8 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 # Edit these values directly.
 CHECKPOINT_IN = "fine_tune/ResNet50/resnet50_binary_runs/balanced_resnet50_binary.pt"
 SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
-OUTPUT_JSON = "fine_tune/ResNet50/report/Tu_thu/2toan/results.json"
-OUTPUT_CHART = "fine_tune/ResNet50/report/Tu_thu/2toan/results_chart.png"
+OUTPUT_JSON = "fine_tune/ResNet50/report/Tu_thu/2toan_results.json"
+OUTPUT_CHART = "fine_tune/ResNet50/report/Tu_thu/2toan_results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 128

@@ -26,8 +26,8 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 # Edit these values directly.
 CHECKPOINT_IN = "fine_tune/OpenCLIP/openclip_binary_runs/balanced_openclip_binary.pt"
 SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
-OUTPUT_JSON = "fine_tune/OpenCLIP/report/Tu_thu/2toan/results_full_finetune.json"
-OUTPUT_CHART = "fine_tune/OpenCLIP/report/Tu_thu/2toan/results_chart_full_finetune.png"
+OUTPUT_JSON = "fine_tune/OpenCLIP/report/Tu_thu/2toan_results.json"
+OUTPUT_CHART = "fine_tune/OpenCLIP/report/Tu_thu/2toan_results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 64
