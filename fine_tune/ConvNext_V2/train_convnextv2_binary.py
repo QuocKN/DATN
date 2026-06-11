@@ -94,8 +94,6 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
     train_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomApply([transforms.ColorJitter(brightness=0.1, contrast=0.1)], p=0.3),
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
@@ -140,21 +138,21 @@ def load_convnextv2_backbone(model_name: str, device: torch.device) -> nn.Module
     last_exc: Exception | None = None
     backbone = None
     for candidate in model_candidates:
-        for use_pretrained in (True, False):
-            try:
-                backbone = timm.create_model(candidate, pretrained=use_pretrained, num_classes=0, global_pool="avg")
-                if candidate != model_name:
-                    print(f"Fallback model name: {candidate} (from {model_name})")
-                if not use_pretrained:
-                    print(f"Using non-pretrained weights for model: {candidate}")
-                break
-            except Exception as exc:
-                last_exc = exc
+        try:
+            backbone = timm.create_model(candidate, pretrained=True, num_classes=0, global_pool="avg")
+            if candidate != model_name:
+                print(f"Fallback model name: {candidate} (from {model_name})")
+            break
+        except Exception as exc:
+            last_exc = exc
         if backbone is not None:
             break
 
     if backbone is None:
-        raise RuntimeError(f"Could not create ConvNeXtV2 model from '{model_name}'.") from last_exc
+        raise RuntimeError(
+            f"Could not load pretrained ConvNeXtV2 weights for '{model_name}'; "
+            "refusing to train from random initialization."
+        ) from last_exc
     backbone.to(device)
     return backbone
 
@@ -448,7 +446,8 @@ def main() -> None:
 
     optimizer = build_optimizer(model, args.backbone_lr, args.head_lr, args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
-    criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
+    class_weights = None if args.use_balanced_sampler else make_class_weights(train_samples, device)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     best_valid_macro_f1 = -1.0
     best_path = out_dir / "convnextv2_binary_best.pt"

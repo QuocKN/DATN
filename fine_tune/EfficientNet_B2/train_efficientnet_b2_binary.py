@@ -77,8 +77,6 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
     train_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomApply([transforms.ColorJitter(brightness=0.1, contrast=0.1)], p=0.3),
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
@@ -155,8 +153,10 @@ def unfreeze_last_n_feature_blocks(model: nn.Module, train_last_n_blocks: int) -
 def build_model(freeze_backbone: bool, train_last_n_blocks: int) -> tuple[nn.Module, int]:
     try:
         model = models.efficientnet_b2(weights=models.EfficientNet_B2_Weights.IMAGENET1K_V1)
-    except Exception:
-        model = models.efficientnet_b2(weights=None)
+    except Exception as exc:
+        raise RuntimeError(
+            "Could not load pretrained EfficientNet-B2 ImageNet weights; refusing to train from random initialization."
+        ) from exc
 
     unfrozen_blocks = 0
     if train_last_n_blocks > 0:
@@ -415,7 +415,8 @@ def main() -> None:
 
     optimizer = build_optimizer(model, args.backbone_lr, args.head_lr, args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
-    criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
+    class_weights = None if args.use_balanced_sampler else make_class_weights(train_samples, device)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     best_valid_macro_f1 = -1.0
     best_path = out_dir / "balanced_efficientnet_b2_binary.pt"

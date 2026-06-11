@@ -74,11 +74,6 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
     train_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomApply(
-                [transforms.ColorJitter(brightness=0.1, contrast=0.1)],
-                p=0.3,
-            ),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ]
@@ -178,8 +173,10 @@ def build_swin_small_model(
 ) -> tuple[nn.Module, int]:
     try:
         model = models.swin_v2_s(weights=models.Swin_V2_S_Weights.IMAGENET1K_V1)
-    except Exception:
-        model = models.swin_v2_s(weights=None)
+    except Exception as exc:
+        raise RuntimeError(
+            "Could not load pretrained Swin V2 Small ImageNet weights; refusing to train from random initialization."
+        ) from exc
 
     unfrozen_stages = 0
     if train_last_n_stages > 0:
@@ -436,7 +433,8 @@ def main() -> None:
 
     optimizer = build_optimizer(model, args.backbone_lr, args.head_lr, args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
-    criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
+    class_weights = None if args.use_balanced_sampler else make_class_weights(train_samples, device)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     best_valid_macro_f1 = -1.0
     best_path = out_dir / "balanced_swin_small_binary.pt"

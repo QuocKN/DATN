@@ -74,11 +74,6 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
     train_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomApply(
-                [transforms.ColorJitter(brightness=0.1, contrast=0.1)],
-                p=0.3,
-            ),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ]
@@ -136,8 +131,10 @@ def build_samples(
 def build_model(freeze_backbone: bool) -> nn.Module:
     try:
         model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
-    except Exception:
-        model = models.resnet50(weights=None)
+    except Exception as exc:
+        raise RuntimeError(
+            "Could not load pretrained ResNet50 ImageNet weights; refusing to train from random initialization."
+        ) from exc
 
     if freeze_backbone:
         for param in model.parameters():
@@ -353,7 +350,8 @@ def main() -> None:
     model = build_model(freeze_backbone=args.freeze_backbone).to(device)
     optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=args.lr, weight_decay=args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
-    criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
+    class_weights = None if args.use_balanced_sampler else make_class_weights(train_samples, device)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     best_valid_macro_f1 = -1.0
     best_path = out_dir / "balanced_resnet50_binary.pt"

@@ -84,11 +84,6 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
     train_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomApply(
-                [transforms.ColorJitter(brightness=0.1, contrast=0.1)],
-                p=0.3,
-            ),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ]
@@ -422,7 +417,8 @@ def main() -> None:
     )
     optimizer = build_optimizer(model, args.backbone_lr, args.head_lr, args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
-    criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
+    class_weights = None if args.use_balanced_sampler else make_class_weights(train_samples, device)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     best_valid_macro_f1 = -1.0
     best_path = out_dir / f"balanced_{args.dino_model}_binary_3_stage.pt"

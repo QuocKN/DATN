@@ -50,3 +50,15 @@ console.log("Hello world");
   - Swin v2 s Tranformer Small
   - ResNet18
   - ResNet50
+
+  fine tune:
+  ResNet18/50: ~40%
+  SigLip: >85%
+  Swin Transformer: 10%
+  EfficientNet B2 >90%
+  Dinov2 >90% 
+  ConvNextv2: >70%
+
+  linear probe: <50% cho tất cả model
+
+
