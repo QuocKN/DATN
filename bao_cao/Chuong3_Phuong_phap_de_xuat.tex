@@ -1,0 +1,306 @@
+\documentclass[../DoAn.tex]{subfiles}
+\begin{document}
+
+\label{chap:phuong_phap_de_xuat}
+
+Chương này trình bày phương pháp xây dựng hệ thống phát hiện thiết bị bay không người lái (drone) dựa trên tín hiệu vô tuyến (Radio Frequency -- RF). Phương pháp được thiết kế theo hướng thu nhận thụ động tín hiệu RF, lưu tín hiệu dưới dạng các mẫu đồng pha và vuông pha (In-phase/Quadrature -- I/Q), chuyển đổi chuỗi I/Q thành biểu diễn spectrogram, sau đó sử dụng các mô hình học sâu đã được tiền huấn luyện để thực hiện phân loại. Hai chiến lược khai thác mô hình tiền huấn luyện được khảo sát gồm \textit{linear probing}, trong đó backbone được giữ cố định và Support Vector Machine (SVM) được huấn luyện trên vector đặc trưng, và \textit{fine-tuning}, trong đó toàn bộ backbone được cập nhật theo dữ liệu của bài toán. Quy trình được áp dụng thống nhất cho bộ dữ liệu DroneDetect v2 và dữ liệu RF thực tế thu bằng thiết bị bladeRF trong băng tần 2,4~GHz. Nội dung chương tập trung mô tả mục đích, nguyên lý và cách triển khai từng thành phần của phương pháp; cấu hình thực nghiệm, chỉ số đánh giá và kết quả so sánh được trình bày ở chương tiếp theo.
+
+\section{Phát biểu bài toán}
+
+Drone dân dụng thường trao đổi dữ liệu điều khiển, trạng thái hoặc hình ảnh với bộ điều khiển mặt đất thông qua các liên kết vô tuyến. Quá trình truyền thông này tạo ra năng lượng điện từ và các cấu trúc tín hiệu có thể được quan sát bằng thiết bị thu RF phù hợp. Vì vậy, thay vì phụ thuộc vào hình ảnh quang học hoặc âm thanh, sự hiện diện của drone có thể được nhận biết bằng cách phân tích tín hiệu thu trong dải tần hoạt động. Phương pháp phát hiện dựa trên RF có ưu điểm là không yêu cầu đường nhìn trực tiếp giữa cảm biến và mục tiêu, đồng thời có khả năng hoạt động trong một số điều kiện ánh sáng hoặc thời tiết gây khó khăn cho cảm biến quang học. Tuy nhiên, tín hiệu cần phát hiện thường chịu ảnh hưởng của nhiễu nền, suy hao đường truyền, thiết bị phát khác và sự khác biệt giữa các hệ thống thu, do đó cần xây dựng một quy trình biểu diễn và phân loại có khả năng học được các đặc trưng ổn định.
+
+Đầu vào ban đầu của hệ thống là một chuỗi tín hiệu I/Q thu tại băng tần quan sát. Mỗi mẫu phức được biểu diễn bởi
+\begin{equation}
+    x[n] = I[n] + jQ[n], \qquad n=0,1,\ldots,N-1,
+\end{equation}
+trong đó $I[n]$ là thành phần đồng pha, $Q[n]$ là thành phần vuông pha, $j$ là đơn vị ảo và $N$ là số mẫu của đoạn tín hiệu. Biểu diễn I/Q bảo toàn thông tin biên độ và pha của tín hiệu băng gốc phức, nhờ đó cho phép thực hiện các phép phân tích phổ sau quá trình thu. Do chuỗi I/Q có thể có độ dài lớn và khó đưa trực tiếp vào các backbone thị giác đã được tiền huấn luyện, mỗi đoạn tín hiệu được biến đổi thành spectrogram trước khi thực hiện phân loại.
+
+Đầu ra của hệ thống là một trong hai nhãn \textit{Drone} hoặc \textit{Non-drone}. Lớp \textit{Drone} biểu thị đoạn tín hiệu có chứa hoạt động RF của drone theo quy ước gán nhãn của dữ liệu. Lớp \textit{Non-drone} biểu thị các đoạn không chứa hoạt động cần phát hiện, có thể bao gồm nhiễu nền hoặc tín hiệu từ những nguồn phát không thuộc drone. Với spectrogram $\mathbf{S}$ được tạo từ một đoạn I/Q, bài toán được mô hình hóa dưới dạng
+\begin{equation}
+    f_{\theta}: \mathbf{S} \longrightarrow \hat{y}, 
+    \qquad \hat{y}\in\{0,1\},
+\end{equation}
+trong đó $f_{\theta}$ là mô hình có tham số $\theta$, nhãn $0$ tương ứng với \textit{Non-drone} và nhãn $1$ tương ứng với \textit{Drone}. Mô hình đồng thời có thể tạo ra điểm số hoặc xác suất của từng lớp để hỗ trợ quá trình ra quyết định.
+
+Phân loại nhị phân được lựa chọn vì mục tiêu chính của hệ thống là xác định sự hiện diện của drone trong vùng quan sát RF, thay vì nhận dạng chính xác chủng loại, nhà sản xuất hoặc chế độ hoạt động của thiết bị. Cách phát biểu này phù hợp với yêu cầu cảnh báo ở mức phát hiện và giúp hợp nhất các tín hiệu drone khác nhau vào một lớp mục tiêu chung. Ngoài ra, dữ liệu RF thực tế có thể không chứa đầy đủ mẫu của từng loại drone để xây dựng bài toán đa lớp cân bằng. Việc giới hạn đầu ra ở hai lớp làm giảm mức độ phụ thuộc vào số lượng mẫu của từng thiết bị, đồng thời tạo điều kiện đánh giá rõ ràng khả năng phân biệt giữa hoạt động RF của drone và nền vô tuyến.
+
+Bài toán đặt ra hai yêu cầu chính đối với phương pháp. Thứ nhất, biểu diễn đầu vào phải làm nổi bật được sự biến thiên năng lượng theo thời gian và tần số của tín hiệu, nhưng vẫn bảo đảm thống nhất giữa dữ liệu công khai và dữ liệu tự thu. Thứ hai, mô hình phải khai thác được tri thức từ quá trình tiền huấn luyện mà không giả định rằng ảnh tự nhiên và spectrogram RF có cùng phân phối. Vì vậy, phương pháp đề xuất sử dụng STFT để tạo spectrogram và khảo sát song song hai chiến lược chuyển giao tri thức là linear probing và fine-tuning.
+
+\section{Tổng quan hệ thống phát hiện drone bằng tín hiệu RF}
+
+\subsection{Luồng xử lý tổng thể}
+
+Hệ thống được tổ chức thành một chuỗi xử lý liên tiếp từ miền tín hiệu đến miền quyết định. Tín hiệu RF tại đầu vào được thiết bị vô tuyến định nghĩa bằng phần mềm (Software-Defined Radio -- SDR) hạ tần và số hóa thành chuỗi I/Q. Chuỗi này được kiểm tra chất lượng, phân đoạn theo độ dài xác định và biến đổi sang miền thời gian--tần số bằng STFT. Spectrogram sau đó được chuẩn hóa theo định dạng đầu vào của từng backbone. Cuối cùng, ảnh được đưa qua mô hình học sâu và bộ phân loại để tạo nhãn \textit{Drone} hoặc \textit{Non-drone}. Luồng xử lý có thể tóm tắt như sau:
+\begin{equation}
+    \text{RF Signal}
+    \longrightarrow
+    \text{IQ Data}
+    \longrightarrow
+    \text{Spectrogram}
+    \longrightarrow
+    \text{Deep Learning Model}
+    \longrightarrow
+    \text{Drone/Non-drone}.
+\end{equation}
+
+% Gợi ý chèn hình: Pipeline tổng thể của hệ thống từ tín hiệu RF, dữ liệu I/Q, spectrogram, mô hình học sâu đến kết quả Drone/Non-drone.
+
+Quy trình trên được sử dụng cho cả giai đoạn xây dựng mô hình và giai đoạn suy luận. Trong giai đoạn xây dựng mô hình, các spectrogram có nhãn được tạo từ DroneDetect v2, sau đó được tổ chức thành các tập huấn luyện, xác thực và kiểm thử. Mỗi backbone được đánh giá theo hai chiến lược. Với linear probing, backbone chỉ đóng vai trò bộ trích xuất đặc trưng và SVM đảm nhiệm phân loại. Với fine-tuning, lớp phân loại cuối được thay thế và toàn bộ mô hình được huấn luyện lại cho bài toán hai lớp. Việc sử dụng cùng một quy trình tiền xử lý giúp hạn chế sai lệch do cách tạo dữ liệu và tạo cơ sở so sánh giữa các backbone.
+
+Trong giai đoạn suy luận thực tế, bản ghi I/Q từ bladeRF được xử lý bằng các bước tương ứng với dữ liệu huấn luyện. Mục đích của việc duy trì quy trình thống nhất là bảo đảm ý nghĩa của các đặc trưng thời gian--tần số không bị thay đổi do lựa chọn tham số hoặc phương pháp chuẩn hóa khác nhau. Dữ liệu thực tế không được sử dụng để mô tả kết quả trong chương này mà đóng vai trò đầu vào độc lập cho quy trình đánh giá khả năng tổng quát hóa được trình bày ở chương thực nghiệm.
+
+\subsection{Dữ liệu đầu vào và đầu ra}
+
+Tại khối thu nhận, dữ liệu đầu vào là tín hiệu RF tương tự trong vùng tần số quan sát. Sau quá trình hạ tần, lọc và lấy mẫu tại SDR, đầu ra của khối này là chuỗi số phức I/Q. Thành phần $I$ và $Q$ có thể được lưu xen kẽ hoặc lưu theo cấu trúc của phần mềm thu, nhưng khi đưa vào xử lý phải được khôi phục thành một chuỗi phức duy nhất. Đi kèm mỗi bản ghi cần có các thông tin mô tả như tần số trung tâm, tốc độ lấy mẫu, độ lợi thu, thời điểm thu, nguồn dữ liệu và nhãn. Các thông tin này hỗ trợ việc tái tạo trục tần số, kiểm tra tính nhất quán và truy vết nguồn của từng spectrogram.
+
+Đầu ra của khối phân đoạn là các cửa sổ I/Q có cùng số lượng mẫu. Mỗi cửa sổ đại diện cho một khoảng quan sát ngắn và được xử lý như một mẫu độc lập. Cách tổ chức này giúp chuẩn hóa kích thước dữ liệu, tăng số lượng mẫu có thể sử dụng và cho phép mô hình đưa ra dự đoán theo từng khoảng thời gian. Độ dài cửa sổ phải đủ để chứa cấu trúc truyền có ý nghĩa, nhưng không nên quá dài vì có thể làm giảm độ phân giải thời gian của quyết định và tăng chi phí tính toán.
+
+Đầu ra của khối biến đổi STFT là một ma trận hai chiều, trong đó một chiều biểu diễn thời gian, chiều còn lại biểu diễn tần số và giá trị tại mỗi phần tử biểu thị cường độ phổ. Sau phép lấy thang logarit và ánh xạ thành ảnh, ma trận này trở thành spectrogram. Để sử dụng với các backbone thị giác, ảnh được thay đổi kích thước, chuyển sang số kênh phù hợp và chuẩn hóa theo yêu cầu của mô hình tiền huấn luyện. Nhãn của ảnh được kế thừa từ đoạn tín hiệu hoặc bản ghi nguồn theo quy tắc xây dựng dữ liệu.
+
+Đầu ra cuối cùng của hệ thống gồm nhãn dự đoán và điểm tin cậy. Trong nhánh fine-tuning, điểm tin cậy có thể được lấy từ xác suất sau hàm softmax hoặc sigmoid tùy cách xây dựng lớp đầu ra. Trong nhánh linear probing, điểm quyết định của SVM cho biết vị trí tương đối của embedding so với siêu phẳng phân tách. Các giá trị này được sử dụng để chuyển thành nhãn nhị phân theo một ngưỡng xác định trong cấu hình đánh giá.
+
+\section{Thu nhận và tiền xử lý tín hiệu RF}
+
+\subsection{Nguồn dữ liệu sử dụng}
+
+Nguồn dữ liệu chính phục vụ xây dựng mô hình là DroneDetect v2. Đây là bộ dữ liệu RF có gán nhãn liên quan đến hoạt động của drone và các trường hợp không phải drone. Trong phạm vi đề tài, dữ liệu được quy về bài toán phân loại nhị phân. Những mẫu tương ứng với hoạt động drone được ánh xạ vào lớp \textit{Drone}, trong khi các mẫu nền hoặc không chứa hoạt động drone được ánh xạ vào lớp \textit{Non-drone}. Việc ánh xạ nhãn cần được thực hiện từ metadata gốc thay vì suy luận từ tên tệp không được kiểm soát, qua đó giảm nguy cơ gán nhãn sai và bảo đảm khả năng tái lập.
+
+DroneDetect v2 được sử dụng để hình thành các tập dữ liệu phục vụ huấn luyện và đánh giá trên dữ liệu chuẩn. Trước khi sinh spectrogram, mỗi tệp được đọc đúng kiểu dữ liệu, thứ tự byte và cách bố trí hai kênh I/Q. Thông tin nhãn và nguồn thu được liên kết với từng đoạn sau phân đoạn. Khi một bản ghi dài tạo ra nhiều spectrogram, các ảnh này vẫn phải giữ cùng mã nguồn để hỗ trợ chia tập theo bản ghi hoặc theo phiên thu. Nguyên tắc này hạn chế trường hợp các đoạn gần nhau của cùng một tín hiệu xuất hiện đồng thời trong tập huấn luyện và tập kiểm thử, vốn có thể làm phép đánh giá trở nên lạc quan do rò rỉ dữ liệu.
+
+Bên cạnh dữ liệu công khai, đề tài sử dụng dữ liệu RF được thu trực tiếp bằng bladeRF tại băng tần 2,4~GHz. Nguồn dữ liệu này có mục đích mô phỏng điều kiện tiếp nhận ngoài thực tế, nơi tín hiệu chịu ảnh hưởng của thiết bị thu, ăng-ten, độ lợi, khoảng cách, vật cản và các nguồn phát khác cùng băng tần. Dữ liệu được lưu dưới dạng I/Q để áp dụng lại toàn bộ quy trình xử lý đã xây dựng. Các bản ghi thực tế cần được quản lý riêng với dữ liệu huấn luyện nhằm bảo đảm chúng phản ánh một miền dữ liệu chưa được mô hình quan sát trong quá trình tối ưu tham số.
+
+Hai nguồn dữ liệu có thể khác nhau về tốc độ lấy mẫu, băng thông hữu dụng, độ dài bản ghi và mức công suất. Vì vậy, bước chuẩn bị dữ liệu không chỉ chuyển đổi định dạng mà còn phải kiểm tra tính tương thích của miền tần số và cấu hình STFT. Trong trường hợp tốc độ lấy mẫu khác nhau, trục tần số của spectrogram phải được xác định theo đúng metadata của từng nguồn. Nếu cần thực hiện đổi tốc độ lấy mẫu hoặc cắt băng thông, phép biến đổi phải được áp dụng nhất quán và được mô tả trong cấu hình thực nghiệm.
+
+\subsection{Thu nhận dữ liệu bằng SDR}
+
+BladeRF là thiết bị SDR đảm nhiệm việc thu và số hóa tín hiệu trong hệ thống. Kiến trúc SDR cho phép cấu hình các tham số thu bằng phần mềm, bao gồm tần số trung tâm, tốc độ lấy mẫu, băng thông bộ lọc và độ lợi. Trong đề tài, thiết bị được thiết lập để quan sát vùng tần số thuộc băng 2,4~GHz, là băng tần được nhiều hệ thống điều khiển và truyền dữ liệu không dây sử dụng. Việc lựa chọn chính xác tần số trung tâm và băng thông quan sát phải dựa trên mục tiêu thu, giới hạn phần cứng và đặc điểm tín hiệu cần khảo sát.
+
+Ăng-ten là phần tử đầu tiên tiếp nhận năng lượng điện từ và có ảnh hưởng trực tiếp đến chất lượng dữ liệu. Ăng-ten cần hỗ trợ băng 2,4~GHz và được kết nối với bladeRF bằng đường truyền phù hợp để hạn chế suy hao. Vị trí, hướng đặt và phân cực của ăng-ten có thể làm thay đổi mức tín hiệu thu được. Do đó, trong mỗi phiên thu, cấu hình ăng-ten và khoảng cách tương đối giữa bộ thu, drone và bộ điều khiển cần được ghi lại cùng metadata. Mục đích của việc ghi nhận này là hỗ trợ phân tích sự khác biệt giữa các phiên thu, không phải đưa trực tiếp các thông tin đó vào quyết định của mô hình.
+
+GNU Radio được sử dụng để cấu hình luồng thu và chuyển dữ liệu từ bladeRF sang tệp lưu trữ. Một lưu đồ thu cơ bản gồm khối nguồn bladeRF, các khối giám sát phổ hoặc biên độ khi cần thiết và khối ghi tệp. Khối nguồn được cấu hình bằng tần số trung tâm, tốc độ lấy mẫu, băng thông và độ lợi. Dữ liệu sau số hóa được truyền dưới dạng mẫu phức đến khối ghi tệp mà không thực hiện các biến đổi làm mất thông tin pha. Trong quá trình thu, giao diện hiển thị phổ có thể được sử dụng để kiểm tra tín hiệu xuất hiện trong vùng quan sát và phát hiện sớm cấu hình độ lợi không phù hợp.
+
+% Gợi ý chèn hình: Sơ đồ hệ thống thu tín hiệu RF gồm ăng-ten, bladeRF, GNU Radio và khối lưu dữ liệu I/Q.
+
+Tệp I/Q cần được lưu kèm mô tả rõ ràng về kiểu mẫu, chẳng hạn số thực dấu phẩy động 32 bit hoặc số nguyên có dấu, vì việc đọc sai kiểu dữ liệu sẽ làm thay đổi hoàn toàn biên độ và phổ. Tên tệp hoặc tệp metadata đi kèm cần thể hiện mã phiên thu, trạng thái có drone hoặc không có drone, tần số trung tâm, tốc độ lấy mẫu và các tham số phần cứng quan trọng. Sau khi hoàn tất một phiên thu, dữ liệu được kiểm tra nhanh về kích thước tệp, số lượng mẫu và khả năng đọc lại trước khi chuyển sang bước tiền xử lý.
+
+\subsection{Kiểm tra chất lượng tín hiệu}
+
+Kiểm tra chất lượng tín hiệu được thực hiện trước khi sinh spectrogram nhằm phát hiện các bản ghi không hợp lệ hoặc các hiện tượng có thể tạo ra đặc trưng giả. Nếu dữ liệu lỗi được chuyển trực tiếp thành ảnh, mô hình có thể học mối liên hệ giữa nhãn và lỗi thu thay vì học cấu trúc RF của drone. Việc kiểm tra không nhằm loại bỏ mọi tín hiệu có nhiễu, bởi nhiễu là một thành phần tự nhiên của dữ liệu thực tế, mà nhằm xác định các trường hợp sai cấu hình, bão hòa hoặc mất dữ liệu có thể làm sai lệch quy trình.
+
+Mật độ phổ công suất (Power Spectral Density -- PSD) được sử dụng để quan sát phân bố công suất trung bình theo tần số. PSD có thể được ước lượng bằng phương pháp periodogram hoặc Welch. Với phương pháp Welch, chuỗi được chia thành các khung có chồng lấn, mỗi khung được nhân cửa sổ và tính phổ, sau đó các phổ công suất được lấy trung bình. Biểu diễn này giúp xác định liệu năng lượng có nằm trong dải tần mong đợi, có xuất hiện thành phần một chiều bất thường hay có nguồn nhiễu hẹp băng chiếm ưu thế hay không. PSD cũng hỗ trợ phát hiện trường hợp tần số trung tâm hoặc băng thông thu không phù hợp.
+
+Tỷ số tín hiệu trên nhiễu (Signal-to-Noise Ratio -- SNR) mô tả mức chênh lệch giữa công suất tín hiệu quan tâm và công suất nền. Trong dữ liệu thực tế, việc xác định chính xác vùng chỉ chứa nhiễu có thể khó khăn, vì vậy SNR thường được ước lượng từ các vùng thời gian hoặc tần số được xem là nền. Một dạng biểu diễn tổng quát là
+\begin{equation}
+    \mathrm{SNR}_{\mathrm{dB}}
+    =
+    10\log_{10}
+    \left(
+        \frac{P_{\mathrm{signal}}}{P_{\mathrm{noise}}}
+    \right).
+\end{equation}
+Giá trị SNR được dùng như thông tin mô tả chất lượng, giúp nhận biết các bản ghi quá yếu hoặc khác biệt đáng kể về điều kiện thu. Phương pháp ước lượng phải được giữ cố định trong cùng một nhóm dữ liệu để các giá trị có thể so sánh.
+
+Clipping xảy ra khi biên độ tín hiệu vượt khỏi miền biểu diễn của bộ chuyển đổi tương tự--số hoặc kiểu dữ liệu lưu trữ. Khi đó, nhiều mẫu $I$ hoặc $Q$ tập trung tại giá trị cực đại và cực tiểu, làm dạng sóng bị cắt. Clipping có thể được phát hiện bằng cách tính tỷ lệ mẫu nằm sát giới hạn biên độ hoặc quan sát phân bố biên độ. Hiện tượng này làm phát sinh méo phi tuyến và năng lượng ngoài dải, vì vậy spectrogram tạo ra có thể chứa các cấu trúc không thuộc tín hiệu gốc. Nếu tỷ lệ clipping vượt ngưỡng kiểm soát, bản ghi cần được đánh dấu để loại bỏ hoặc phân tích riêng, đồng thời cấu hình độ lợi của phiên thu tiếp theo cần được điều chỉnh.
+
+Burst là khoảng thời gian ngắn có mức năng lượng tăng rõ rệt so với nền. Burst có thể là thành phần có ý nghĩa của liên kết drone, nhưng cũng có thể bắt nguồn từ nhiễu xung hoặc nguồn phát khác. Việc phát hiện burst được thực hiện bằng cách theo dõi công suất theo thời gian, chẳng hạn tính trung bình $|x[n]|^2$ trên các cửa sổ ngắn và so sánh với ngưỡng nền. Mục đích của bước này là mô tả vị trí và mật độ các hoạt động ngắn hạn, đồng thời hỗ trợ lựa chọn đoạn tín hiệu chứa đủ thông tin để tạo spectrogram.
+
+Stripe artifact là các vệt dọc hoặc ngang bất thường trên spectrogram. Vệt dọc thường liên quan đến xung năng lượng mạnh trong thời gian rất ngắn, mất mẫu hoặc gián đoạn luồng thu; vệt ngang có thể xuất hiện do sóng mang liên tục, rò dao động nội hoặc nguồn nhiễu hẹp băng. Một số cấu trúc sọc có thể tồn tại ổn định theo thiết bị thu và trở thành dấu hiệu nhận dạng nguồn dữ liệu. Vì vậy, spectrogram cần được quan sát cùng PSD, thống kê biên độ và thông tin clipping để phân biệt cấu trúc tín hiệu với lỗi thu.
+
+Việc đánh giá PSD, SNR, clipping, burst và stripe artifact trước khi tạo tập ảnh có vai trò bảo vệ tính hợp lệ của dữ liệu. Các chỉ báo chất lượng được lưu cùng mã bản ghi để có thể truy vết khi phân tích dự đoán ở chương thực nghiệm. Quy trình này cũng giúp bảo đảm rằng sự khác biệt giữa DroneDetect v2 và dữ liệu bladeRF không chỉ xuất phát từ lỗi định dạng hoặc cấu hình thu không phù hợp.
+
+\subsection{Phân đoạn dữ liệu}
+
+Một bản ghi I/Q thường chứa số lượng mẫu lớn và có thời lượng dài hơn khoảng quan sát cần thiết cho một quyết định. Vì vậy, tín hiệu được chia thành các đoạn có độ dài cố định $L$. Đoạn thứ $k$ được xác định bởi
+\begin{equation}
+    \mathbf{x}_{k}
+    =
+    \left[
+        x[kD],x[kD+1],\ldots,x[kD+L-1]
+    \right],
+\end{equation}
+trong đó $D$ là bước dịch giữa hai đoạn liên tiếp. Khi $D=L$, các đoạn không chồng lấn; khi $D<L$, các đoạn có chồng lấn. Chồng lấn có thể làm tăng số lượng mẫu và giảm khả năng bỏ sót hoạt động nằm tại ranh giới cửa sổ, nhưng mức chồng lấn lớn cũng tạo ra nhiều mẫu gần giống nhau và tăng chi phí tính toán.
+
+Độ dài đoạn quyết định khoảng thời gian mà mỗi spectrogram biểu diễn. Nếu $f_s$ là tốc độ lấy mẫu, thời lượng của một đoạn là $T=L/f_s$. Giá trị $T$ cần đủ dài để ghi nhận cấu trúc truyền theo thời gian, đồng thời đủ ngắn để số cột thời gian của spectrogram và chi phí bộ nhớ vẫn phù hợp. Tham số này được lựa chọn cùng với kích thước FFT và hop length, vì cả ba cùng chi phối độ phân giải của biểu diễn đầu vào.
+
+Đối với phần cuối bản ghi không đủ $L$ mẫu, phương pháp có thể loại bỏ đoạn dư hoặc đệm giá trị theo quy tắc cố định. Trong bài toán học từ tín hiệu RF, loại bỏ đoạn dư thường tránh tạo ra vùng phổ nhân tạo do đệm một lượng lớn số không. Nếu áp dụng đệm, tỷ lệ vùng đệm cần được kiểm soát và cùng một quy tắc phải được dùng cho mọi nguồn dữ liệu.
+
+Mỗi đoạn sau khi cắt được gắn nhãn và mã nguồn kế thừa từ bản ghi ban đầu. Khi chia tập dữ liệu, các đoạn có cùng bản ghi hoặc cùng phiên thu không được phân tán tùy ý giữa tập huấn luyện và tập kiểm thử. Cách chia theo nguồn giúp giảm nguy cơ mô hình ghi nhớ nhiễu nền, mức công suất hoặc artifact riêng của một bản ghi. Các đoạn chỉ được tạo sau khi đã xác định quy tắc quản lý nguồn và nhãn để toàn bộ quá trình có thể tái lập.
+
+\section{Xây dựng ảnh spectrogram}
+
+\subsection{Cấu hình STFT}
+
+Phép biến đổi Fourier thời gian ngắn (Short-Time Fourier Transform -- STFT) được sử dụng để mô tả sự thay đổi thành phần tần số theo thời gian. Thay vì tính một phổ duy nhất cho toàn bộ đoạn, STFT chia tín hiệu thành các khung ngắn và thực hiện biến đổi Fourier trên từng khung. Với tín hiệu $x[n]$, STFT tại khung thời gian $m$ và bin tần số $r$ được xác định bởi
+\begin{equation}
+    X[m,r]
+    =
+    \sum_{n=0}^{N_{\mathrm{FFT}}-1}
+    x[n+mH]w[n]
+    \exp
+    \left(
+        -j\frac{2\pi rn}{N_{\mathrm{FFT}}}
+    \right),
+\end{equation}
+trong đó $w[n]$ là hàm cửa sổ, $N_{\mathrm{FFT}}$ là kích thước FFT và $H$ là hop length.
+
+Cửa sổ Hann được lựa chọn để giảm rò rỉ phổ tại biên của mỗi khung. Cửa sổ này làm suy giảm dần các mẫu ở hai đầu thay vì cắt đột ngột chuỗi tín hiệu. Với độ dài cửa sổ $N_w$, cửa sổ Hann có thể được biểu diễn bởi
+\begin{equation}
+    w[n]
+    =
+    \frac{1}{2}
+    \left(
+        1-\cos\frac{2\pi n}{N_w-1}
+    \right),
+    \qquad 0\leq n<N_w.
+\end{equation}
+Việc giảm gián đoạn tại biên giúp năng lượng của một thành phần tần số ít lan sang các bin lân cận hơn. Đổi lại, cửa sổ làm thay đổi độ rộng búp chính, do đó lựa chọn cửa sổ luôn gắn với cân bằng giữa độ phân giải tần số và mức rò rỉ phổ.
+
+Kích thước FFT quyết định số bin tần số được tính cho mỗi khung. Khi tốc độ lấy mẫu là $f_s$, khoảng cách danh định giữa hai bin là $\Delta f=f_s/N_{\mathrm{FFT}}$. Giá trị $N_{\mathrm{FFT}}$ lớn tạo lưới tần số dày hơn nhưng làm tăng chi phí tính toán và không tự động tạo thêm thông tin nếu độ dài cửa sổ hữu hiệu không tăng. Vì vậy, kích thước FFT cần được lựa chọn phù hợp với băng thông tín hiệu, độ dài đoạn và kích thước ảnh đầu vào của mô hình.
+
+Hop length $H$ là số mẫu dịch chuyển giữa hai khung STFT liên tiếp. Khi $H$ nhỏ hơn độ dài cửa sổ, các khung chồng lấn và spectrogram có nhiều bước thời gian hơn. Mức chồng lấn cao giúp mô tả mượt hơn sự thay đổi theo thời gian nhưng làm tăng số phép FFT và tạo tương quan lớn giữa các cột kề nhau. Cấu hình hop length cần bảo đảm các burst ngắn không bị bỏ qua, đồng thời duy trì kích thước dữ liệu có thể xử lý hiệu quả.
+
+Sau khi tính FFT, thứ tự tần số mặc định thường bắt đầu từ tần số không, tiếp theo là tần số dương rồi đến tần số âm. Phép \texttt{fftshift} được sử dụng để dịch thành phần tần số không về giữa ma trận. Khi đó, trục tần số của tín hiệu băng gốc phức được sắp xếp từ $-f_s/2$ đến gần $f_s/2$. Cách sắp xếp này phù hợp với việc quan sát phổ quanh tần số trung tâm của bộ thu và làm cho spectrogram dễ diễn giải hơn. Nếu $f_c$ là tần số trung tâm, tần số RF tương ứng được xác định bằng cách cộng $f_c$ vào trục tần số băng gốc.
+
+Các tham số cửa sổ, kích thước FFT, hop length và quy tắc fftshift phải được lưu trong cấu hình xử lý thay vì thiết lập thủ công cho từng nguồn. Mục đích là bảo đảm spectrogram của tập huấn luyện, tập kiểm thử và dữ liệu thực tế có cùng quy ước hình học. Giá trị cụ thể của các tham số thuộc cấu hình thực nghiệm và được báo cáo tại chương đánh giá.
+
+\subsection{Sinh ảnh spectrogram}
+
+Quá trình sinh spectrogram bắt đầu từ một đoạn I/Q đã qua kiểm tra chất lượng. STFT tạo ra ma trận phức $X[m,r]$. Độ lớn phổ được tính bằng $|X[m,r]|$, còn công suất phổ tỷ lệ với $|X[m,r]|^2$. Do miền giá trị công suất có thể chênh lệch nhiều bậc, thang logarit được sử dụng để nén dải động:
+\begin{equation}
+    S[m,r]
+    =
+    10\log_{10}
+    \left(
+        |X[m,r]|^2+\varepsilon
+    \right),
+\end{equation}
+trong đó $\varepsilon$ là hằng số dương nhỏ nhằm tránh lấy logarit tại giá trị bằng không. Nếu sử dụng độ lớn thay cho công suất, hệ số logarit cần được điều chỉnh tương ứng để giữ đúng ý nghĩa đơn vị.
+
+Ma trận $S$ biểu diễn năng lượng theo thời gian và tần số. Trục ngang tương ứng với chỉ số khung STFT, trục dọc tương ứng với bin tần số sau fftshift, còn cường độ điểm ảnh biểu thị mức năng lượng trên thang logarit. Biểu diễn này làm nổi bật các cấu trúc như dải năng lượng liên tục, burst theo thời gian, tín hiệu hẹp băng và sự thay đổi vị trí tần số. Đây là những đặc điểm khó quan sát đồng thời nếu chỉ sử dụng dạng sóng thời gian hoặc PSD trung bình.
+
+% Gợi ý chèn hình: Quy trình chuyển đổi một đoạn tín hiệu I/Q qua STFT, magnitude, log scale và ánh xạ thành ảnh spectrogram.
+
+Để chuyển ma trận số thành ảnh, miền cường độ cần được ánh xạ vào một khoảng hữu hạn. Một phương án là cắt giá trị theo ngưỡng dưới và ngưỡng trên rồi chuẩn hóa tuyến tính. Ngưỡng có thể được xác định cố định cho toàn bộ dữ liệu hoặc theo thống kê của tập huấn luyện. Chuẩn hóa riêng từng ảnh có thể làm nổi bật cấu trúc yếu nhưng đồng thời loại bỏ thông tin mức công suất tương đối; chuẩn hóa toàn cục giữ được quan hệ công suất nhưng nhạy hơn với ngoại lệ. Vì vậy, quy tắc ánh xạ phải được chọn trước khi huấn luyện và áp dụng giống nhau cho dữ liệu thực tế.
+
+Spectrogram có thể được lưu dưới dạng ảnh hoặc tạo động trong quá trình nạp dữ liệu. Lưu ảnh giúp giảm chi phí tính STFT lặp lại và thuận tiện cho kiểm tra trực quan, nhưng cần quản lý định dạng ảnh để tránh lượng tử hóa hoặc nén mất mát ngoài ý muốn. Tạo động giữ được ma trận số và cho phép thay đổi cấu hình, nhưng làm tăng thời gian xử lý. Dù sử dụng cách nào, metadata của ảnh phải liên kết được với tệp I/Q, vị trí đoạn, nhãn và cấu hình STFT.
+
+\subsection{Chuẩn hóa dữ liệu đầu vào}
+
+Các backbone tiền huấn luyện thường yêu cầu ảnh có kích thước không gian và số kênh xác định. Trong khi đó, spectrogram gốc là một ma trận đơn kênh có kích thước phụ thuộc vào số bin tần số và số khung thời gian. Vì vậy, ảnh được resize về độ phân giải đầu vào của từng backbone bằng một phép nội suy thống nhất. Resize cho phép xử lý theo batch, nhưng có thể làm co giãn tỷ lệ giữa hai trục. Quy tắc resize cần giữ cố định để mọi mô hình nhận cùng nội dung phổ, trừ trường hợp kiến trúc yêu cầu độ phân giải riêng.
+
+Đối với mô hình nhận ảnh ba kênh, spectrogram đơn kênh có thể được sao chép sang ba kênh. Cách thực hiện này không tạo thêm thông tin màu nhưng bảo đảm tương thích với lớp tích chập hoặc bộ nhúng đầu vào đã được tiền huấn luyện trên ảnh RGB. Một lựa chọn khác là ánh xạ spectrogram qua bảng màu, tuy nhiên bảng màu có thể tạo ra biên màu nhân tạo và làm thay đổi quan hệ cường độ. Do mục tiêu là so sánh backbone trên cùng biểu diễn, phương pháp sao chép kênh tạo một đầu vào đơn giản và dễ kiểm soát hơn.
+
+Sau bước resize và chuyển kênh, tensor ảnh được chuẩn hóa. Với mỗi kênh $c$, phép chuẩn hóa có dạng
+\begin{equation}
+    \widetilde{S}_{c}
+    =
+    \frac{S_{c}-\mu_c}{\sigma_c},
+\end{equation}
+trong đó $\mu_c$ và $\sigma_c$ là trung bình và độ lệch chuẩn theo cấu hình tiền xử lý. Đối với backbone tiền huấn luyện, các giá trị này thường được lấy từ cấu hình đi kèm trọng số để duy trì miền đầu vào mà mô hình đã quan sát. Nếu sử dụng thống kê riêng của dữ liệu RF, các thống kê chỉ được ước lượng trên tập huấn luyện nhằm tránh sử dụng thông tin từ tập kiểm thử.
+
+Quy trình chuẩn bị đầu vào được đóng gói thành cùng một chuỗi biến đổi cho huấn luyện và suy luận. Các phép tăng cường dữ liệu, nếu được sử dụng, chỉ được áp dụng cho tập huấn luyện và phải có ý nghĩa đối với spectrogram. Chẳng hạn, thay đổi không kiểm soát theo trục tần số hoặc đảo trục thời gian có thể làm sai ý nghĩa vật lý. Vì vậy, chương này chỉ xác lập quy trình chuẩn hóa nền tảng; cấu hình tăng cường cụ thể được xem là một tham số thực nghiệm.
+
+\section{Xây dựng mô hình phát hiện drone}
+
+\subsection{Linear Probing}
+
+Linear probing được sử dụng để đánh giá mức độ phù hợp của không gian đặc trưng tiền huấn luyện đối với spectrogram RF mà không cập nhật tham số backbone. Với ảnh đầu vào $\mathbf{S}$, backbone $g_{\phi}$ tạo ra embedding
+\begin{equation}
+    \mathbf{h}=g_{\phi}(\mathbf{S}),
+\end{equation}
+trong đó $\phi$ là toàn bộ tham số đã được tiền huấn luyện và được đóng băng. Tùy kiến trúc, embedding có thể được lấy từ đầu ra sau global average pooling, token đại diện hoặc đặc trưng đã được chiếu qua lớp biểu diễn. Cách lấy embedding phải được xác định nhất quán cho từng backbone và không sử dụng lớp phân loại gốc của mô hình.
+
+Toàn bộ spectrogram trong tập huấn luyện được đưa qua backbone ở chế độ suy luận để tạo tập vector đặc trưng. Nhãn nhị phân của mỗi ảnh được giữ nguyên và liên kết với embedding tương ứng. Trước khi huấn luyện SVM, các vector có thể được chuẩn hóa theo từng chiều dựa trên thống kê của tập huấn luyện. Bộ biến đổi chuẩn hóa sau đó được áp dụng nguyên trạng cho tập xác thực, tập kiểm thử và dữ liệu thực tế.
+
+SVM được lựa chọn làm bộ phân loại trên không gian embedding. Với SVM tuyến tính, hàm quyết định có dạng
+\begin{equation}
+    d(\mathbf{h})=\mathbf{w}^{T}\mathbf{h}+b,
+\end{equation}
+trong đó $\mathbf{w}$ và $b$ xác định siêu phẳng phân tách. Mô hình được tối ưu để tạo biên phân tách lớn giữa hai lớp, đồng thời cho phép một số sai lệch thông qua hệ số điều chuẩn. Nhãn dự đoán được xác định theo dấu của $d(\mathbf{h})$ hoặc theo ngưỡng được thiết lập trên tập xác thực.
+
+Ưu điểm của linear probing là chi phí huấn luyện thấp vì gradient không cần truyền qua backbone. Embedding của mỗi ảnh có thể được tính một lần và tái sử dụng khi điều chỉnh SVM. Phương pháp này cũng tạo ra phép kiểm tra trực tiếp đối với chất lượng đặc trưng: nếu hai lớp có thể được phân tách tốt bằng SVM trong khi backbone không được cập nhật, biểu diễn tiền huấn luyện đã chứa thông tin hữu ích cho bài toán RF.
+
+Hạn chế của linear probing là backbone không thích nghi với sự khác biệt giữa ảnh tự nhiên và spectrogram. Những đặc trưng quan trọng đối với drone có thể không được làm nổi bật trong không gian biểu diễn ban đầu. Kết quả còn phụ thuộc vào vị trí lấy embedding, cách chuẩn hóa và cấu hình SVM. Vì vậy, linear probing được xem là một chiến lược chuyển giao có mức thích nghi thấp và được so sánh với fine-tuning toàn bộ mô hình trong cùng điều kiện dữ liệu.
+
+\subsection{Fine-tuning}
+
+Fine-tuning cho phép mô hình điều chỉnh các đặc trưng tiền huấn luyện theo cấu trúc riêng của spectrogram RF. Trước tiên, lớp phân loại gốc của backbone được loại bỏ và thay bằng lớp đầu ra cho hai lớp. Nếu sử dụng hai logits, đầu ra của mô hình là
+\begin{equation}
+    \mathbf{z}
+    =
+    [z_0,z_1]
+    =
+    f_{\theta}(\mathbf{S}),
+\end{equation}
+trong đó $z_0$ và $z_1$ lần lượt là điểm số của lớp \textit{Non-drone} và \textit{Drone}. Xác suất được tính bằng softmax:
+\begin{equation}
+    p(y=c\mid\mathbf{S})
+    =
+    \frac{\exp(z_c)}
+    {\exp(z_0)+\exp(z_1)},
+    \qquad c\in\{0,1\}.
+\end{equation}
+
+Toàn bộ tham số backbone và lớp phân loại mới được cho phép cập nhật. Hàm mất mát cross-entropy được sử dụng để đo sai lệch giữa phân phối dự đoán và nhãn thật:
+\begin{equation}
+    \mathcal{L}
+    =
+    -\frac{1}{B}
+    \sum_{i=1}^{B}
+    \sum_{c=0}^{1}
+    \mathbb{I}(y_i=c)
+    \log p(y=c\mid\mathbf{S}_i),
+\end{equation}
+trong đó $B$ là kích thước batch và $\mathbb{I}(\cdot)$ là hàm chỉ thị. Gradient của hàm mất mát được lan truyền qua lớp phân loại và toàn bộ backbone để cập nhật tham số bằng bộ tối ưu.
+
+Trọng số tiền huấn luyện được sử dụng làm điểm khởi tạo thay vì huấn luyện từ đầu. Cách khởi tạo này tận dụng các bộ lọc và quan hệ không gian mà mô hình đã học được từ tập dữ liệu lớn. Tuy nhiên, tốc độ học cần được lựa chọn thận trọng để tránh làm mất nhanh các biểu diễn hữu ích. Có thể sử dụng tốc độ học nhỏ cho backbone và tốc độ học lớn hơn cho lớp phân loại mới, hoặc áp dụng lịch giảm tốc độ học trong quá trình huấn luyện. Mô hình được lựa chọn dựa trên tập xác thực, còn tập kiểm thử không tham gia điều chỉnh tham số.
+
+Fine-tuning được lựa chọn vì spectrogram có cấu trúc khác ảnh tự nhiên. Trục ngang và trục dọc mang ý nghĩa vật lý khác nhau, còn cường độ điểm ảnh biểu thị năng lượng thay vì màu sắc hoặc vật liệu. Việc cập nhật toàn bộ backbone cho phép các tầng sâu điều chỉnh vùng chú ý và đặc trưng theo các mẫu thời gian--tần số của tín hiệu RF. Mặt khác, số lượng tham số được cập nhật lớn làm tăng yêu cầu tính toán và nguy cơ quá khớp. Sự đối lập này là cơ sở để so sánh fine-tuning với linear probing.
+
+\subsection{Các backbone được khảo sát}
+
+ResNet50 là mạng nơ-ron tích chập sâu sử dụng các khối residual. Kết nối tắt cho phép tín hiệu và gradient truyền qua nhiều tầng, giúp huấn luyện mạng sâu ổn định hơn. ResNet50 được lựa chọn làm mô hình CNN tham chiếu vì kiến trúc phổ biến, quy trình tiền xử lý rõ ràng và khả năng trích xuất đặc trưng phân cấp. Khi áp dụng cho spectrogram, các tầng tích chập có thể học cấu trúc cục bộ như biên dải phổ, cụm năng lượng và biến thiên ngắn theo thời gian.
+
+EfficientNet-B2 thuộc họ CNN sử dụng chiến lược mở rộng đồng thời độ sâu, độ rộng và độ phân giải. Kiến trúc hướng đến sự cân bằng giữa năng lực biểu diễn và chi phí tính toán. EfficientNet-B2 được đưa vào khảo sát để đánh giá một backbone gọn hơn ResNet50 nhưng vẫn có khả năng khai thác đặc trưng đa tỉ lệ. Đặc điểm này phù hợp với spectrogram, nơi tín hiệu có thể xuất hiện dưới dạng cấu trúc hẹp hoặc rộng trên trục thời gian--tần số.
+
+ConvNeXtV2 là kiến trúc tích chập hiện đại được thiết kế dựa trên nhiều nguyên tắc huấn luyện và tổ chức khối của các mô hình thị giác thế hệ mới. Mô hình vẫn duy trì phép tích chập nhưng sử dụng kernel lớn, chuẩn hóa và cấu trúc khối được cải tiến. ConvNeXtV2 được lựa chọn để khảo sát khả năng của CNN hiện đại trong việc mô hình hóa ngữ cảnh rộng trên spectrogram mà không chuyển hoàn toàn sang cơ chế self-attention.
+
+SigLIP là mô hình thị giác--ngôn ngữ được tiền huấn luyện bằng mục tiêu tương phản dựa trên hàm sigmoid. Trong phạm vi đề tài, encoder ảnh của SigLIP được sử dụng như backbone trích xuất đặc trưng. Mặc dù quá trình tiền huấn luyện không thực hiện trên tín hiệu RF, mô hình đã học biểu diễn thị giác từ lượng dữ liệu lớn và có thể cung cấp embedding có tính khái quát. Việc khảo sát SigLIP nhằm xác định mức độ chuyển giao của đặc trưng thị giác--ngôn ngữ sang miền spectrogram.
+
+DINOv2 là mô hình thị giác được tiền huấn luyện theo hướng tự giám sát. Phương pháp tiền huấn luyện không phụ thuộc trực tiếp vào nhãn lớp của bài toán đích và hướng đến xây dựng đặc trưng tổng quát ở mức ảnh và vùng ảnh. DINOv2 được lựa chọn vì embedding tự giám sát có khả năng biểu diễn cấu trúc hình học và ngữ nghĩa mà không bị giới hạn bởi một bộ nhãn đóng. Đối với spectrogram, đặc tính này có thể hữu ích khi các mẫu phổ cần được phân biệt dựa trên hình dạng và quan hệ không gian.
+
+Năm backbone đại diện cho các hướng kiến trúc và tiền huấn luyện khác nhau: CNN residual, CNN tối ưu hiệu quả, CNN hiện đại, mô hình thị giác--ngôn ngữ và mô hình tự giám sát. Tất cả được đưa vào cùng pipeline tạo spectrogram, chuẩn hóa và chia dữ liệu. Cách tổ chức này giúp so sánh ảnh hưởng của biểu diễn backbone và chiến lược huấn luyện, thay vì để kết quả bị chi phối bởi khác biệt trong khâu chuẩn bị dữ liệu.
+
+\section{Quy trình suy luận}
+
+\subsection{Suy luận trên dữ liệu benchmark}
+
+Suy luận trên dữ liệu benchmark được thực hiện với phần dữ liệu DroneDetect v2 không tham gia cập nhật tham số hoặc lựa chọn mô hình. Mỗi bản ghi được phân đoạn và chuyển thành spectrogram bằng đúng cấu hình STFT đã sử dụng khi xây dựng tập huấn luyện. Ảnh sau đó được resize, chuyển kênh và chuẩn hóa theo cấu hình của backbone. Việc tái sử dụng cùng chuỗi biến đổi giúp bảo đảm thay đổi đầu ra phản ánh năng lực của mô hình thay vì sự không nhất quán của tiền xử lý.
+
+Đối với linear probing, spectrogram được đưa qua backbone đóng băng để lấy embedding. Vector này được biến đổi bằng bộ chuẩn hóa đã khớp trên tập huấn luyện và đưa vào SVM. Điểm quyết định của SVM được chuyển thành nhãn \textit{Drone} hoặc \textit{Non-drone}. Không thực hiện huấn luyện lại backbone hoặc SVM trên tập kiểm thử.
+
+Đối với fine-tuning, tensor ảnh được đưa trực tiếp qua mô hình đã chọn tại giai đoạn xác thực. Lớp đầu ra tạo logits và xác suất hai lớp, sau đó nhãn có xác suất lớn hơn được chọn làm dự đoán. Mỗi dự đoán được lưu cùng mã tệp nguồn, vị trí đoạn, nhãn thật và điểm tin cậy để phục vụ tính toán các chỉ số tại chương thực nghiệm.
+
+Việc đánh giá cần được thực hiện ở cùng đơn vị với cách phát biểu bài toán. Nếu mỗi spectrogram được xem là một mẫu, dự đoán được tính ở mức đoạn tín hiệu. Khi cần quyết định ở mức bản ghi, các dự đoán của nhiều đoạn có thể được tổng hợp bằng tỷ lệ phiếu, trung bình điểm tin cậy hoặc một quy tắc ngưỡng. Quy tắc tổng hợp phải được xác định từ trước và không được điều chỉnh dựa trên nhãn của tập kiểm thử.
+
+\subsection{Suy luận trên dữ liệu RF thực tế}
+
+Quy trình suy luận thực tế bắt đầu bằng việc thiết lập bladeRF và ăng-ten tại băng 2,4~GHz, sau đó thu tín hiệu bằng GNU Radio và lưu chuỗi I/Q. Bản ghi được kiểm tra định dạng, PSD, mức biên độ, clipping và các dấu hiệu bất thường. Những thông tin này giúp xác nhận dữ liệu có thể được xử lý bằng pipeline và hỗ trợ giải thích các trường hợp dự đoán không ổn định.
+
+Tín hiệu hợp lệ được chia thành các đoạn có cùng thời lượng với dữ liệu benchmark. Mỗi đoạn được biến đổi bằng cửa sổ Hann, kích thước FFT, hop length, fftshift và quy tắc log scale tương ứng với giai đoạn huấn luyện. Spectrogram được resize và chuẩn hóa theo backbone. Không sử dụng phép điều chỉnh riêng dựa trên nhãn thật của dữ liệu bladeRF, vì điều đó có thể làm mất ý nghĩa đánh giá trên miền dữ liệu mới.
+
+Sau bước chuẩn bị, spectrogram được đưa qua một trong hai nhánh mô hình. Với linear probing, backbone tạo embedding và SVM tạo quyết định. Với fine-tuning, mô hình tạo trực tiếp xác suất hai lớp. Kết quả của từng đoạn gồm nhãn dự đoán, điểm tin cậy, vị trí thời gian trong bản ghi và thông tin chất lượng tín hiệu. Các kết quả theo đoạn có thể được sắp xếp theo thời gian để quan sát sự thay đổi quyết định trong suốt phiên thu.
+
+Mục tiêu của suy luận trên dữ liệu thực tế là đánh giá khả năng tổng quát hóa khi miền dữ liệu thay đổi. Dữ liệu bladeRF có thể khác DroneDetect v2 về phần cứng, ăng-ten, mức khuếch đại, môi trường nhiễu, khoảng cách, tốc độ lấy mẫu và phân bố công suất. Sự khác biệt này tạo ra \textit{domain shift}, khiến đặc trưng học được trên benchmark không nhất thiết duy trì hiệu quả trên dữ liệu mới. Việc áp dụng nguyên trạng mô hình và pipeline cho dữ liệu tự thu cho phép đánh giá mức độ bền vững của từng backbone và từng chiến lược huấn luyện.
+
+Quy trình này không giả định rằng điểm tin cậy của mô hình luôn là xác suất đã được hiệu chỉnh. Điểm số được lưu để phân tích và so sánh, còn ngưỡng quyết định phải được xác lập trên tập xác thực hoặc theo yêu cầu vận hành. Các chỉ số, kết quả và phân tích sai số trên dữ liệu benchmark cũng như dữ liệu RF thực tế được trình bày riêng trong chương đánh giá thực nghiệm.
+
+\section{Kết chương}
+
+Chương này đã trình bày phương pháp xây dựng hệ thống phát hiện drone dựa trên tín hiệu RF. Bài toán được phát biểu dưới dạng phân loại nhị phân với đầu vào ban đầu là chuỗi I/Q và đầu ra là nhãn \textit{Drone} hoặc \textit{Non-drone}. Hệ thống thực hiện thu nhận hoặc tiếp nhận dữ liệu RF, kiểm tra chất lượng bằng các thông tin như PSD, SNR, clipping, burst và artifact, sau đó phân đoạn tín hiệu để tạo các mẫu có kích thước thống nhất.
+
+Mỗi đoạn I/Q được chuyển sang spectrogram bằng STFT với cửa sổ Hann, FFT, hop length và fftshift. Ma trận độ lớn được đưa về thang logarit, resize và chuẩn hóa để phù hợp với các backbone thị giác. Trên biểu diễn này, hai chiến lược sử dụng mô hình tiền huấn luyện được xây dựng. Linear probing đóng băng backbone, trích xuất embedding và sử dụng SVM để phân loại; fine-tuning thay thế lớp phân loại cuối và cập nhật toàn bộ backbone theo bài toán hai lớp. Các backbone được khảo sát gồm ResNet50, EfficientNet-B2, ConvNeXtV2, SigLIP và DINOv2.
+
+Quy trình suy luận được xác lập cho cả DroneDetect v2 và dữ liệu RF thực tế thu bằng bladeRF tại băng 2,4~GHz. Việc sử dụng chung pipeline tiền xử lý và mô hình cho hai nguồn dữ liệu tạo cơ sở đánh giá khả năng chuyển giao và tổng quát hóa trong điều kiện thu khác nhau. Chương tiếp theo trình bày thiết lập thí nghiệm, tiêu chí đánh giá và kết quả so sánh các mô hình theo hai chiến lược huấn luyện.
+
+\end{document}

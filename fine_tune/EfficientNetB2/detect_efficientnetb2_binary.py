@@ -13,37 +13,22 @@ import torch
 import torch.nn as nn
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
-from torchvision import transforms
+from torchvision import models, transforms
 from tqdm import tqdm
-
-try:
-    from transformers import AutoImageProcessor, SiglipVisionModel
-except Exception as exc:  # pragma: no cover
-    raise RuntimeError("Missing dependency 'transformers'. Install it first: pip install transformers") from exc
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = "fine_tune/SigLIP/siglip_binary_runs/balanced_siglip_binary.pt"
-SOURCE_DIR = r"G:\DATN_DATA\RF\Tu_thu\2toan_spectrograms_refactor_30"
-OUTPUT_JSON = "fine_tune/SigLIP/report/test/results.json"
-OUTPUT_CHART = "fine_tune/SigLIP/report/test/results_chart.png"
-IMAGE_SIZE = 224
+CHECKPOINT_IN = "fine_tune/EfficientNetB2/balanced_efficientnet_b2_binary.pt"
+SOURCE_DIR = r"G:\DATN_DATA\RF\Tu_thu\signal1_spectrograms_v1"
+OUTPUT_JSON = "fine_tune/EfficientNetB2/report/test/results.json"
+OUTPUT_CHART = "fine_tune/EfficientNetB2/report/test/results_chart.png"
+IMAGE_SIZE = 260
 DEVICE = "cuda:0"
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 NUM_WORKERS = 4
-
-
-class SigLIPClassifier(nn.Module):
-    def __init__(self, backbone: nn.Module, feature_dim: int, num_classes: int) -> None:
-        super().__init__()
-        self.backbone = backbone
-        self.head = nn.Linear(feature_dim, num_classes)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        outputs = self.backbone(pixel_values=x)
-        features = outputs.pooler_output
-        return self.head(features)
+DEFAULT_MEAN = [0.485, 0.456, 0.406]
+DEFAULT_STD = [0.229, 0.224, 0.225]
 
 
 class SpectrogramDataset(Dataset):
@@ -72,22 +57,27 @@ def collect_image_paths(root: Path) -> List[Path]:
 
 
 def build_model(checkpoint: dict, device: torch.device) -> tuple[nn.Module, List[str], dict, int, List[float], List[float], str]:
-    siglip_model = checkpoint.get("siglip_model", "google/siglip-base-patch16-224")
     class_names = checkpoint.get("class_names", ["non_drone", "drone"])
     class_to_idx = checkpoint.get("class_to_idx", {name: idx for idx, name in enumerate(class_names)})
     image_size = int(checkpoint.get("image_size", IMAGE_SIZE))
+    mean = list(checkpoint.get("image_mean", DEFAULT_MEAN))
+    std = list(checkpoint.get("image_std", DEFAULT_STD))
+    backbone_name = checkpoint.get("backbone_name", "efficientnet_b2")
 
-    image_processor = AutoImageProcessor.from_pretrained(siglip_model)
-    mean = list(image_processor.image_mean)
-    std = list(image_processor.image_std)
+    if backbone_name != "efficientnet_b2":
+        raise ValueError(f"Unsupported backbone_name in checkpoint: {backbone_name}")
 
-    backbone = SiglipVisionModel.from_pretrained(siglip_model).to(device)
-    feature_dim = int(backbone.config.hidden_size)
-    model = SigLIPClassifier(backbone=backbone, feature_dim=feature_dim, num_classes=len(class_names)).to(device)
+    try:
+        model = models.efficientnet_b2(weights=models.EfficientNet_B2_Weights.IMAGENET1K_V1)
+    except Exception:
+        model = models.efficientnet_b2(weights=None)
+
+    in_features = model.classifier[1].in_features
+    model.classifier[1] = nn.Linear(in_features, len(class_names))
+    model.to(device)
     model.load_state_dict(checkpoint["state_dict"], strict=True)
     model.eval()
-
-    return model, class_names, class_to_idx, image_size, mean, std, siglip_model
+    return model, class_names, class_to_idx, image_size, mean, std, backbone_name
 
 
 @torch.no_grad()
@@ -191,11 +181,17 @@ def visualize_detection_results(
     drone_name = "/".join(last_two_parts)
 
     for bar, text in zip(bars, display_values):
-        ax4.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + max(total * 0.015, 0.5), text, ha="center", fontweight="bold")
+        ax4.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + max(total * 0.015, 0.5),
+            text,
+            ha="center",
+            fontweight="bold",
+        )
 
     fig.suptitle(
         f"{drone_name}\n\n"
-        f"Fine-tuned SigLIP Detection Results | Model: {model_name or 'unknown'} | "
+        f"Fine-tuned EfficientNet-B2 Detection Results | Model: {model_name or 'unknown'} | "
         f"Drone: {drone_count}/{total} ({100 * drone_count / max(total, 1):.1f}%)\n",
         fontsize=14,
         fontweight="bold",
@@ -216,7 +212,7 @@ def main() -> None:
 
     device = torch.device(DEVICE if torch.cuda.is_available() and DEVICE.startswith("cuda") else "cpu")
     checkpoint = torch.load(checkpoint_path, map_location=device)
-    model, class_names, class_to_idx, image_size, mean, std, siglip_model = build_model(checkpoint, device)
+    model, class_names, class_to_idx, image_size, mean, std, backbone_name = build_model(checkpoint, device)
 
     if "drone" not in class_to_idx:
         raise ValueError("Checkpoint class_to_idx does not contain 'drone'")
@@ -254,9 +250,9 @@ def main() -> None:
     non_drone_count = total - drone_count
 
     summary = {
-        "method": "siglip_finetuned_classifier",
-        "model_name": checkpoint.get("model_name", "siglip_binary_finetuned"),
-        "siglip_model": siglip_model,
+        "method": "efficientnet_b2_finetuned_classifier",
+        "model_name": checkpoint.get("model_name", "efficientnet_b2_binary_finetuned"),
+        "backbone_name": backbone_name,
         "checkpoint_in": str(checkpoint_path),
         "source_images": total,
         "detected_drone_count": drone_count,

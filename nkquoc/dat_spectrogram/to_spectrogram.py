@@ -23,9 +23,9 @@ from nkquoc.dat_spectrogram.converter import convert_dat_to_spectrograms
 # ========================
 # CONFIG
 # ========================
-INPUT_DAT_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/MA1_0000_02/MA1_0000_02.dat"
-OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/MA1_0000_02/spectrograms"
-SAMPLE_RATE = 60_000_000
+INPUT_DAT_PATH = r"G:\DATN_DATA\RF\Tu_thu\capturedNoise.dat"
+OUTPUT_DIR = r"G:\DATN_DATA\RF\Tu_thu\spectrogramsnoise_indoor"
+SAMPLE_RATE = 30_000_000
 STFT_POINT = 1024
 DURATION_TIME = 0.05
 OUTPUT_PREFIX = "spectrogram_MA1_0000_02"

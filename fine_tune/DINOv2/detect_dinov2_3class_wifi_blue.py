@@ -20,7 +20,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
 CHECKPOINT_IN = "fine_tune/DINOv2/dinov2_binary_runs/balanced_dinov2_vits14_3class_wifi_blue.pt"
-SOURCE_DIR ="/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/non_drone/capturedNoise_spectrograms"
+SOURCE_DIR =r"G:\DATN_DATA\RF\Tu_thu\signal_spectrograms_v1"
 OUTPUT_JSON = "fine_tune/DINOv2/report/test/results_3class_wifi_blue.json"
 OUTPUT_CHART = "fine_tune/DINOv2/report/test/results_3class_wifi_blue_chart.png"
 IMAGE_SIZE = 224

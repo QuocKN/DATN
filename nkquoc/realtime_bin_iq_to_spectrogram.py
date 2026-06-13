@@ -19,6 +19,7 @@ import queue
 import stat
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from collections import deque
@@ -35,17 +36,17 @@ except ImportError:
     cv2 = None
 
 try:
-    from . import iq_spectrogram_core as spectrogram_core
-    from .iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
-    from .iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
+    from nkquoc.base import iq_spectrogram_core as spectrogram_core
+    from nkquoc.base.iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
+    from nkquoc.base.iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
 except ImportError:
-    import iq_spectrogram_core as spectrogram_core
-    from iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
-    from iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
+    from base import iq_spectrogram_core as spectrogram_core
+    from base.iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
+    from base.iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
 
 
-SAMPLE_RATE = 60_000_000
-RF_BANDWIDTH = 28_000_000
+SAMPLE_RATE = 20_000_000
+RF_BANDWIDTH = 20_000_000
 WINDOW_SECONDS = 0.05
 HOP_SECONDS = 0.05
 STFT_POINT = 1024
@@ -243,13 +244,34 @@ def ensure_fifo(path: Path) -> bool:
     return True
 
 
-def build_bladerf_script(args: argparse.Namespace, fifo_path: Path) -> str:
+def default_bladerf_capture_path() -> Path:
+    if os.name == "nt":
+        return Path(tempfile.gettempdir()) / f"bladerf_iq_{os.getpid()}.bin"
+    return Path(f"/tmp/bladerf_iq_{os.getpid()}.pipe")
+
+
+def ensure_bladerf_capture_path(path: Path) -> bool:
+    """Prepare bladeRF output path. Return True when this function should clean it up."""
+    if os.name != "nt":
+        return ensure_fifo(path)
+
+    if path.exists():
+        raise FileExistsError(
+            f"Capture file already exists: {path}. "
+            "Choose another --fifo-path or delete the old capture file first."
+        )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.touch()
+    return True
+
+
+def build_bladerf_script(args: argparse.Namespace, capture_path: Path) -> str:
     commands = [
         f"set frequency rx {format_bladerf_value(args.center_frequency)}",
         f"set samplerate rx {format_bladerf_value(args.sample_rate)}",
         f"set bandwidth rx {format_bladerf_value(args.rf_bandwidth)}",
         f"set gain rx {format_bladerf_value(args.gain)}",
-        f"rx config file={fifo_path} format=bin n=0",
+        f"rx config file={capture_path} format=bin n=0",
         "rx start",
         "rx wait",
     ]
@@ -258,19 +280,19 @@ def build_bladerf_script(args: argparse.Namespace, fifo_path: Path) -> str:
 
 @contextmanager
 def bladerf_capture_context(args: argparse.Namespace) -> Iterator[Path]:
-    fifo_path = Path(args.fifo_path or f"/tmp/bladerf_iq_{os.getpid()}.pipe")
-    created_fifo = ensure_fifo(fifo_path)
+    capture_path = Path(args.fifo_path) if args.fifo_path else default_bladerf_capture_path()
+    cleanup_capture_path = ensure_bladerf_capture_path(capture_path)
     command = ["bladeRF-cli"]
     if args.device:
         command.extend(["-d", args.device])
-    command.extend(["-e", build_bladerf_script(args, fifo_path)])
+    command.extend(["-e", build_bladerf_script(args, capture_path)])
 
     print("Starting bladeRF capture:")
     print(" ".join(command))
 
     process = subprocess.Popen(command)
     try:
-        yield fifo_path
+        yield capture_path
     finally:
         if process.poll() is None:
             process.terminate()
@@ -279,9 +301,9 @@ def bladerf_capture_context(args: argparse.Namespace) -> Iterator[Path]:
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait(timeout=5)
-        if created_fifo:
+        if cleanup_capture_path:
             try:
-                fifo_path.unlink()
+                capture_path.unlink()
             except FileNotFoundError:
                 pass
 
@@ -395,7 +417,7 @@ def read_stream_to_spectrograms(
         )
 
         if iq_samples.size == 0:
-            if not args.follow:
+            if not args.follow and not args.bladerf:
                 break
             time.sleep(args.poll_seconds)
             continue
@@ -629,11 +651,15 @@ def parse_args() -> argparse.Namespace:
         help="Growing .bin file, FIFO, or '-' for stdin with int16 interleaved IQ",
     )
     parser.add_argument("-o", "--output-dir", required=True, help="Directory for spectrogram PNGs")
-    parser.add_argument("--bladerf", action="store_true", help="Capture from bladeRF-cli through a temporary FIFO")
+    parser.add_argument("--bladerf", action="store_true", help="Capture from bladeRF-cli")
     parser.add_argument("--center-frequency", type=float, default=CENTER_FREQUENCY)
     parser.add_argument("--gain", type=float, default=RX_GAIN)
     parser.add_argument("--device", default=None, help="Optional bladeRF device selector for bladeRF-cli -d")
-    parser.add_argument("--fifo-path", default=None, help="Optional FIFO path for --bladerf")
+    parser.add_argument(
+        "--fifo-path",
+        default=None,
+        help="Optional capture path for --bladerf; FIFO on Linux, temporary .bin file on Windows",
+    )
     parser.add_argument("--sample-rate", type=int, default=SAMPLE_RATE)
     parser.add_argument("--rf-bandwidth", type=int, default=RF_BANDWIDTH)
     parser.add_argument("--window-seconds", type=float, default=WINDOW_SECONDS)

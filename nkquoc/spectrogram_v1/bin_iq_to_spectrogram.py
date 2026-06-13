@@ -21,12 +21,12 @@ from scipy.signal import stft
 # ========================
 # INPUT_BIN_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone/2toan.bin"
 # OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone/spectrograms"
-INPUT_BIN_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/1toan.bin"
-OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms"
+INPUT_BIN_PATH = r"G:\DATN_DATA\RF\Tu_thu\non_drone.bin"
+OUTPUT_DIR = r"G:\DATN_DATA\RF\Tu_thu\non_drone_spectrograms"
 
 
-SAMPLE_RATE = 28_000_000  # Hz (adjust as needed)
-STFT_POINT = 2048
+SAMPLE_RATE = 50_000_000  # Hz (adjust as needed)
+STFT_POINT = 1024
 DURATION_TIME = 0.05  # seconds per spectrogram
 CHUNK_SIZE = 4096  # IQ samples per chunk
 OUTPUT_PREFIX = "spectrogram"
