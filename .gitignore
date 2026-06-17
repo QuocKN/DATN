@@ -5,3 +5,4 @@ WIFI/
 BOTH/
 .venv/
 __pycache__/
+server.c

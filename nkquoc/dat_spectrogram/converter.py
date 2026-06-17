@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import os
-from ..iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
-from ..iq_waveform_plotter import WaveformPlotter
+from ..base.iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
+from ..base.iq_waveform_plotter import WaveformPlotter
 from .iq_reader import iter_iq_chunks_from_dat
 
 def convert_dat_to_spectrograms(

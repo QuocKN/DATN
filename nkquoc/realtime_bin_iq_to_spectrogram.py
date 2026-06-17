@@ -35,17 +35,22 @@ except ImportError:
     cv2 = None
 
 try:
-    from . import iq_spectrogram_core as spectrogram_core
-    from .iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
-    from .iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
+    from .base import iq_spectrogram_core as spectrogram_core
+    from .base.iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
+    from .base.iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
 except ImportError:
-    import iq_spectrogram_core as spectrogram_core
-    from iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
-    from iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
+    try:
+        from .base import iq_spectrogram_core as spectrogram_core
+        from .base.iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
+        from .base.iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
+    except ImportError:
+        from base import iq_spectrogram_core as spectrogram_core
+        from base.iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
+        from base.iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
 
 
-SAMPLE_RATE = 60_000_000
-RF_BANDWIDTH = 28_000_000
+SAMPLE_RATE = 10_000_000
+RF_BANDWIDTH = 10_000_000
 WINDOW_SECONDS = 0.05
 HOP_SECONDS = 0.05
 STFT_POINT = 1024
