@@ -20,7 +20,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
 CHECKPOINT_IN = "fine_tune/EfficientNet_B2/efficientnet_b2_binary_runs/balanced_efficientnet_b2_binary.pt"
-SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
+SOURCE_DIR = r"G:\DATN_DATA\RF\Tu_thu\signal1_spectrograms_v1"
 OUTPUT_JSON = "fine_tune/EfficientNet_B2/report/Tu_thu/2toan_results.json"
 OUTPUT_CHART = "fine_tune/EfficientNet_B2/report/Tu_thu/2toan_results_chart.png"
 IMAGE_SIZE = 260
