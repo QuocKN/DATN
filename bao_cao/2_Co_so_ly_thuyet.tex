@@ -3,9 +3,9 @@
 
 \section{Cơ sở phát hiện drone bằng tín hiệu RF}
 
-Drone thương mại thường duy trì liên kết vô tuyến hai chiều giữa thiết bị bay và bộ điều khiển. Đường lên truyền các lệnh điều khiển như thay đổi tốc độ, hướng bay, độ cao và chế độ hoạt động; đường xuống truyền video, trạng thái bay, vị trí, tốc độ, độ cao, dung lượng pin hoặc các gói định danh drone \cite{aouladhadj2023drone}. Vì vậy, ngay cả khi không quan sát trực tiếp hình ảnh của drone, hệ thống vẫn có thể phát hiện sự hiện diện của drone thông qua tín hiệu RF phát sinh trong quá trình truyền thông.
+Drone thương mại thường duy trì liên kết vô tuyến hai chiều giữa thiết bị bay và bộ điều khiển. Đường lên truyền các lệnh điều khiển như thay đổi hướng bay, tốc độ, độ cao hoặc chế độ hoạt động; đường xuống truyền video, telemetry, trạng thái bay, vị trí, dung lượng pin hoặc các gói định danh drone \cite{aouladhadj2023drone}. Vì vậy, ngay cả khi không quan sát trực tiếp bằng camera hoặc mắt thường, sự hiện diện của drone vẫn có thể được phát hiện thông qua tín hiệu RF phát sinh trong quá trình truyền thông.
 
-So với các phương pháp radar, camera hoặc âm thanh, phát hiện bằng RF có ưu điểm là thụ động, không phụ thuộc ánh sáng và có thể khai thác trực tiếp liên kết truyền thông drone--controller. Tuy nhiên, phương pháp này cũng gặp khó khăn vì các băng tần mà drone sử dụng, đặc biệt là 2.4~GHz và 5.8~GHz, đồng thời là các băng tần phổ biến của Wi-Fi, Bluetooth và nhiều thiết bị IoT. Do đó, bài toán không chỉ là phát hiện năng lượng trong phổ, mà còn là phân biệt đặc trưng tín hiệu drone với các nguồn phát không phải drone.
+Phát hiện bằng RF là phương pháp thụ động, không cần phát xạ thêm tín hiệu và ít phụ thuộc vào điều kiện ánh sáng. Phương pháp này khai thác trực tiếp liên kết drone--controller, do đó phù hợp với bài toán giám sát trong môi trường thực tế. Tuy nhiên, các băng tần drone thường sử dụng, đặc biệt là 2.4~GHz và 5.8~GHz, cũng là băng tần phổ biến của Wi-Fi, Bluetooth và nhiều thiết bị IoT. Vì vậy, bài toán không chỉ là phát hiện năng lượng trong phổ, mà còn là phân biệt cấu trúc tín hiệu drone với các nguồn phát không phải drone.
 
 % ===== HÌNH 2.1 =====
 % Gợi ý chèn hình: Mô hình liên kết Drone--Controller.
@@ -19,9 +19,9 @@ So với các phương pháp radar, camera hoặc âm thanh, phát hiện bằng
     \label{fig:drone-controller-link}
 \end{figure}
 
-\section{Bản chất tín hiệu RF và sự lan truyền trong không gian}
+\section{Bản chất tín hiệu RF và truyền thông drone}
 
-Tín hiệu RF (Radio Frequency) là tín hiệu điện từ có tần số nằm trong vùng vô tuyến. Về bản chất, khi dòng điện cao tần biến thiên trên anten phát, anten tạo ra trường điện từ biến thiên và bức xạ năng lượng ra không gian dưới dạng sóng điện từ. Sóng này lan truyền với vận tốc xấp xỉ vận tốc ánh sáng, mang theo thông tin thông qua sự thay đổi của biên độ, pha hoặc tần số theo thời gian. Ở phía thu, anten nhận chuyển một phần năng lượng điện từ trong không gian trở lại thành tín hiệu điện để thiết bị thu xử lý.
+Tín hiệu RF (Radio Frequency) là tín hiệu điện từ trong vùng tần số vô tuyến. Khi dòng điện cao tần biến thiên trên anten phát, anten bức xạ năng lượng ra không gian dưới dạng sóng điện từ. Sóng này mang thông tin thông qua sự thay đổi của biên độ, pha hoặc tần số theo thời gian. Ở phía thu, anten chuyển một phần năng lượng điện từ trong không gian trở lại thành tín hiệu điện để thiết bị thu xử lý.
 
 Một tín hiệu RF điều chế có thể được biểu diễn ở dạng băng thông dải:
 \begin{equation}
@@ -31,25 +31,33 @@ Một tín hiệu RF điều chế có thể được biểu diễn ở dạng b
     x(t)e^{j2\pi f_c t}
     \right\},
 \end{equation}
-trong đó $f_c$ là tần số sóng mang, $x(t)$ là tín hiệu băng gốc phức chứa thông tin cần truyền và $\Re\{\cdot\}$ là phần thực. Với drone thương mại, thông tin này có thể là lệnh điều khiển, dữ liệu telemetry, video hoặc gói định danh.
+trong đó $f_c$ là tần số sóng mang, $x(t)$ là tín hiệu băng gốc phức chứa thông tin cần truyền và $\Re\{\cdot\}$ là phần thực. Với drone thương mại, thông tin này có thể là lệnh điều khiển, telemetry, video hoặc gói định danh.
 
-Khi lan truyền trong không gian, tín hiệu RF không đến bộ thu theo một đường lý tưởng duy nhất. Trong môi trường thực tế, tín hiệu có thể truyền theo đường thẳng (line-of-sight), bị phản xạ bởi tường, mặt đất, cây cối hoặc vật thể kim loại, bị tán xạ bởi các vật nhỏ và bị che khuất bởi chướng ngại vật. Vì vậy, tín hiệu thu được thường là tổng của nhiều bản sao có biên độ, pha và độ trễ khác nhau. Hiện tượng này gọi là truyền đa đường (multipath) và có thể gây tăng giảm công suất theo thời gian hoặc làm méo đặc trưng phổ của tín hiệu.
+Trong quá trình hoạt động, drone duy trì các luồng truyền thông có chức năng khác nhau. Đường điều khiển mang lệnh bay từ người điều khiển đến drone; đường telemetry truyền trạng thái như vị trí, độ cao, tốc độ, mức pin và chất lượng liên kết; đường video truyền hình ảnh từ camera về màn hình điều khiển. Tín hiệu điều khiển và telemetry thường có tốc độ dữ liệu thấp, kích thước gói nhỏ, yêu cầu độ tin cậy và độ trễ thấp. Ngược lại, tín hiệu video có tốc độ dữ liệu cao, chiếm băng thông lớn và có thể được giảm bitrate khi chất lượng kênh suy giảm.
 
-Ngoài đa đường, chuyển động của drone cũng có thể tạo ra dịch Doppler. Khi nguồn phát và bộ thu có vận tốc tương đối, tần số quan sát được có thể lệch nhẹ so với tần số phát. Với vận tốc tương đối $v$, độ dịch Doppler xấp xỉ:
+Khi lan truyền trong không gian, tín hiệu RF chịu ảnh hưởng của phản xạ, tán xạ, che khuất và đa đường (multipath). Tín hiệu thu được có thể là tổng của nhiều bản sao với biên độ, pha và độ trễ khác nhau, làm công suất thu biến thiên theo thời gian và tần số. Chuyển động của drone cũng có thể tạo dịch Doppler:
 \begin{equation}
     f_D = \frac{v}{c} f_c,
 \end{equation}
-trong đó $c$ là vận tốc ánh sáng. Ở băng 2.4~GHz, dịch Doppler của drone thương mại thường nhỏ so với băng thông tín hiệu, nhưng vẫn là một trong các yếu tố làm tín hiệu thực tế khác với tín hiệu lý tưởng.
+trong đó $v$ là vận tốc tương đối giữa nguồn phát và bộ thu, $c$ là vận tốc ánh sáng. Với drone thương mại, dịch Doppler thường nhỏ so với băng thông tín hiệu, nhưng vẫn là một yếu tố làm tín hiệu thực tế khác với mô hình lý tưởng.
 
-\section{Đặc điểm tín hiệu RF của drone thương mại}
+\section{Đặc điểm truyền thông RF của drone thương mại}
 
-Các drone thương mại có thể sử dụng nhiều giao thức truyền thông khác nhau như Wi-Fi, Enhanced Wi-Fi, Lightbridge và OcuSync \cite{aouladhadj2023drone}. Các giao thức này thường hoạt động ở băng 2.4~GHz và 5.8~GHz, nhưng khác nhau về cơ chế truyền, băng thông, khả năng chống nhiễu và cách lựa chọn kênh. Với Wi-Fi hoặc Enhanced Wi-Fi, tín hiệu có thể nằm trên các kênh tương tự Wi-Fi dân dụng. Với các dòng DJI đời mới, OcuSync sử dụng cơ chế đa băng, đa kênh và có khả năng chuyển kênh để duy trì liên kết ổn định trong môi trường có nhiễu.
+Drone thương mại có thể sử dụng nhiều công nghệ truyền thông như Wi-Fi, Enhanced Wi-Fi, Lightbridge và OcuSync \cite{aouladhadj2023drone}. Các công nghệ này thường hoạt động ở băng 2.4~GHz hoặc 5.8~GHz, nhưng khác nhau về băng thông, cách phát gói, cơ chế chọn kênh và khả năng chống nhiễu. Vì vậy, dấu vết RF của drone không cố định ở một dạng duy nhất.
 
-Về phía phát, drone và bộ điều khiển không phát tín hiệu liên tục theo một mẫu cố định duy nhất. Bộ điều khiển phát các gói lệnh điều khiển lên drone, trong khi drone phát các gói phản hồi, trạng thái bay, dữ liệu định danh hoặc luồng video về bộ điều khiển. Tùy giao thức và trạng thái hoạt động, tín hiệu có thể xuất hiện dưới dạng các burst ngắn, chuỗi gói lặp lại theo chu kỳ, vùng phổ chiếm dụng rộng hoặc các cụm năng lượng thay đổi vị trí theo tần số. Do đó, dấu hiệu của drone trên miền RF thường là cấu trúc năng lượng theo thời gian--tần số chứ không chỉ là một đỉnh phổ đơn lẻ.
+Với Wi-Fi hoặc các cơ chế gần Wi-Fi, tín hiệu thường xuất hiện dưới dạng các frame hoặc beacon trên một kênh có băng thông tương đối rộng. Do Wi-Fi dân dụng cũng tạo ra đặc trưng tương tự, chỉ quan sát thấy một kênh Wi-Fi hoạt động chưa đủ để kết luận có drone. Cần xem xét thêm mật độ burst, chu kỳ phát, độ rộng băng, vị trí kênh và quan hệ giữa các cụm năng lượng theo thời gian.
 
-Một số drone hiện đại còn phát các gói định danh như Remote Drone ID (RDID) hoặc DJI Drone ID. Theo \cite{aouladhadj2023drone}, Wi-Fi RDID có thể được phát dưới dạng beacon IEEE 802.11 tại kênh Wi-Fi số 6, tương ứng tần số trung tâm 2437~MHz. DJI Drone ID dựa trên Enhanced Wi-Fi chiếm băng thông khoảng 5~MHz và sử dụng Frequency Hopping Spread Spectrum (FHSS) trên các băng 2.4~GHz và 5.8~GHz. Với OcuSync, tín hiệu Drone ID có thể chiếm băng thông khoảng 10~MHz và cũng sử dụng FHSS \cite{aouladhadj2023drone}.
+Enhanced Wi-Fi, Lightbridge và OcuSync là các cơ chế được nhà sản xuất tối ưu cho điều khiển, telemetry, video hoặc định danh drone. Theo \cite{aouladhadj2023drone}, DJI Drone ID dựa trên Enhanced Wi-Fi có thể chiếm băng thông khoảng 5~MHz và sử dụng FHSS trên các băng 2.4~GHz và 5.8~GHz; với OcuSync, tín hiệu Drone ID có thể chiếm băng thông khoảng 10~MHz và cũng sử dụng FHSS. Một số drone hiện đại còn phát Remote Drone ID (RDID); Wi-Fi RDID có thể được phát dưới dạng beacon IEEE 802.11 tại kênh Wi-Fi số 6, tương ứng tần số trung tâm 2437~MHz \cite{aouladhadj2023drone}.
 
-FHSS là cơ chế trong đó tín hiệu thay đổi tần số phát theo thời gian thay vì cố định tại một kênh duy nhất. Trên spectrogram, tín hiệu FHSS có thể xuất hiện dưới dạng các cụm năng lượng ngắn, các burst rời rạc hoặc các vệt sáng thay đổi vị trí theo trục tần số. Nếu burst có thời lượng rất ngắn trong miền thời gian, năng lượng của nó có thể trải rộng hơn trong miền tần số theo tính chất Fourier.
+Từ góc nhìn nhận dạng, các đặc trưng hữu ích không chỉ là mức công suất tức thời, mà là cấu trúc năng lượng trên miền thời gian--tần số. Các dấu hiệu thường quan sát gồm vùng phổ băng rộng, burst ngắn, chuỗi gói lặp lại, cụm năng lượng thay đổi theo tần số và sự chồng lấn với Wi-Fi hoặc Bluetooth.
+
+\section{Kỹ thuật truyền dẫn và đặc trưng phổ của tín hiệu drone}
+
+Một hệ thống truyền thông drone có thể kết hợp nhiều kỹ thuật ở các lớp khác nhau. OFDM và FHSS mô tả cách tổ chức tín hiệu trong miền tần số và thời gian, trong khi BPSK, QPSK, 16-QAM hoặc 64-QAM là các sơ đồ điều chế số dùng để ánh xạ bit thành symbol.
+
+OFDM (Orthogonal Frequency Division Multiplexing) chia một kênh băng rộng thành nhiều sóng mang con trực giao. Mỗi subcarrier có thể được điều chế bằng BPSK, QPSK hoặc các sơ đồ QAM. Trên spectrogram, tín hiệu OFDM thường xuất hiện như một vùng năng lượng rộng, có biên tần số tương đối rõ và chiếm nhiều MHz. Các luồng video hoặc công nghệ gần Wi-Fi thường tạo dạng phổ băng rộng này.
+
+FHSS (Frequency Hopping Spread Spectrum) là kỹ thuật nhảy tần, trong đó tín hiệu thay đổi tần số phát theo thời gian. Tại mỗi thời điểm, tín hiệu có thể chỉ chiếm băng thông hẹp, nhưng vị trí tần số của nó thay đổi liên tục. Trên spectrogram, FHSS thường tạo các burst rời rạc hoặc các cụm năng lượng di chuyển theo trục tần số.
 
 % ===== HÌNH 2.2 =====
 % Gợi ý chèn hình: Minh họa FHSS trên miền thời gian--tần số.
@@ -62,69 +70,42 @@ FHSS là cơ chế trong đó tín hiệu thay đổi tần số phát theo th�
     \label{fig:fhss-pattern}
 \end{figure}
 
-\section{Cơ sở lựa chọn băng tần và cấu hình thu}
+Sơ đồ điều chế quyết định số bit truyền trên mỗi symbol và mức SNR cần thiết để giải điều chế. Điều chế bậc thấp như BPSK hoặc QPSK chịu nhiễu tốt hơn nhưng tốc độ dữ liệu thấp hơn. Điều chế bậc cao như 16-QAM hoặc 64-QAM truyền được nhiều bit hơn trên mỗi symbol nhưng cần SNR cao hơn. Khi kênh truyền xấu đi, hệ thống drone có thể giảm bậc điều chế, tăng mã sửa lỗi hoặc giảm bitrate video để duy trì liên kết.
 
-Trong đồ án này, dữ liệu RF tự thu được thực hiện bằng bladeRF với tần số trung tâm:
+Một điểm quan trọng khi đọc spectrogram là mật độ công suất phổ (Power Spectral Density -- PSD). Nếu một tín hiệu có tổng công suất $P$ và chiếm băng thông $B$, PSD có thể hiểu xấp xỉ là:
 \begin{equation}
-    f_c = 2.4375~\text{GHz}.
+    PSD \approx \frac{P}{B}.
 \end{equation}
-
-Lựa chọn này dựa trên ba lý do chính. Thứ nhất, 2.4375~GHz nằm trong băng ISM 2.4~GHz, nơi nhiều drone thương mại, Wi-Fi và Bluetooth cùng hoạt động. Thứ hai, tần số này rất gần kênh Wi-Fi số 6 tại 2437~MHz, là vị trí mà Wi-Fi RDID có thể xuất hiện theo \cite{aouladhadj2023drone}. Thứ ba, việc thu trong vùng phổ có cả tín hiệu drone và các nguồn phát không phải drone giúp bài toán gần hơn với điều kiện triển khai thực tế.
-
-Tần số lấy mẫu và băng thông thu trong thực nghiệm được chọn là:
+Với công suất thu $P_r$ theo dBm, PSD tại đầu thu có thể viết:
 \begin{equation}
-    f_s = 28~\text{MHz}, \qquad B = 28~\text{MHz}.
+    PSD_{r,\mathrm{dBm/Hz}}
+    \approx
+    P_{r,\mathrm{dBm}}
+    -
+    10\log_{10}(B).
 \end{equation}
+Do đó, tín hiệu video OFDM băng rộng có năng lượng trải trên nhiều MHz nên PSD trên mỗi Hz thấp hơn. Ngược lại, tín hiệu điều khiển, telemetry hoặc FHSS hẹp băng có năng lượng tập trung hơn, vì vậy có thể hiện rõ hơn trên spectrogram dù tổng công suất không lớn hơn.
 
-Với cấu hình này, vùng phổ quan sát xấp xỉ từ:
-\begin{equation}
-    f_c - \frac{f_s}{2}
-    \quad \text{đến} \quad
-    f_c + \frac{f_s}{2}.
-\end{equation}
+\section{Thu tín hiệu RF bằng SDR và biểu diễn I/Q}
 
-Tức là:
-\begin{equation}
-    2.4235~\text{GHz}
-    \quad \text{đến} \quad
-    2.4515~\text{GHz}.
-\end{equation}
+Trong hệ thống thu của đồ án, anten nhận năng lượng RF trong vùng phổ quan tâm và đưa tín hiệu vào thiết bị SDR. Bên trong SDR, tín hiệu được khuếch đại, trộn với dao động nội tại tần số $f_c$ để hạ tần về băng gốc, lọc theo băng thông thu và chuyển đổi tương tự--số. Kết quả là chuỗi mẫu số biểu diễn tín hiệu băng gốc.
 
-Dải tần này bao phủ vùng quanh kênh Wi-Fi 6 và đủ rộng để quan sát các thành phần tín hiệu có băng thông vài MHz, chẳng hạn DJI Drone ID Enhanced Wi-Fi khoảng 5~MHz. Đồng thời, băng thông 28~MHz vẫn phù hợp với khả năng thu và lưu dữ liệu của bladeRF trong điều kiện thực nghiệm.
-
-% ===== HÌNH 2.3 =====
-% Gợi ý chèn hình: Vị trí tần số thu trong băng 2.4 GHz.
-% 2400 MHz ---------------- 2483.5 MHz
-%              | 2437 MHz Wi-Fi Channel 6
-%              | 2437.5 MHz bladeRF center
-% Vùng quan sát: 2423.5--2451.5 MHz
-
-\section{Quá trình thu tín hiệu RF bằng SDR}
-
-Trong hệ thống thu của đồ án, anten thu nhận năng lượng RF trong vùng phổ quan tâm và đưa tín hiệu vào thiết bị SDR. Bên trong SDR, tín hiệu được khuếch đại với một mức gain nhất định, trộn với dao động nội tại tần số $f_c$ để hạ tần về băng gốc, lọc theo băng thông thu và sau đó được chuyển đổi tương tự--số. Kết quả của quá trình này là chuỗi mẫu số biểu diễn tín hiệu ở băng gốc.
-
-Việc hạ tần có thể hiểu là đưa vùng tần số quanh $f_c$ về quanh 0~Hz để thuận tiện cho xử lý số. Nếu một thành phần tín hiệu có tần số thực là $f$, sau khi hạ tần nó xuất hiện tại tần số tương đối:
+Nếu một thành phần tín hiệu có tần số thực là $f$, sau khi hạ tần nó xuất hiện tại tần số tương đối:
 \begin{equation}
     f_{\mathrm{baseband}} = f - f_c.
 \end{equation}
-Vì vậy, trong ảnh spectrogram hai phía đã \textit{fftshift}, tâm ảnh tương ứng với tần số trung tâm $f_c$, phần phía trên và phía dưới biểu diễn các thành phần lệch dương hoặc lệch âm so với $f_c$.
+Vì vậy, trong spectrogram hai phía đã \textit{fftshift}, tâm ảnh tương ứng với tần số trung tâm $f_c$, còn phần phía trên và phía dưới biểu diễn các thành phần lệch dương hoặc lệch âm so với $f_c$.
 
-Chất lượng dữ liệu thu phụ thuộc vào nhiều tham số của SDR như gain, tần số trung tâm, tần số lấy mẫu, băng thông lọc, độ ổn định dao động nội và độ phân giải ADC. Nếu gain quá thấp, tín hiệu drone có thể chìm trong nhiễu nền. Nếu gain quá cao, ADC có thể bị bão hòa hoặc clipping, tạo ra thành phần phổ giả. Vì vậy, bước kiểm tra biên độ I/Q, phát hiện clipping và quan sát spectrogram là cần thiết trước khi đưa dữ liệu vào mô hình học sâu.
-
-\section{Biểu diễn tín hiệu I/Q}
-
-Sau khi tín hiệu RF được hạ tần về băng gốc, dữ liệu được lưu dưới dạng chuỗi mẫu phức I/Q:
+Sau khi hạ tần, dữ liệu thường được biểu diễn dưới dạng chuỗi mẫu phức I/Q:
 \begin{equation}
     x[n] = I[n] + jQ[n],
 \end{equation}
-trong đó $I[n]$ là thành phần đồng pha, $Q[n]$ là thành phần vuông pha và $j$ là đơn vị ảo.
-
-Biểu diễn I/Q giữ lại cả thông tin biên độ và pha của tín hiệu, vì vậy phù hợp cho phân tích phổ, phát hiện burst, ước lượng công suất và tạo ảnh spectrogram. Trong dữ liệu tự thu của đồ án, các mẫu I/Q được lưu xen kẽ theo dạng:
+trong đó $I[n]$ là thành phần đồng pha, $Q[n]$ là thành phần vuông pha và $j$ là đơn vị ảo. Biểu diễn I/Q giữ lại thông tin biên độ và pha, nên phù hợp cho phân tích phổ, phát hiện burst, ước lượng công suất và tạo ảnh spectrogram. Trong nhiều hệ thống thu SDR, các mẫu I/Q có thể được lưu xen kẽ theo dạng:
 \begin{equation}
     I_0, Q_0, I_1, Q_1, \ldots, I_n, Q_n.
 \end{equation}
 
-Với bladeRF, dữ liệu thường được lưu dưới dạng số nguyên 16-bit, trong khi ADC có độ phân giải hữu hiệu thấp hơn. Do đó, khi xử lý cần kiểm tra miền giá trị của $I$ và $Q$, chuẩn hóa biên độ và phát hiện clipping. Nếu tín hiệu bị clipping, phổ thu được có thể xuất hiện thành phần giả hoặc vệt năng lượng bất thường, ảnh hưởng trực tiếp tới spectrogram và kết quả phân loại.
+Chất lượng dữ liệu thu phụ thuộc vào gain, tần số trung tâm, tốc độ lấy mẫu, băng thông lọc, độ ổn định dao động nội và độ phân giải ADC. Nếu gain quá thấp, tín hiệu drone có thể chìm trong nhiễu nền; nếu gain quá cao, ADC có thể bị bão hòa hoặc clipping, tạo ra thành phần phổ giả và ảnh hưởng đến kết quả phân loại.
 
 % ===== HÌNH 2.4 =====
 % Gợi ý chèn hình: RF -> SDR -> I/Q samples.
@@ -138,7 +119,7 @@ Với bladeRF, dữ liệu thường được lưu dưới dạng số nguyên 1
 
 \section{STFT và ảnh spectrogram}
 
-Tín hiệu drone có tính không dừng theo thời gian do sự xuất hiện của gói điều khiển, telemetry, video, burst hoặc nhảy tần. Vì vậy, biến đổi Fourier trên toàn bộ tín hiệu chỉ cho biết phân bố năng lượng trung bình theo tần số mà không cho biết thời điểm xuất hiện của từng thành phần tín hiệu. Để giữ lại đồng thời thông tin thời gian và tần số, đồ án sử dụng biến đổi Fourier thời gian ngắn (Short-Time Fourier Transform -- STFT).
+Tín hiệu drone có tính không dừng do sự xuất hiện của gói điều khiển, telemetry, video, burst hoặc nhảy tần. Biến đổi Fourier trên toàn bộ đoạn tín hiệu chỉ cho biết phân bố năng lượng trung bình theo tần số, nhưng không cho biết thời điểm xuất hiện của từng thành phần. Vì vậy, đồ án sử dụng biến đổi Fourier thời gian ngắn (Short-Time Fourier Transform -- STFT) để giữ lại đồng thời thông tin thời gian và tần số.
 
 STFT của tín hiệu rời rạc $x[n]$ được định nghĩa:
 \begin{equation}
@@ -152,9 +133,7 @@ trong đó $N$ là kích thước FFT, $H$ là bước nhảy giữa hai cửa s
 \begin{equation}
     S(m,k) = 10\log_{10}\left(|X(m,k)|^2 + \epsilon\right),
 \end{equation}
-trong đó $\epsilon$ là hằng số nhỏ để tránh logarit của 0.
-
-Trên spectrogram, trục ngang biểu diễn thời gian, trục dọc biểu diễn tần số và cường độ màu biểu diễn năng lượng tín hiệu. Với tín hiệu drone, các đặc trưng có thể quan sát gồm burst ngắn, vệt nhảy tần FHSS, vùng băng thông chiếm dụng và sự chồng lấn với Wi-Fi hoặc Bluetooth. Vì vậy, spectrogram là biểu diễn phù hợp để chuyển bài toán RF thành bài toán phân loại ảnh bằng học sâu.
+trong đó $\epsilon$ là hằng số nhỏ để tránh logarit của 0. Trên spectrogram, trục ngang biểu diễn thời gian, trục dọc biểu diễn tần số và cường độ màu biểu diễn năng lượng. Các đặc trưng như burst ngắn, vùng OFDM băng rộng, vệt nhảy tần FHSS hoặc nhiễu đồng kênh đều có thể được quan sát trên biểu diễn này.
 
 % ===== HÌNH 2.5 =====
 % Gợi ý chèn hình: IQ signal -> Windowing -> FFT -> Spectrogram.
@@ -176,9 +155,9 @@ Trên spectrogram, trục ngang biểu diễn thời gian, trục dọc biểu d
     \label{fig:drone-spectrogram-example}
 \end{figure}
 
-\section{Suy hao truyền sóng, SNR và chất lượng tín hiệu}
+\section{Suy hao truyền sóng, SNR và ảnh hưởng đến spectrogram}
 
-Khi tín hiệu RF lan truyền từ drone hoặc bộ điều khiển đến anten thu, công suất tín hiệu giảm theo khoảng cách. Trong điều kiện không gian tự do lý tưởng, công suất thu có thể mô tả bằng công thức Friis:
+Khi tín hiệu RF lan truyền từ drone hoặc bộ điều khiển đến anten thu, công suất thu giảm theo khoảng cách và điều kiện môi trường. Trong điều kiện không gian tự do lý tưởng, công suất thu có thể mô tả bằng công thức Friis:
 \begin{equation}
     P_r
     =
@@ -187,22 +166,23 @@ Khi tín hiệu RF lan truyền từ drone hoặc bộ điều khiển đến an
     \frac{\lambda}{4\pi d}
     \right)^2,
 \end{equation}
-trong đó $P_t$ là công suất phát, $P_r$ là công suất thu, $G_t$ và $G_r$ là hệ số khuếch đại anten phát và anten thu, $\lambda$ là bước sóng, còn $d$ là khoảng cách truyền. Công thức này cho thấy khi khoảng cách tăng, công suất thu giảm xấp xỉ theo bình phương khoảng cách.
+trong đó $P_t$ là công suất phát, $P_r$ là công suất thu, $G_t$ và $G_r$ là hệ số khuếch đại anten phát và anten thu, $\lambda$ là bước sóng, còn $d$ là khoảng cách truyền.
 
-Trong môi trường thực tế, suy hao thường lớn hơn mô hình không gian tự do do che khuất, phản xạ, hấp thụ và nhiễu đồng kênh. Một mô hình thường dùng để mô tả suy hao theo khoảng cách là:
+Nếu biểu diễn công suất theo dBm và suy hao, độ lợi anten theo dB, quan hệ giữa công suất phát và công suất thu có thể viết:
 \begin{equation}
-    PL(d)
+    P_{r,\mathrm{dBm}}
     =
-    PL(d_0)
+    P_{t,\mathrm{dBm}}
     +
-    10n\log_{10}
-    \left(
-    \frac{d}{d_0}
-    \right)
+    G_{t,\mathrm{dB}}
     +
-    X_{\sigma},
+    G_{r,\mathrm{dB}}
+    -
+    PL_{\mathrm{dB}}(d).
 \end{equation}
-trong đó $PL(d)$ là suy hao đường truyền tại khoảng cách $d$, $d_0$ là khoảng cách tham chiếu, $n$ là hệ số suy hao môi trường và $X_{\sigma}$ biểu diễn thành phần biến thiên ngẫu nhiên do che khuất hoặc fading. Khi môi trường nhiều vật cản, $n$ lớn hơn và công suất thu giảm nhanh hơn so với truyền trong không gian thoáng.
+Trong cách viết rút gọn, khi bỏ qua độ lợi anten hoặc gộp chúng vào suy hao tổng, có thể hiểu $P_r \approx P_t - PL$. Công thức này cho thấy khi khoảng cách tăng hoặc môi trường gây suy hao lớn, công suất thu tại SDR giảm trực tiếp.
+
+Trong thực tế, drone có thể tăng công suất phát, giảm bậc điều chế, tăng mã sửa lỗi hoặc giảm bitrate video khi đi xa bộ điều khiển. Tuy nhiên, suy hao đường truyền vẫn làm $P_r$ tại anten thu giảm khi khoảng cách lớn hoặc có che khuất. Vì spectrogram biểu diễn năng lượng theo từng ô thời gian--tần số, tín hiệu yếu hoặc có PSD thấp sẽ mờ dần và dễ lẫn vào nền nhiễu.
 
 Tỉ số tín hiệu trên nhiễu (Signal-to-Noise Ratio -- SNR) được định nghĩa:
 \begin{equation}
@@ -213,11 +193,9 @@ Tỉ số tín hiệu trên nhiễu (Signal-to-Noise Ratio -- SNR) được đ�
     \frac{P_{\mathrm{signal}}}{P_{\mathrm{noise}}}
     \right),
 \end{equation}
-trong đó $P_{\mathrm{signal}}$ là công suất tín hiệu và $P_{\mathrm{noise}}$ là công suất nhiễu.
+trong đó $P_{\mathrm{signal}}$ là công suất tín hiệu và $P_{\mathrm{noise}}$ là công suất nhiễu. Khi SNR cao, vùng năng lượng của drone nổi bật trên spectrogram; khi SNR thấp, các burst hoặc vùng băng thông chiếm dụng trở nên mờ hơn, làm tăng nguy cơ phân loại sai.
 
-Suy hao truyền sóng làm giảm $P_{\mathrm{signal}}$, từ đó làm giảm SNR nếu công suất nhiễu không đổi. Trên spectrogram, khi SNR cao, vùng năng lượng của drone xuất hiện rõ ràng, có biên tương phản tốt so với nền nhiễu. Khi SNR giảm, các vệt burst hoặc vùng băng thông chiếm dụng trở nên mờ hơn, màu sắc gần với nền hơn và một số gói tín hiệu yếu có thể biến mất. Nếu SNR quá thấp, spectrogram của drone có thể giống nhiễu nền hoặc giống tín hiệu non-drone, làm tăng nguy cơ mô hình phân loại sai.
-
-Ngoài việc làm mờ tín hiệu, môi trường truyền còn có thể thay đổi hình dạng spectrogram. Fading theo thời gian làm vệt năng lượng lúc mạnh lúc yếu; đa đường có thể tạo các biến thiên công suất hẹp theo tần số; nhiễu đồng kênh từ Wi-Fi, Bluetooth hoặc thiết bị IoT có thể chồng lên vùng phổ của drone. Ngược lại, nếu gain thu quá cao, clipping có thể tạo các sọc dọc, thành phần phổ giả hoặc vùng năng lượng bất thường. Vì vậy, chất lượng spectrogram là kết quả đồng thời của công suất phát, khoảng cách, môi trường lan truyền, cấu hình thu và mức nhiễu nền.
+Cần phân biệt giữa khả năng quan sát trên spectrogram SDR và khả năng thu của bộ điều khiển chuyên dụng. Controller thường có anten, bộ tự động điều chỉnh khuếch đại (AGC), đồng bộ tín hiệu, mã sửa lỗi và điều chế thích nghi. Vì vậy, liên kết video vẫn có thể hoạt động dù trên spectrogram thu bằng SDR, vệt tín hiệu đã mờ hoặc không còn nổi bật. Ngoài suy hao, đa đường, fading, nhiễu đồng kênh và clipping do gain thu quá cao cũng có thể làm thay đổi hình dạng spectrogram.
 
 % ===== HÌNH 2.7 =====
 % Gợi ý chèn hình: So sánh spectrogram tốt và spectrogram bị clipping/sọc dọc.
@@ -231,11 +209,11 @@ Ngoài việc làm mờ tín hiệu, môi trường truyền còn có thể thay
 
 \section{Học sâu cho phân loại spectrogram}
 
-\hl{Sau khi tín hiệu RF được chuyển thành spectrogram, bài toán được đưa về dạng phân loại ảnh nhị phân gồm hai lớp: \textit{drone} và \textit{non-drone}.} Các mô hình CNN như ResNet hoặc EfficientNet có khả năng học các đặc trưng cục bộ như cạnh phổ, vùng sáng, texture và burst. Tuy nhiên, CNN có thể dễ phụ thuộc vào các chi tiết cục bộ hoặc artifact của tập dữ liệu, đặc biệt khi dữ liệu huấn luyện chưa đủ đa dạng.
+Sau khi tín hiệu RF được chuyển thành spectrogram, bài toán phát hiện drone được đưa về dạng phân loại ảnh nhị phân gồm hai lớp: \textit{Drone} và \textit{Non-drone}. Mỗi ảnh spectrogram biểu diễn một đoạn tín hiệu; nhãn của ảnh cho biết đoạn đó có chứa hoạt động RF của drone hay không.
 
-\hl{Các kiến trúc Transformer thị giác như Swin Transformer }và DINOv2 có khả năng mô hình hóa quan hệ rộng hơn giữa các vùng ảnh. Đối với spectrogram, điều này có thể hữu ích vì đặc trưng drone không chỉ nằm ở một điểm phổ cục bộ, mà còn nằm ở cấu trúc phân bố năng lượng theo thời gian--tần số, sự lặp lại của burst và quan hệ giữa các vùng tín hiệu.
+Các mô hình CNN học đặc trưng cục bộ thông qua phép tích chập, chẳng hạn cạnh phổ, vùng sáng, burst ngắn hoặc dải năng lượng băng rộng. Các mô hình Transformer thị giác chia ảnh thành các vùng nhỏ và học quan hệ giữa các vùng ảnh, phù hợp khi dấu hiệu drone nằm ở cấu trúc phân bố năng lượng rộng hơn trên miền thời gian--tần số. Trong cả hai trường hợp, mô hình không giải điều chế gói tin, mà học các dấu hiệu hình học và thống kê của tín hiệu trên spectrogram.
 
-Trong đồ án này, các mô hình CNN và Transformer được so sánh trên cùng pipeline:
+Về nguyên tắc, một hệ thống phát hiện drone bằng học sâu cần duy trì cùng chuỗi xử lý từ tín hiệu RF đến spectrogram và mô hình phân loại. Luồng khái niệm của bài toán được thể hiện như sau:
 \begin{figure}[htbp]
     \centering
     \begin{tikzpicture}[
@@ -258,13 +236,14 @@ Trong đồ án này, các mô hình CNN và Transformer được so sánh trên
     \caption{Luồng tổng quát của bài toán phát hiện drone dựa trên tín hiệu RF trong đồ án.}
     \label{fig:overall-problem}
 \end{figure}
-Trọng tâm đánh giá không chỉ là độ chính xác trên tập kiểm thử cùng phân phối, mà còn là khả năng tổng quát hóa khi mô hình được kiểm tra trên dữ liệu RF tự thu bằng bladeRF. Điều này xuất phát từ thực tế rằng dữ liệu công khai và dữ liệu thực tế có thể khác nhau về thiết bị thu, băng thông, nhiễu nền, SNR và chất lượng spectrogram.
+
+Trong thực tế, khả năng tổng quát hóa là yếu tố quan trọng vì dữ liệu từ các nguồn thu khác nhau có thể khác nhau về thiết bị, băng thông, mức nhiễu, SNR và chất lượng spectrogram.
 
 \section*{Kết chương}
 \addcontentsline{toc}{section}{Kết chương}
 
-Chương này đã trình bày cơ sở lý thuyết cho bài toán phát hiện drone bằng tín hiệu RF. Về bản chất, tín hiệu RF là sóng điện từ được anten phát bức xạ ra không gian và được anten thu chuyển trở lại thành tín hiệu điện. Drone thương mại tạo ra liên kết truyền thông RF giữa drone và bộ điều khiển, bao gồm tín hiệu điều khiển, telemetry, video và các gói định danh. Các giao thức phổ biến như Wi-Fi, Enhanced Wi-Fi, Lightbridge và OcuSync thường hoạt động ở băng 2.4~GHz và 5.8~GHz. Trong đó, Wi-Fi RDID có thể xuất hiện tại kênh 6 quanh 2437~MHz, tạo cơ sở cho việc lựa chọn tần số trung tâm 2.4375~GHz khi thu dữ liệu bằng bladeRF.
+Chương này đã trình bày cơ sở lý thuyết cho bài toán phát hiện drone bằng tín hiệu RF. Drone thương mại tạo ra liên kết vô tuyến hai chiều với bộ điều khiển, bao gồm tín hiệu điều khiển, telemetry, video và các gói định danh. Các công nghệ như Wi-Fi, Enhanced Wi-Fi, Lightbridge và OcuSync có thể tạo ra nhiều dạng đặc trưng khác nhau trên miền thời gian--tần số.
 
-Chương cũng đã trình bày quá trình thu tín hiệu bằng SDR, biểu diễn I/Q, STFT, spectrogram, suy hao truyền sóng, SNR và các yếu tố ảnh hưởng tới chất lượng dữ liệu RF. Trên nền tảng đó, đồ án sử dụng các mô hình học sâu để phân loại spectrogram thành drone và non-drone, đồng thời tập trung đánh giá khả năng tổng quát hóa giữa dữ liệu công khai và dữ liệu RF tự thu trong môi trường thực tế.
+Chương cũng đã trình bày quá trình thu RF bằng SDR, biểu diễn I/Q, STFT và ảnh spectrogram, cùng các yếu tố ảnh hưởng đến chất lượng tín hiệu như suy hao truyền sóng, PSD, SNR, fading và clipping. Trên nền tảng đó, spectrogram được xem như ảnh đầu vào cho mô hình học sâu để phân loại \textit{Drone} và \textit{Non-drone}.
 
 \end{document}
