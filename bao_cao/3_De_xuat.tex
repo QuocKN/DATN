@@ -27,8 +27,6 @@ Pipeline xử lý được thiết kế thống nhất cho cả dữ liệu hu�
 \begin{equation}
     \text{I/Q Data}
     \longrightarrow
-    \text{Quality Check}
-    \longrightarrow
     \text{Segmentation}
     \longrightarrow
     \text{Spectrogram}
@@ -40,19 +38,48 @@ Pipeline xử lý được thiết kế thống nhất cho cả dữ liệu hu�
 
 Việc giữ cùng pipeline có vai trò quan trọng vì mô hình học trực tiếp từ hình học và phân bố cường độ của spectrogram. Nếu cấu hình xử lý ở giai đoạn suy luận khác với giai đoạn huấn luyện, đặc trưng đầu vào có thể thay đổi dù tín hiệu RF gốc tương tự nhau. Vì vậy, các tham số như kiểu dữ liệu I/Q, tốc độ lấy mẫu, độ dài đoạn, cấu hình STFT, quy tắc log scale, resize và chuẩn hóa ảnh cần được lưu cùng cấu hình mô hình.
 
-Trong giai đoạn xây dựng mô hình, các spectrogram có nhãn được tạo từ DroneDetect v2 và chia thành tập huấn luyện, tập xác thực, tập kiểm thử. Tập huấn luyện dùng để tối ưu SVM hoặc fine-tuning backbone; tập xác thực dùng để chọn siêu tham số và checkpoint; tập kiểm thử chỉ dùng để báo cáo kết quả sau cùng. Dữ liệu RF tự thu bằng bladeRF được xử lý bằng cùng pipeline nhưng không được dùng để cập nhật tham số, nhằm đánh giá khả năng tổng quát hóa sang miền dữ liệu mới.
+Trong giai đoạn xây dựng mô hình, tập dữ liệu nhị phân được tạo bằng cách kết hợp mẫu \textit{Drone} từ DroneDetect v2 với mẫu \textit{Non-drone} do đồ án tự thu hoặc bổ sung. Hai nguồn dữ liệu này được xử lý bằng cùng pipeline tạo spectrogram và được chia thành tập huấn luyện, tập xác thực, tập kiểm thử. Tập huấn luyện dùng để tối ưu SVM hoặc fine-tuning backbone; tập xác thực dùng để chọn siêu tham số và checkpoint; tập kiểm thử chỉ dùng để báo cáo kết quả sau cùng. Các tập RF tự thu dùng riêng cho đánh giá ngoài miền, chẳng hạn Drone1 và Drone2, không được dùng để cập nhật tham số.
 
 Mỗi bước trong pipeline đều tạo ra dữ liệu trung gian có thể kiểm tra lại. Bản ghi I/Q giữ vai trò dữ liệu gốc; đoạn I/Q là đơn vị xử lý; spectrogram là đầu vào của mô hình; dự đoán theo đoạn là đầu ra để tính chỉ số. Việc lưu liên kết giữa các mức này giúp truy vết khi mô hình dự đoán sai, chẳng hạn từ một ảnh spectrogram quay lại bản ghi RF, vị trí thời gian, cấu hình STFT và chỉ báo chất lượng tín hiệu tương ứng.
+
+\section{Thiết kế mô hình thu tín hiệu RF}
+
+Phần thu tín hiệu được thiết kế như một khối đầu vào của toàn bộ hệ thống phát hiện drone. Mục tiêu của khối này là thu nhận năng lượng RF trong băng tần quan sát, chuyển tín hiệu cao tần về dạng mẫu I/Q băng gốc và lưu lại thành bản ghi số để các bước xử lý sau có thể tái lập. Khối thu không thực hiện giải điều chế gói tin hay giải mã giao thức truyền thông của drone, mà chỉ cung cấp dữ liệu dạng I/Q cho pipeline tạo spectrogram.
+
+Mô hình thu tổng quát gồm các thành phần:
+\begin{equation}
+    \text{Drone/Controller RF}
+    \longrightarrow
+    \text{Anten thu}
+    \longrightarrow
+    \text{SDR}
+    \longrightarrow
+    \text{I/Q Recording}
+    \longrightarrow
+    \text{Store File}.
+\end{equation}
+
+Trong mô hình này, anten thu nhận tín hiệu trong vùng phổ quan tâm, sau đó thiết bị SDR thực hiện khuếch đại, hạ tần về băng gốc, lọc theo băng thông cấu hình và lấy mẫu tương tự--số. Đầu ra của SDR là chuỗi mẫu phức:
+\begin{equation}
+    x[n] = I[n] + jQ[n],
+\end{equation}
+trong đó $I[n]$ và $Q[n]$ lần lượt là hai thành phần đồng pha và vuông pha của mẫu thứ $n$. Việc giữ cả hai thành phần này cho phép bảo toàn thông tin biên độ và pha của tín hiệu, phù hợp với phân tích phổ và tạo spectrogram.
+
+Các tham số quan trọng của khối thu gồm tần số trung tâm $f_c$, tốc độ lấy mẫu $f_s$, băng thông thu, độ lợi thu, loại anten và định dạng lưu mẫu. Tần số trung tâm xác định vùng phổ được quan sát quanh băng tần drone. Tốc độ lấy mẫu và băng thông quyết định độ rộng phổ có thể ghi lại. Độ lợi thu ảnh hưởng trực tiếp đến mức công suất tín hiệu sau khuếch đại: nếu quá thấp, tín hiệu drone có thể bị chìm trong nhiễu nền; nếu quá cao, ADC có thể bị bão hòa và tạo artifact trên spectrogram.
+
+Dữ liệu sau khi thu được lưu dưới dạng bản ghi I/Q liên tục. Mỗi bản ghi cần đi kèm thông tin cấu hình thu như $f_c$, $f_s$, băng thông, gain nếu có, thời điểm hoặc mã phiên thu, loại tín hiệu và nhãn dự kiến. Metadata này không được đưa trực tiếp vào mô hình phân loại, nhưng cần thiết để đọc đúng file, tái tạo trục tần số, so sánh giữa các phiên thu và phân tích các trường hợp mô hình dự đoán sai.
+
+Trong phạm vi đồ án, mô hình thu được sử dụng cho hai mục đích. Thứ nhất, hệ thống thu RF tạo dữ liệu \textit{Non-drone} để bổ sung lớp âm cho bài toán phân loại nhị phân, vì DroneDetect v2 không cung cấp đủ mẫu nền không chứa drone cho cấu hình huấn luyện của đồ án. Thứ hai, hệ thống thu được dùng để tạo các tập đánh giá độc lập nhằm kiểm tra khả năng tổng quát hóa khi điều kiện phần cứng và môi trường thu thay đổi. Vì vậy, cần tách rõ dữ liệu tự thu dùng cho huấn luyện lớp \textit{Non-drone} và dữ liệu tự thu chỉ dùng cho đánh giá.
 
 \section{Chuẩn bị dữ liệu RF}
 
 \subsection{Nguồn dữ liệu}
 
-Nguồn dữ liệu chính để xây dựng mô hình là DroneDetect v2. Các nhãn gốc được quy về hai lớp: \textit{Drone} và \textit{Non-drone}. Khi một bản ghi dài được cắt thành nhiều đoạn, mỗi đoạn kế thừa nhãn và mã nguồn của bản ghi ban đầu. Việc giữ mã nguồn giúp chia dữ liệu theo bản ghi hoặc phiên thu, hạn chế trường hợp các đoạn rất giống nhau xuất hiện đồng thời trong tập huấn luyện và tập kiểm thử.
+Nguồn dữ liệu \textit{Drone} chính để xây dựng mô hình là DroneDetect v2. Tuy nhiên, DroneDetect v2 trong phạm vi sử dụng của đồ án không có lớp \textit{Non-drone} tương ứng, nên không thể trực tiếp tạo bài toán phân loại nhị phân chỉ từ bộ dữ liệu này. Vì vậy, đồ án tự thu thêm dữ liệu RF không chứa drone để làm lớp \textit{Non-drone}. Khi một bản ghi dài được cắt thành nhiều đoạn, mỗi đoạn kế thừa nhãn và mã nguồn của bản ghi ban đầu. Việc giữ mã nguồn giúp chia dữ liệu theo bản ghi hoặc phiên thu, hạn chế trường hợp các đoạn rất giống nhau xuất hiện đồng thời trong tập huấn luyện và tập kiểm thử.
 
-Trong quá trình quy đổi nhãn, các mẫu có hoạt động RF của drone được đưa vào lớp \textit{Drone}. Các mẫu nền hoặc mẫu không chứa hoạt động drone được đưa vào lớp \textit{Non-drone}. Quy tắc ánh xạ nhãn cần được áp dụng nhất quán trước khi tạo spectrogram để tránh tình trạng cùng một loại tín hiệu bị gán nhãn khác nhau ở các bước xử lý sau.
+Trong quá trình quy đổi nhãn, các mẫu từ DroneDetect v2 có hoạt động RF của drone được đưa vào lớp \textit{Drone}. Các mẫu nền tự thu, hoặc mẫu RF không chứa hoạt động drone, được đưa vào lớp \textit{Non-drone}. Quy tắc ánh xạ nhãn cần được áp dụng nhất quán trước khi tạo spectrogram để tránh tình trạng cùng một loại tín hiệu bị gán nhãn khác nhau ở các bước xử lý sau.
 
-Bên cạnh dữ liệu công khai, đồ án sử dụng dữ liệu RF tự thu bằng bladeRF trong băng 2.4~GHz. Dữ liệu này phản ánh điều kiện thu khác với benchmark, bao gồm khác biệt về thiết bị, anten, gain, môi trường nhiễu, khoảng cách và mức công suất. Các bản ghi tự thu được quản lý như miền dữ liệu độc lập để kiểm tra mô hình sau huấn luyện.
+Bên cạnh phần \textit{Non-drone} tự thu dùng để huấn luyện, đồ án còn sử dụng các bản ghi RF tự thu bằng bladeRF trong băng 2.4~GHz làm miền đánh giá độc lập. Nhóm dữ liệu đánh giá này phản ánh điều kiện thu khác với tập dữ liệu nhị phân nội miền, bao gồm khác biệt về thiết bị, anten, gain, môi trường nhiễu, khoảng cách và mức công suất. Các bản ghi tự thu dùng cho đánh giá được quản lý tách khỏi tập huấn luyện để kiểm tra mô hình sau huấn luyện.
 
 Mỗi bản ghi I/Q cần đi kèm metadata tối thiểu gồm nguồn dữ liệu, nhãn, tần số trung tâm, tốc độ lấy mẫu, kiểu dữ liệu, độ lợi thu nếu có và mã phiên thu. Metadata này giúp đọc đúng dữ liệu, tái tạo trục tần số và truy vết các trường hợp dự đoán sai.
 
@@ -88,7 +115,7 @@ Giá trị $L$ cần đủ lớn để chứa cấu trúc truyền có ý nghĩa
 
 Mức chồng lấn giữa các đoạn được lựa chọn tùy mục tiêu xử lý. Không chồng lấn giúp các mẫu độc lập hơn và giảm chi phí tính toán. Chồng lấn giúp giảm nguy cơ bỏ sót burst nằm gần ranh giới hai đoạn, nhưng tạo ra nhiều mẫu tương tự nhau. Nếu dùng chồng lấn, cách chia tập theo bản ghi càng cần được giữ chặt để tránh rò rỉ dữ liệu.
 
-Sau khi phân đoạn, mỗi đoạn được gắn kèm nhãn, mã bản ghi gốc, chỉ số đoạn và vị trí thời gian tương ứng trong bản ghi. Các thông tin này không phải đầu vào của mô hình, nhưng cần thiết để phân tích kết quả theo thời gian và truy vết khi so sánh giữa dữ liệu benchmark và dữ liệu tự thu.
+Sau khi phân đoạn, mỗi đoạn được gắn kèm nhãn, mã bản ghi gốc, chỉ số đoạn và vị trí thời gian tương ứng trong bản ghi. Các thông tin này không phải đầu vào của mô hình, nhưng cần thiết để phân tích kết quả theo thời gian và truy vết khi so sánh giữa dữ liệu nội miền và dữ liệu tự thu.
 
 \section{Tạo spectrogram từ tín hiệu I/Q}
 
@@ -206,9 +233,9 @@ Trong linear probing, spectrogram được đưa qua backbone đóng băng để
 
 Checkpoint được lựa chọn dựa trên kết quả của tập xác thực thay vì tập kiểm thử. Cách làm này giúp tập kiểm thử giữ vai trò đánh giá độc lập. Trong quá trình huấn luyện, các thông tin như loss, accuracy, learning rate và checkpoint tốt nhất cần được lưu lại để phục vụ tái lập thí nghiệm và so sánh giữa các backbone.
 
-\subsection{Suy luận trên dữ liệu benchmark}
+\subsection{Suy luận trên tập kiểm thử nội miền}
 
-Suy luận trên DroneDetect v2 được thực hiện trên tập kiểm thử không tham gia huấn luyện hoặc lựa chọn mô hình. Mỗi bản ghi được phân đoạn, chuyển thành spectrogram và chuẩn hóa bằng đúng pipeline đã dùng khi huấn luyện. Với linear probing, mô hình tạo embedding rồi SVM đưa ra quyết định. Với fine-tuning, mô hình tạo xác suất hai lớp và nhãn có xác suất lớn hơn được chọn làm dự đoán.
+Suy luận nội miền được thực hiện trên tập kiểm thử nhị phân không tham gia huấn luyện hoặc lựa chọn mô hình. Tập này gồm mẫu \textit{Drone} từ DroneDetect v2 và mẫu \textit{Non-drone} tự thu/bổ sung, được xử lý bằng cùng pipeline đã dùng khi huấn luyện. Mỗi bản ghi được phân đoạn, chuyển thành spectrogram và chuẩn hóa bằng đúng cấu hình tương ứng. Với linear probing, mô hình tạo embedding rồi SVM đưa ra quyết định. Với fine-tuning, mô hình tạo xác suất hai lớp và nhãn có xác suất lớn hơn được chọn làm dự đoán.
 
 Kết quả suy luận được lưu cùng mã tệp nguồn, vị trí đoạn, nhãn thật và điểm tin cậy. Các thông tin này phục vụ tính accuracy, precision, recall, F1-score và ma trận nhầm lẫn ở chương đánh giá.
 
@@ -216,16 +243,16 @@ Khi cần kết luận ở mức bản ghi thay vì mức đoạn, các dự đo
 
 \subsection{Suy luận trên dữ liệu RF tự thu}
 
-Với dữ liệu tự thu bằng bladeRF, bản ghi I/Q được kiểm tra định dạng và chất lượng trước khi xử lý. Các đoạn hợp lệ được chuyển thành spectrogram bằng cùng cấu hình STFT, log scale, resize và chuẩn hóa đã dùng cho dữ liệu huấn luyện. Dữ liệu tự thu không được dùng để cập nhật tham số hoặc chọn checkpoint.
+Với các tập tự thu dùng cho đánh giá, bản ghi I/Q được kiểm tra định dạng và chất lượng trước khi xử lý. Các đoạn hợp lệ được chuyển thành spectrogram bằng cùng cấu hình STFT, log scale, resize và chuẩn hóa đã dùng cho dữ liệu huấn luyện. Các tập đánh giá tự thu này không được dùng để cập nhật tham số hoặc chọn checkpoint. Điều này khác với phần dữ liệu \textit{Non-drone} tự thu, vốn được sử dụng trong quá trình xây dựng tập huấn luyện nhị phân.
 
-Mục tiêu của bước này là kiểm tra khả năng tổng quát hóa khi miền dữ liệu thay đổi. Dữ liệu bladeRF có thể khác DroneDetect v2 về thiết bị thu, anten, mức gain, môi trường nhiễu, khoảng cách, tốc độ lấy mẫu và phân bố công suất. Vì vậy, kết quả trên dữ liệu tự thu được xem là phép kiểm tra bổ sung cho khả năng triển khai thực tế của từng backbone và từng chiến lược huấn luyện.
+Mục tiêu của bước này là kiểm tra khả năng tổng quát hóa khi miền dữ liệu thay đổi. Dữ liệu bladeRF có thể khác tập dữ liệu nhị phân nội miền về thiết bị thu, anten, mức gain, môi trường nhiễu, khoảng cách, tốc độ lấy mẫu và phân bố công suất. Vì vậy, kết quả trên dữ liệu tự thu được xem là phép kiểm tra bổ sung cho khả năng triển khai thực tế của từng backbone và từng chiến lược huấn luyện.
 
 Do dữ liệu tự thu có thể chỉ chứa lớp \textit{Drone} trong một số phiên đánh giá, kết quả trên nguồn này cần được diễn giải đúng phạm vi. Khi không có mẫu \textit{Non-drone}, chỉ có thể đánh giá tỷ lệ nhận diện drone hoặc recall của lớp dương, chưa thể kết luận đầy đủ về tỷ lệ cảnh báo sai. Vì vậy, đánh giá trên dữ liệu tự thu được dùng để kiểm tra khả năng phát hiện trong điều kiện mới, còn khả năng phân biệt hai lớp vẫn cần dựa trên tập kiểm thử có đủ nhãn.
 
 \section{Kết chương}
 
-Chương này đã trình bày phương pháp đề xuất cho bài toán phát hiện drone bằng tín hiệu RF. Pipeline bắt đầu từ dữ liệu I/Q, kiểm tra chất lượng, phân đoạn, tạo spectrogram, chuẩn hóa ảnh và đưa vào mô hình phân loại hai lớp \textit{Drone} / \textit{Non-drone}. Các bước xử lý được thiết kế thống nhất để hạn chế sai lệch giữa dữ liệu huấn luyện, dữ liệu kiểm thử và dữ liệu RF tự thu.
+Chương này đã trình bày phương pháp đề xuất cho bài toán phát hiện drone bằng tín hiệu RF. Pipeline bắt đầu từ mô hình thu tín hiệu RF bằng SDR, lưu dữ liệu I/Q, kiểm tra chất lượng, phân đoạn, tạo spectrogram, chuẩn hóa ảnh và đưa vào mô hình phân loại hai lớp \textit{Drone} / \textit{Non-drone}. Các bước xử lý được thiết kế thống nhất để hạn chế sai lệch giữa dữ liệu huấn luyện, dữ liệu kiểm thử và dữ liệu RF tự thu.
 
-Hai chiến lược khai thác mô hình tiền huấn luyện được xây dựng gồm linear probing với SVM trên embedding đóng băng và fine-tuning toàn bộ backbone bằng cross-entropy. Sáu backbone gồm VGG13-BN, ResNet50, EfficientNet-B2, ConvNeXtV2, SigLIP và DINOv2 được đặt trong cùng pipeline để so sánh công bằng hơn. Quy trình này tạo cơ sở để chương tiếp theo đánh giá hiệu năng benchmark, khả năng tổng quát hóa và ảnh hưởng của chất lượng spectrogram.
+Hai chiến lược khai thác mô hình tiền huấn luyện được xây dựng gồm linear probing với SVM trên embedding đóng băng và fine-tuning toàn bộ backbone bằng cross-entropy. Sáu backbone gồm VGG13-BN, ResNet50, EfficientNet-B2, ConvNeXtV2, SigLIP và DINOv2 được đặt trong cùng pipeline để so sánh công bằng hơn. Quy trình này tạo cơ sở để chương tiếp theo đánh giá hiệu năng nội miền, khả năng tổng quát hóa và ảnh hưởng của chất lượng spectrogram.
 
 \end{document}

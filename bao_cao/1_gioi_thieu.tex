@@ -1,0 +1,95 @@
+\documentclass[../DoAn.tex]{subfiles}
+\begin{document}
+
+Chương này trình bày tổng quan về bài toán phát hiện thiết bị bay không người lái dựa trên tín hiệu vô tuyến. Trước hết, chương phân tích bối cảnh hình thành bài toán và lý do lựa chọn hướng tiếp cận RF. Tiếp theo, chương nêu các hướng nghiên cứu liên quan, khoảng trống cần giải quyết, mục tiêu, phạm vi thực hiện, đóng góp chính và bố cục của toàn bộ đồ án.
+
+\section{Đặt vấn đề}
+\label{sec:dvd}
+
+Trong những năm gần đây, thiết bị bay không người lái, thường được gọi là drone hoặc UAV, được ứng dụng rộng rãi trong quay phim, giám sát, nông nghiệp thông minh, khảo sát địa hình, vận chuyển và cứu hộ cứu nạn. Sự phổ biến này mang lại nhiều lợi ích về kinh tế và kỹ thuật, nhưng đồng thời cũng tạo ra các rủi ro liên quan đến an ninh, an toàn hàng không và quyền riêng tư. Drone có thể được sử dụng để xâm nhập khu vực hạn chế, ghi hình trái phép, vận chuyển vật phẩm cấm hoặc gây gián đoạn hoạt động tại các khu vực nhạy cảm. Vì vậy, phát hiện drone sớm và ổn định là một yêu cầu quan trọng trong các hệ thống giám sát và phòng chống UAV.
+
+Bài toán phát hiện drone có thể được tiếp cận bằng nhiều loại cảm biến khác nhau. Camera khai thác đặc trưng hình ảnh của drone, radar phân tích tín hiệu phản xạ từ mục tiêu, còn các hệ thống âm thanh sử dụng tiếng động cơ hoặc cánh quạt để nhận dạng. Mỗi hướng tiếp cận đều có ưu điểm riêng, nhưng cũng tồn tại hạn chế. Camera phụ thuộc vào ánh sáng, thời tiết và tầm nhìn trực tiếp. Radar có chi phí triển khai cao và có thể gặp khó khăn với drone kích thước nhỏ. Phương pháp âm thanh dễ bị ảnh hưởng bởi nhiễu môi trường và thường có phạm vi phát hiện hạn chế.
+
+Phát hiện drone dựa trên tín hiệu vô tuyến (Radio Frequency - RF) là một hướng tiếp cận có nhiều tiềm năng. Phần lớn drone thương mại duy trì liên kết vô tuyến với bộ điều khiển để truyền lệnh điều khiển, dữ liệu trạng thái hoặc luồng video. Các tín hiệu này thường xuất hiện trong các dải tần ISM như 2,4~GHz hoặc 5,8~GHz. Bằng cách thu nhận và phân tích tín hiệu RF, hệ thống có thể phát hiện sự hiện diện của drone mà không cần quan sát trực tiếp mục tiêu. Đặc điểm này giúp phương pháp RF phù hợp với các kịch bản giám sát thụ động và có khả năng hoạt động trong nhiều điều kiện môi trường khác nhau.
+
+Tuy nhiên, môi trường RF thực tế thường phức tạp. Tín hiệu thu được có thể chịu ảnh hưởng của nhiễu nền, Wi-Fi, Bluetooth, thay đổi khoảng cách, sai lệch tần số, fading, clipping, artifact của thiết bị thu hoặc khác biệt giữa các cấu hình SDR. Những yếu tố này làm cho dữ liệu triển khai có thể khác đáng kể so với dữ liệu dùng trong huấn luyện. Vì vậy, một mô hình đạt kết quả cao trên tập kiểm thử nội miền chưa chắc duy trì được hiệu năng khi áp dụng lên dữ liệu tự thu hoặc dữ liệu đến từ bộ dữ liệu RF khác.
+
+Đồ án này tập trung vào bài toán phát hiện drone từ tín hiệu RF theo hướng phân loại nhị phân. Tín hiệu I/Q được phân đoạn, chuyển đổi sang biểu diễn thời gian--tần số dưới dạng spectrogram, sau đó đưa vào các backbone thị giác để dự đoán hai lớp \textit{Drone} và \textit{Non-drone}. Trọng tâm của đồ án không chỉ là xây dựng pipeline phân loại, mà còn đánh giá mức độ tổng quát hóa của mô hình khi miền dữ liệu thay đổi.
+
+\section{Động lực nghiên cứu và khoảng trống cần giải quyết}
+\label{sec:giaiphap}
+
+Trong các nghiên cứu phát hiện drone bằng RF, một hướng tiếp cận phổ biến là thiết kế đặc trưng thủ công từ tín hiệu, chẳng hạn phổ công suất (PSD), đặc trưng miền thời gian, miền tần số, entropy phổ hoặc các hệ số thu được từ Continuous Wavelet Transform (CWT), Wavelet Scattering Transform (WST), Hilbert--Huang Transform (HHT) và Wavelet Packet Transform (WPT). Các đặc trưng này sau đó được đưa vào những bộ phân loại truyền thống như SVM, KNN hoặc Random Forest \cite{swinney2021interference,nguyen2025effective}. Nhóm phương pháp này có ưu điểm về khả năng giải thích và chi phí tính toán, nhưng hiệu năng phụ thuộc nhiều vào chất lượng thiết kế đặc trưng.
+
+Một hướng tiếp cận khác là sử dụng học sâu để tự động học đặc trưng từ dữ liệu RF. Nhiều nghiên cứu chuyển tín hiệu RF thành các biểu diễn trực quan như PSD, spectrogram hoặc constellation diagram trước khi đưa vào CNN hoặc mô hình học chuyển tiếp \cite{swinney2021operating,swinney2021flightmode}. Cách tiếp cận này giảm sự phụ thuộc vào đặc trưng thủ công và tận dụng khả năng học biểu diễn của các mô hình thị giác. Một số công trình gần đây còn xây dựng mô hình end-to-end hoạt động trực tiếp trên tín hiệu RF, chẳng hạn kiến trúc CNN đa tỉ lệ trên bộ dữ liệu CardRF \cite{alam2023rf}.
+
+Bên cạnh mô hình, dữ liệu công khai cũng đóng vai trò quan trọng trong việc thúc đẩy nghiên cứu. Các bộ dữ liệu như DroneRF, DroneDetect, DroneRFa, RFUAV, CardRF và CageDroneRF cung cấp nguồn tín hiệu phục vụ huấn luyện và đánh giá mô hình học máy, học sâu \cite{alsaad2019dronerf,swinney2021dronedetect,yu2024dronerfa,shi2025rfuav,rostami2026cagedronerf}. Tuy nhiên, các bộ dữ liệu này khác nhau về loại drone, thiết bị thu, tốc độ lấy mẫu, băng thông quan sát, nhãn dữ liệu và điều kiện môi trường. Sự khác biệt đó làm cho kết quả trên một nguồn dữ liệu khó phản ánh đầy đủ khả năng hoạt động trên nguồn dữ liệu khác.
+
+Trong phạm vi đồ án, DroneDetect v2 được sử dụng làm nguồn mẫu \textit{Drone} chính. Tuy nhiên, dữ liệu này không cung cấp lớp \textit{Non-drone} phù hợp với cấu hình huấn luyện nhị phân của đồ án. Vì vậy, lớp \textit{Non-drone} cần được xây dựng từ dữ liệu RF tự thu hoặc bổ sung. Điểm này dẫn đến yêu cầu quan trọng: phải tách rõ dữ liệu tự thu dùng để tạo lớp âm cho huấn luyện với dữ liệu tự thu được giữ riêng cho đánh giá sau huấn luyện.
+
+Một khoảng trống khác nằm ở cách đánh giá khả năng tổng quát hóa. Nếu mô hình chỉ được đánh giá trên tập kiểm thử có cùng nguồn và cùng quy trình xử lý với dữ liệu huấn luyện, kết quả có thể phản ánh tốt khả năng học trong miền nhưng chưa đủ để kết luận về khả năng triển khai. Đối với tín hiệu RF, khác biệt về thiết bị SDR, anten, gain, băng thông, tốc độ lấy mẫu, khoảng cách và môi trường nhiễu có thể làm thay đổi hình dạng spectrogram. Hiện tượng này được gọi là \textit{domain shift} và có thể làm suy giảm hiệu năng khi mô hình được áp dụng trên dữ liệu tự thu hoặc dữ liệu ngoài miền.
+
+Ngoài ra, phần lớn các thí nghiệm cần phân biệt rõ ảnh hưởng của kiến trúc mô hình và ảnh hưởng của chiến lược huấn luyện. Một backbone tiền huấn luyện có thể được dùng như bộ trích xuất đặc trưng cố định trong linear probing, hoặc được fine-tune toàn bộ theo bài toán RF spectrogram. Hai cách sử dụng này có chi phí và khả năng thích nghi khác nhau. Do đó, cần đặt các backbone trong cùng một pipeline tiền xử lý và cùng một thiết kế đánh giá để so sánh công bằng hơn.
+
+Xuất phát từ các nhận định trên, đồ án xây dựng hệ thống phát hiện drone dựa trên spectrogram RF và đánh giá trong ba nhóm kịch bản: tập kiểm thử nội miền, dữ liệu RF tự thu bằng bladeRF và các bộ dữ liệu ngoài miền như RFUAV, CageDroneRF, DRFF-R1, DRFF-R2. Cách tổ chức này giúp xem xét đồng thời hiệu năng trong điều kiện kiểm soát, khả năng nhận diện trên dữ liệu thực tế tự thu và mức độ chuyển giao sang các nguồn RF khác.
+
+\section{Đối tượng, mục tiêu và phạm vi nghiên cứu}
+
+\subsection{Đối tượng nghiên cứu}
+
+Đối tượng nghiên cứu của đồ án là tín hiệu RF liên quan đến hoạt động của drone và các tín hiệu nền không chứa drone. Dữ liệu đầu vào được xem xét dưới dạng chuỗi mẫu I/Q, sau đó được phân đoạn và chuyển thành ảnh spectrogram để phục vụ phân loại. Đơn vị dự đoán của hệ thống là một đoạn tín hiệu RF, tương ứng với một ảnh spectrogram và một nhãn phân loại.
+
+Đồ án tập trung vào bài toán phân loại nhị phân:
+\[
+    \textit{Non-drone} = 0,\qquad
+    \textit{Drone} = 1.
+\]
+Trong đó, lớp \textit{Drone} được xây dựng chủ yếu từ DroneDetect v2, còn lớp \textit{Non-drone} được bổ sung từ dữ liệu RF tự thu hoặc nguồn dữ liệu không chứa hoạt động drone. Tập dữ liệu nhị phân này được chia thành huấn luyện, xác thực và kiểm thử nội miền. Các tập tự thu dùng riêng cho đánh giá như Drone1 và Drone2 không được dùng để cập nhật tham số hoặc lựa chọn checkpoint.
+
+\subsection{Mục tiêu nghiên cứu}
+
+Mục tiêu chính của đồ án là xây dựng và đánh giá một pipeline phát hiện drone từ tín hiệu RF sử dụng biểu diễn spectrogram và các mô hình học sâu. Pipeline bắt đầu từ dữ liệu I/Q, thực hiện phân đoạn tín hiệu, tạo ảnh spectrogram, chuẩn hóa đầu vào, huấn luyện mô hình phân loại hai lớp và đánh giá kết quả trong nhiều điều kiện dữ liệu khác nhau.
+
+Về mô hình, đồ án khảo sát hai chiến lược khai thác backbone tiền huấn luyện. Chiến lược thứ nhất là \textit{linear probing}, trong đó backbone được đóng băng để trích xuất embedding và bộ phân loại SVM được huấn luyện trên embedding này. Chiến lược thứ hai là \textit{fine-tuning}, trong đó lớp phân loại cuối được thay bằng đầu ra hai lớp và toàn bộ backbone được cập nhật bằng hàm mất mát cross-entropy.
+
+Sáu backbone được đưa vào so sánh gồm VGG13-BN, ResNet50, EfficientNet-B2, ConvNeXtV2, SigLIP và DINOv2. Các backbone này đại diện cho nhiều hướng thiết kế khác nhau: CNN tuần tự, CNN residual, CNN tối ưu hiệu quả, CNN hiện đại, mô hình thị giác--ngôn ngữ và mô hình tự giám sát. Trọng tâm so sánh không phải kết luận một nhóm kiến trúc luôn tốt hơn nhóm còn lại, mà là xác định backbone nào phù hợp hơn với spectrogram RF trong các kịch bản đánh giá của đồ án.
+
+Từ các mục tiêu trên, đồ án đặt ra các câu hỏi nghiên cứu chính. Thứ nhất, fine-tuning có cải thiện đáng kể so với linear probing trên ảnh spectrogram RF hay không. Thứ hai, kết quả nội miền có phản ánh đầy đủ khả năng hoạt động trên dữ liệu tự thu và dữ liệu ngoài miền hay không. Thứ ba, trong sáu backbone được khảo sát, mô hình nào duy trì tỷ lệ nhận diện ổn định hơn khi điều kiện dữ liệu thay đổi. Thứ tư, các tham số tạo spectrogram và chất lượng tín hiệu đầu vào ảnh hưởng như thế nào đến kết quả nhận dạng.
+
+\subsection{Phạm vi nghiên cứu}
+
+Phạm vi của đồ án được giới hạn ở bài toán phát hiện sự hiện diện của drone bằng tín hiệu RF, không mở rộng sang nhận dạng chủng loại drone, giải mã giao thức truyền thông hoặc định vị nguồn phát. Hệ thống không thực hiện giải điều chế gói tin, mà học trực tiếp từ đặc trưng thời gian--tần số trên spectrogram.
+
+Về dữ liệu, đồ án sử dụng mẫu \textit{Drone} từ DroneDetect v2 kết hợp với mẫu \textit{Non-drone} tự thu hoặc bổ sung để xây dựng tập nhị phân nội miền. Bên cạnh đó, dữ liệu RF tự thu bằng bladeRF tại băng tần 2,4~GHz được dùng để đánh giá khả năng hoạt động trong điều kiện thu thực tế. Các bộ dữ liệu ngoài miền RFUAV, CageDroneRF, DRFF-R1 và DRFF-R2 được đưa vào như các kịch bản kiểm thử bổ sung nhằm khảo sát khả năng chuyển giao giữa các nguồn RF khác nhau.
+
+Về đánh giá, đồ án tách ba nhóm kết quả. Nhóm thứ nhất là kết quả trên tập kiểm thử nội miền để đo khả năng phân biệt hai lớp trong điều kiện gần với dữ liệu huấn luyện. Nhóm thứ hai là kết quả trên dữ liệu RF tự thu, đặc biệt các tập Drone1 và Drone2, nhằm kiểm tra khả năng nhận diện drone trong điều kiện thu thực tế. Nhóm thứ ba là kết quả trên các bộ dữ liệu ngoài miền để khảo sát mức suy giảm hiệu năng khi miền dữ liệu thay đổi. Đối với các tập chỉ chứa lớp \textit{Drone}, kết quả được diễn giải dưới dạng tỷ lệ nhận diện drone hoặc recall lớp dương, chưa dùng để kết luận đầy đủ về tỷ lệ cảnh báo sai.
+
+\section{Đóng góp của đồ án}
+
+Đồ án này có bốn đóng góp chính như sau:
+
+\begin{enumerate}
+    \item Đồ án xây dựng một pipeline xử lý tín hiệu RF cho bài toán phát hiện drone nhị phân, bao gồm thu hoặc đọc dữ liệu I/Q, phân đoạn, tạo spectrogram, chuẩn hóa ảnh và phân loại hai lớp \textit{Drone}/\textit{Non-drone}.
+
+    \item Đồ án tổ chức dữ liệu huấn luyện theo hướng kết hợp mẫu \textit{Drone} từ DroneDetect v2 với mẫu \textit{Non-drone} tự thu hoặc bổ sung, đồng thời tách riêng các tập RF tự thu dùng cho đánh giá để hạn chế nhầm lẫn giữa dữ liệu huấn luyện và dữ liệu kiểm thử thực tế.
+
+    \item Đồ án so sánh hai chiến lược sử dụng mô hình tiền huấn luyện là linear probing và fine-tuning trên sáu backbone VGG13-BN, ResNet50, EfficientNet-B2, ConvNeXtV2, SigLIP và DINOv2 trong cùng một pipeline tạo spectrogram.
+
+    \item Đồ án thiết kế các kịch bản đánh giá gồm kiểm thử nội miền, kiểm thử trên dữ liệu RF tự thu bằng bladeRF và kiểm thử ngoài miền trên RFUAV, CageDroneRF, DRFF-R1, DRFF-R2; từ đó phân tích domain shift, chất lượng spectrogram và mức độ ổn định của từng backbone.
+\end{enumerate}
+
+\section{Bố cục đồ án}
+
+Phần còn lại của báo cáo đồ án tốt nghiệp được tổ chức như sau.
+
+Chương~2 trình bày nền tảng lý thuyết và các nghiên cứu liên quan đến bài toán phát hiện drone bằng tín hiệu RF. Nội dung chương bao gồm cơ sở về tín hiệu I/Q, spectrogram, các hướng tiếp cận phát hiện drone, các bộ dữ liệu RF drone và các kiến trúc học sâu liên quan.
+
+Chương~3 trình bày phương pháp đề xuất của đồ án. Chương này mô tả phát biểu bài toán nhị phân, quy trình tổng thể từ dữ liệu I/Q đến spectrogram, thiết kế mô hình thu tín hiệu RF bằng SDR, cách tổ chức dữ liệu DroneDetect v2 và dữ liệu tự thu, chiến lược linear probing, fine-tuning và quy trình suy luận.
+
+Chương~4 trình bày thiết kế thực nghiệm và phân tích kết quả. Chương này mô tả tập dữ liệu nhị phân nội miền, thiết lập thu bằng bladeRF, dữ liệu Drone1 và Drone2, các bộ dữ liệu ngoài miền RFUAV, CageDroneRF, DRFF-R1, DRFF-R2, tiêu chí đánh giá, kết quả trên từng backbone và phân tích ảnh hưởng của tham số tạo spectrogram.
+
+Chương~5 trình bày kết luận và hướng phát triển. Chương này tổng hợp các kết quả đạt được, nêu các hạn chế về dữ liệu, miền đánh giá và khả năng triển khai, đồng thời đề xuất các hướng mở rộng như bổ sung dữ liệu đa điều kiện, hoàn thiện đánh giá cảnh báo sai và tối ưu hệ thống cho suy luận thực tế.
+
+Kết chương, Chương~1 đã trình bày bối cảnh, động lực, mục tiêu và phạm vi của bài toán phát hiện drone dựa trên tín hiệu RF. Những nội dung này là cơ sở để Chương~2 trình bày chi tiết hơn về nền tảng lý thuyết và các nghiên cứu liên quan.
+
+\end{document}
