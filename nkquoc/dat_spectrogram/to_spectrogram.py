@@ -23,14 +23,15 @@ from nkquoc.dat_spectrogram.converter import convert_dat_to_spectrograms
 # ========================
 # CONFIG
 # ========================
-INPUT_DAT_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/MA1_0000_02/MA1_0000_02.dat"
-OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/MA1_0000_02/spectrograms"
+INPUT_DAT_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/MAV_0000_03.dat"
+OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/DroneDetect/MAV_0000_03/spectrograms"
 SAMPLE_RATE = 60_000_000
+BANDWIDTH = 40_000_000  # Hz; set to None to use the full SAMPLE_RATE span
 STFT_POINT = 1024
 DURATION_TIME = 0.05
-OUTPUT_PREFIX = "spectrogram_MA1_0000_02"
+OUTPUT_PREFIX = "spectrogram_MAV_0000_03"
 IMAGE_SIZE = 224
-WAVEFORM_PREFIX = "waveform_MA1_0000_02"
+WAVEFORM_PREFIX = "waveform_MAV_0000_03"
 WAVEFORM_MAX_POINTS = 20_000
 SAVE_WAVEFORM = True
 MAX_DURATION_SECONDS = 5
@@ -38,7 +39,7 @@ MAX_DURATION_SECONDS = 5
 DAT_FORMAT = "float32_iq"  # "float32_iq" | "int16_iq"
 NORMALIZE_INT16 = False
 
-ENABLE_SPEC_COLUMN_DENOISE = True
+ENABLE_SPEC_COLUMN_DENOISE = False
 SPEC_COLUMN_QUANTILE = 60.0
 
 
@@ -62,6 +63,7 @@ def main() -> None:
         dat_format=DAT_FORMAT,
         normalize_int16=NORMALIZE_INT16,
         max_duration_seconds=MAX_DURATION_SECONDS,
+        bandwidth=BANDWIDTH,
         save_waveform=SAVE_WAVEFORM,
         waveform_prefix=WAVEFORM_PREFIX,
         waveform_max_points=WAVEFORM_MAX_POINTS,

@@ -16,6 +16,7 @@ def convert_dat_to_spectrograms(
     dat_format: str = "float32_iq",
     normalize_int16: bool = False,
     max_duration_seconds: int | None = None,
+    bandwidth: int | float | None = None,
     save_waveform: bool = True,
     waveform_prefix: str = "waveform",
     waveform_max_points: int = 20_000,
@@ -72,6 +73,7 @@ def convert_dat_to_spectrograms(
                 times=times,
                 spectrum=spectrum,
                 output_path=output_path,
+                bandwidth=bandwidth,
             )
 
             waveform_plotter.save(

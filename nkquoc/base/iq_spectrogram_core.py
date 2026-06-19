@@ -65,6 +65,7 @@ def save_spectrogram_image(
     spectrum: np.ndarray,
     output_path: str,
     title: str | None = None,
+    bandwidth: int | float | None = None,
 ) -> None:
     """Save a spectrogram image without axes or labels."""
     magnitude_db = 10 * np.log10(np.abs(spectrum) + 1e-12)
@@ -73,12 +74,39 @@ def save_spectrogram_image(
         magnitude_db = magnitude_db - col_bg
     if ENABLE_SPEC_DB_CLIP:
         magnitude_db = np.clip(magnitude_db, SPEC_CLIP_DB_MIN, SPEC_CLIP_DB_MAX)
+
+    vmin = float(np.min(magnitude_db))
+    vmax = float(np.max(magnitude_db))
+
+    if bandwidth is not None:
+        if bandwidth <= 0:
+            raise ValueError("bandwidth must be positive when provided")
+
+        # Display-only frequency scaling: STFT has already been computed.
+        half_bandwidth = bandwidth / 2
+        frequency_mask = (frequencies >= -half_bandwidth) & (frequencies <= half_bandwidth)
+        if not np.any(frequency_mask):
+            raise ValueError(
+                f"bandwidth={bandwidth} Hz does not overlap spectrogram frequency range "
+                f"{frequencies.min()}..{frequencies.max()} Hz"
+            )
+        frequencies = frequencies[frequency_mask]
+        magnitude_db = magnitude_db[frequency_mask, :]
+
     extent = (times.min(), times.max(), frequencies.min(), frequencies.max())
 
     dpi = 100
     figure = plt.figure(figsize=(IMAGE_SIZE / dpi, IMAGE_SIZE / dpi), dpi=dpi)
     axes = figure.add_axes((0.0, 0.0, 1.0, 1.0))
-    axes.imshow(magnitude_db, extent=extent, aspect="auto", origin="lower", cmap="jet")
+    axes.imshow(
+        magnitude_db,
+        extent=extent,
+        aspect="auto",
+        origin="lower",
+        cmap="jet",
+        vmin=vmin,
+        vmax=vmax,
+    )
     axes.axis("off")
     if title:
         axes.set_title(title)
