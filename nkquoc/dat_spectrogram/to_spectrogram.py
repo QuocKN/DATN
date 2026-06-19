@@ -23,10 +23,10 @@ from nkquoc.dat_spectrogram.converter import convert_dat_to_spectrograms
 # ========================
 # CONFIG
 # ========================
-INPUT_DAT_PATH = r"g:\DATN_DATA\RF\Tu_thu\noise_indoor.dat"
-OUTPUT_DIR = r"G:\DATN_DATA\RF\Tu_thu\noise_indoor_spectrograms"
-SAMPLE_RATE = 30_000_000
-STFT_POINT = 1024
+INPUT_DAT_PATH = r"g:\DATN_DATA\RF\BladeRF\drone_indoor.dat"
+OUTPUT_DIR = r"G:\DATN_DATA\RF\BladeRF\drone_indoor_spectrograms"
+SAMPLE_RATE = 40_000_000
+STFT_POINT = 2048
 DURATION_TIME = 0.05
 OUTPUT_PREFIX = "spectrogram"
 IMAGE_SIZE = 224
@@ -39,7 +39,7 @@ DAT_FORMAT = "float32_iq"  # "float32_iq" | "int16_iq"
 NORMALIZE_INT16 = False
 
 ENABLE_SPEC_COLUMN_DENOISE = True
-SPEC_COLUMN_QUANTILE = 60.0
+SPEC_COLUMN_QUANTILE = 10.0
 
 
 def apply_spectrogram_config() -> None:
