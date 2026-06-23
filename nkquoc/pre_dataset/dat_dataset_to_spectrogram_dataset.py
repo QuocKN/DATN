@@ -54,8 +54,8 @@ DATASET_ROOT = r"C:\Users\DiepHM\Documents\data"
 SOURCE_FOLDERS = ("CLEAN", "WIFI", "BLUE", "BOTH")
 OUTPUT_ROOT = r"C:\Users\DiepHM\Documents\data\DroneDetect_spectrogram_dataset"
 
-SAMPLE_RATE = 60_000_000
-STFT_POINT = 2048
+SAMPLE_RATE = 40_000_000
+STFT_POINT = 1024
 
 # Each recording is 2 seconds long. Use 100 ms windows with 50% overlap.
 WINDOW_SECONDS = 0.1

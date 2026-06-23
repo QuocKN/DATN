@@ -26,7 +26,7 @@ from nkquoc.dat_spectrogram.converter import convert_dat_to_spectrograms
 INPUT_DAT_PATH = r"g:\DATN_DATA\RF\BladeRF\drone_indoor.dat"
 OUTPUT_DIR = r"G:\DATN_DATA\RF\BladeRF\drone_indoor_spectrograms"
 SAMPLE_RATE = 40_000_000
-STFT_POINT = 2048
+STFT_POINT = 1024
 DURATION_TIME = 0.05
 OUTPUT_PREFIX = "spectrogram"
 IMAGE_SIZE = 224
@@ -38,7 +38,7 @@ MAX_DURATION_SECONDS = 5
 DAT_FORMAT = "float32_iq"  # "float32_iq" | "int16_iq"
 NORMALIZE_INT16 = False
 
-ENABLE_SPEC_COLUMN_DENOISE = True
+ENABLE_SPEC_COLUMN_DENOISE = False
 SPEC_COLUMN_QUANTILE = 10.0
 
 
