@@ -1,0 +1,1024 @@
+{
+  "summary": {
+    "method": "dinov2_finetuned_classifier",
+    "model_name": "dinov2_vits14_binary_finetuned",
+    "checkpoint_in": "fine_tune/DINOv2/dinov2_binary_runs/balanced_dinov2_vits14_binary.pt",
+    "source_images": 200,
+    "detected_drone_count": 182,
+    "detected_non_drone_count": 18,
+    "detected_drone_rate": 0.91,
+    "score_mean": 0.8691824078559875,
+    "score_std": 0.2099515199661255,
+    "class_names": [
+      "non_drone",
+      "drone"
+    ],
+    "class_to_idx": {
+      "non_drone": 0,
+      "drone": 1
+    },
+    "best_valid_macro_f1": 1.0
+  },
+  "predictions": [
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000001.png",
+      "prediction": "non_drone",
+      "drone_score": 0.293287456035614
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000002.png",
+      "prediction": "drone",
+      "drone_score": 0.6177625060081482
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000003.png",
+      "prediction": "non_drone",
+      "drone_score": 0.4627959728240967
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.9294363260269165
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.567595362663269
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000006.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3737788796424866
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000007.png",
+      "prediction": "drone",
+      "drone_score": 0.7067751288414001
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000008.png",
+      "prediction": "drone",
+      "drone_score": 0.5767484903335571
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000009.png",
+      "prediction": "drone",
+      "drone_score": 0.8982977271080017
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000010.png",
+      "prediction": "drone",
+      "drone_score": 0.9317435026168823
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000011.png",
+      "prediction": "drone",
+      "drone_score": 0.8888185620307922
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000012.png",
+      "prediction": "non_drone",
+      "drone_score": 0.38969263434410095
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000013.png",
+      "prediction": "drone",
+      "drone_score": 0.7566198110580444
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000014.png",
+      "prediction": "drone",
+      "drone_score": 0.5310571789741516
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000015.png",
+      "prediction": "drone",
+      "drone_score": 0.8549894094467163
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000016.png",
+      "prediction": "non_drone",
+      "drone_score": 0.1716473251581192
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000017.png",
+      "prediction": "drone",
+      "drone_score": 0.6135641932487488
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000018.png",
+      "prediction": "drone",
+      "drone_score": 0.8433405160903931
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000019.png",
+      "prediction": "drone",
+      "drone_score": 0.9640402793884277
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000020.png",
+      "prediction": "drone",
+      "drone_score": 0.9623863697052002
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000021.png",
+      "prediction": "drone",
+      "drone_score": 0.8880670666694641
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000022.png",
+      "prediction": "drone",
+      "drone_score": 0.9857832193374634
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000023.png",
+      "prediction": "drone",
+      "drone_score": 0.8270495533943176
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000024.png",
+      "prediction": "drone",
+      "drone_score": 0.6825706362724304
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000025.png",
+      "prediction": "drone",
+      "drone_score": 0.5971761345863342
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000026.png",
+      "prediction": "non_drone",
+      "drone_score": 0.33210524916648865
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000027.png",
+      "prediction": "non_drone",
+      "drone_score": 0.16119691729545593
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000028.png",
+      "prediction": "drone",
+      "drone_score": 0.7578071355819702
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000029.png",
+      "prediction": "drone",
+      "drone_score": 0.5102331638336182
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000030.png",
+      "prediction": "non_drone",
+      "drone_score": 0.40049412846565247
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000031.png",
+      "prediction": "drone",
+      "drone_score": 0.596469521522522
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000032.png",
+      "prediction": "non_drone",
+      "drone_score": 0.38889288902282715
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000033.png",
+      "prediction": "drone",
+      "drone_score": 0.8531172275543213
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000034.png",
+      "prediction": "non_drone",
+      "drone_score": 0.3204071819782257
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000035.png",
+      "prediction": "non_drone",
+      "drone_score": 0.07745692878961563
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000036.png",
+      "prediction": "non_drone",
+      "drone_score": 0.20566309988498688
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000037.png",
+      "prediction": "drone",
+      "drone_score": 0.8833941221237183
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000038.png",
+      "prediction": "drone",
+      "drone_score": 0.6056221723556519
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000039.png",
+      "prediction": "drone",
+      "drone_score": 0.820852518081665
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000040.png",
+      "prediction": "drone",
+      "drone_score": 0.6314164996147156
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000041.png",
+      "prediction": "drone",
+      "drone_score": 0.5384737253189087
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000042.png",
+      "prediction": "drone",
+      "drone_score": 0.8150871396064758
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000043.png",
+      "prediction": "non_drone",
+      "drone_score": 0.48590508103370667
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000044.png",
+      "prediction": "drone",
+      "drone_score": 0.8563505411148071
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000045.png",
+      "prediction": "drone",
+      "drone_score": 0.916678249835968
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000046.png",
+      "prediction": "non_drone",
+      "drone_score": 0.22999492287635803
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000047.png",
+      "prediction": "drone",
+      "drone_score": 0.6162238121032715
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000048.png",
+      "prediction": "drone",
+      "drone_score": 0.5348242521286011
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000049.png",
+      "prediction": "non_drone",
+      "drone_score": 0.47853419184684753
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000050.png",
+      "prediction": "drone",
+      "drone_score": 0.9020708203315735
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000051.png",
+      "prediction": "drone",
+      "drone_score": 0.8546139597892761
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000052.png",
+      "prediction": "drone",
+      "drone_score": 0.992834210395813
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000053.png",
+      "prediction": "drone",
+      "drone_score": 0.9444783926010132
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000054.png",
+      "prediction": "drone",
+      "drone_score": 0.9416160583496094
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000055.png",
+      "prediction": "drone",
+      "drone_score": 0.9942830204963684
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000056.png",
+      "prediction": "drone",
+      "drone_score": 0.9728241562843323
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000057.png",
+      "prediction": "drone",
+      "drone_score": 0.9716910719871521
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000058.png",
+      "prediction": "drone",
+      "drone_score": 0.6968099474906921
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000059.png",
+      "prediction": "drone",
+      "drone_score": 0.9761295914649963
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000060.png",
+      "prediction": "drone",
+      "drone_score": 0.869939386844635
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000061.png",
+      "prediction": "drone",
+      "drone_score": 0.9946631193161011
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000062.png",
+      "prediction": "drone",
+      "drone_score": 0.6483717560768127
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000063.png",
+      "prediction": "drone",
+      "drone_score": 0.9940550327301025
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000064.png",
+      "prediction": "drone",
+      "drone_score": 0.9963763356208801
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000065.png",
+      "prediction": "drone",
+      "drone_score": 0.9749553203582764
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000066.png",
+      "prediction": "drone",
+      "drone_score": 0.997908353805542
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000067.png",
+      "prediction": "drone",
+      "drone_score": 0.6836077570915222
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000068.png",
+      "prediction": "drone",
+      "drone_score": 0.9918180704116821
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000069.png",
+      "prediction": "drone",
+      "drone_score": 0.9865915179252625
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000070.png",
+      "prediction": "drone",
+      "drone_score": 0.9884944558143616
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000071.png",
+      "prediction": "drone",
+      "drone_score": 0.9864866733551025
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000072.png",
+      "prediction": "drone",
+      "drone_score": 0.9940853118896484
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000073.png",
+      "prediction": "drone",
+      "drone_score": 0.9969209432601929
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000074.png",
+      "prediction": "drone",
+      "drone_score": 0.9753836989402771
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000075.png",
+      "prediction": "drone",
+      "drone_score": 0.9741722345352173
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000076.png",
+      "prediction": "drone",
+      "drone_score": 0.9428997039794922
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000077.png",
+      "prediction": "drone",
+      "drone_score": 0.9818580150604248
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000078.png",
+      "prediction": "drone",
+      "drone_score": 0.9928017854690552
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000079.png",
+      "prediction": "drone",
+      "drone_score": 0.9653894901275635
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000080.png",
+      "prediction": "drone",
+      "drone_score": 0.9961115717887878
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000081.png",
+      "prediction": "drone",
+      "drone_score": 0.9753724932670593
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000082.png",
+      "prediction": "drone",
+      "drone_score": 0.9782260060310364
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000083.png",
+      "prediction": "drone",
+      "drone_score": 0.9996415376663208
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000084.png",
+      "prediction": "drone",
+      "drone_score": 0.9993378520011902
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000085.png",
+      "prediction": "drone",
+      "drone_score": 0.9570515155792236
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000086.png",
+      "prediction": "drone",
+      "drone_score": 0.9787024259567261
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000087.png",
+      "prediction": "drone",
+      "drone_score": 0.9844953417778015
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000088.png",
+      "prediction": "drone",
+      "drone_score": 0.9971708655357361
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000089.png",
+      "prediction": "drone",
+      "drone_score": 0.9871363639831543
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000090.png",
+      "prediction": "drone",
+      "drone_score": 0.9930359721183777
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000091.png",
+      "prediction": "drone",
+      "drone_score": 0.9946920275688171
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000092.png",
+      "prediction": "drone",
+      "drone_score": 0.9944105744361877
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000093.png",
+      "prediction": "non_drone",
+      "drone_score": 0.4590199589729309
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000094.png",
+      "prediction": "drone",
+      "drone_score": 0.9958345890045166
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000095.png",
+      "prediction": "drone",
+      "drone_score": 0.9559583067893982
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000096.png",
+      "prediction": "drone",
+      "drone_score": 0.983937680721283
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000097.png",
+      "prediction": "drone",
+      "drone_score": 0.9979744553565979
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000098.png",
+      "prediction": "drone",
+      "drone_score": 0.9789472818374634
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000099.png",
+      "prediction": "drone",
+      "drone_score": 0.940268874168396
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000100.png",
+      "prediction": "drone",
+      "drone_score": 0.9937519431114197
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000101.png",
+      "prediction": "drone",
+      "drone_score": 0.9923736453056335
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000102.png",
+      "prediction": "drone",
+      "drone_score": 0.9945870637893677
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000103.png",
+      "prediction": "drone",
+      "drone_score": 0.9854926466941833
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000104.png",
+      "prediction": "drone",
+      "drone_score": 0.9386287927627563
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000105.png",
+      "prediction": "drone",
+      "drone_score": 0.9947834610939026
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000106.png",
+      "prediction": "drone",
+      "drone_score": 0.9701987504959106
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000107.png",
+      "prediction": "drone",
+      "drone_score": 0.9454723596572876
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000108.png",
+      "prediction": "drone",
+      "drone_score": 0.9979804158210754
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000109.png",
+      "prediction": "drone",
+      "drone_score": 0.987551748752594
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000110.png",
+      "prediction": "drone",
+      "drone_score": 0.8807483315467834
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000111.png",
+      "prediction": "drone",
+      "drone_score": 0.993094801902771
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000112.png",
+      "prediction": "drone",
+      "drone_score": 0.9971377849578857
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000113.png",
+      "prediction": "drone",
+      "drone_score": 0.9267461895942688
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000114.png",
+      "prediction": "drone",
+      "drone_score": 0.9941178560256958
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000115.png",
+      "prediction": "drone",
+      "drone_score": 0.9993010759353638
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000116.png",
+      "prediction": "drone",
+      "drone_score": 0.9105983972549438
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000117.png",
+      "prediction": "drone",
+      "drone_score": 0.9992296695709229
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000118.png",
+      "prediction": "drone",
+      "drone_score": 0.9981485605239868
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000119.png",
+      "prediction": "drone",
+      "drone_score": 0.9992936849594116
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000120.png",
+      "prediction": "drone",
+      "drone_score": 0.9975615739822388
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000121.png",
+      "prediction": "drone",
+      "drone_score": 0.9987898468971252
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000122.png",
+      "prediction": "drone",
+      "drone_score": 0.9921129941940308
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000123.png",
+      "prediction": "drone",
+      "drone_score": 0.9904839992523193
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000124.png",
+      "prediction": "drone",
+      "drone_score": 0.9755797982215881
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000125.png",
+      "prediction": "drone",
+      "drone_score": 0.9662377834320068
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000126.png",
+      "prediction": "drone",
+      "drone_score": 0.9922352433204651
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000127.png",
+      "prediction": "drone",
+      "drone_score": 0.977290689945221
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000128.png",
+      "prediction": "drone",
+      "drone_score": 0.9936248064041138
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000129.png",
+      "prediction": "drone",
+      "drone_score": 0.9760252237319946
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000130.png",
+      "prediction": "drone",
+      "drone_score": 0.9403333067893982
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000131.png",
+      "prediction": "drone",
+      "drone_score": 0.9721306562423706
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000132.png",
+      "prediction": "drone",
+      "drone_score": 0.9529313445091248
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000133.png",
+      "prediction": "drone",
+      "drone_score": 0.9562988877296448
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000134.png",
+      "prediction": "drone",
+      "drone_score": 0.9750781655311584
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000135.png",
+      "prediction": "non_drone",
+      "drone_score": 0.4016712009906769
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000136.png",
+      "prediction": "drone",
+      "drone_score": 0.7173853516578674
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000137.png",
+      "prediction": "drone",
+      "drone_score": 0.9289542436599731
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000138.png",
+      "prediction": "drone",
+      "drone_score": 0.9778865575790405
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000139.png",
+      "prediction": "drone",
+      "drone_score": 0.9954684972763062
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000140.png",
+      "prediction": "drone",
+      "drone_score": 0.9980385899543762
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000141.png",
+      "prediction": "drone",
+      "drone_score": 0.9727283716201782
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000142.png",
+      "prediction": "drone",
+      "drone_score": 0.991768479347229
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000143.png",
+      "prediction": "drone",
+      "drone_score": 0.9862142205238342
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000144.png",
+      "prediction": "drone",
+      "drone_score": 0.9887562394142151
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000145.png",
+      "prediction": "drone",
+      "drone_score": 0.97708660364151
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000146.png",
+      "prediction": "drone",
+      "drone_score": 0.9532568454742432
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000147.png",
+      "prediction": "drone",
+      "drone_score": 0.9931476712226868
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000148.png",
+      "prediction": "drone",
+      "drone_score": 0.9781320095062256
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000149.png",
+      "prediction": "drone",
+      "drone_score": 0.8116088509559631
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000150.png",
+      "prediction": "drone",
+      "drone_score": 0.9933099746704102
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000151.png",
+      "prediction": "drone",
+      "drone_score": 0.9957026839256287
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000152.png",
+      "prediction": "drone",
+      "drone_score": 0.9823343753814697
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000153.png",
+      "prediction": "drone",
+      "drone_score": 0.9623755216598511
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000154.png",
+      "prediction": "drone",
+      "drone_score": 0.9799278974533081
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000155.png",
+      "prediction": "drone",
+      "drone_score": 0.99137282371521
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000156.png",
+      "prediction": "drone",
+      "drone_score": 0.9331676363945007
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000157.png",
+      "prediction": "drone",
+      "drone_score": 0.9965847730636597
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000158.png",
+      "prediction": "drone",
+      "drone_score": 0.9706224203109741
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000159.png",
+      "prediction": "drone",
+      "drone_score": 0.9861671328544617
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000160.png",
+      "prediction": "drone",
+      "drone_score": 0.9776461720466614
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000161.png",
+      "prediction": "drone",
+      "drone_score": 0.9843421578407288
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000162.png",
+      "prediction": "drone",
+      "drone_score": 0.937432587146759
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000163.png",
+      "prediction": "drone",
+      "drone_score": 0.9822384119033813
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000164.png",
+      "prediction": "drone",
+      "drone_score": 0.9130183458328247
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000165.png",
+      "prediction": "drone",
+      "drone_score": 0.9898752570152283
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000166.png",
+      "prediction": "drone",
+      "drone_score": 0.5785872340202332
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000167.png",
+      "prediction": "drone",
+      "drone_score": 0.9765243530273438
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000168.png",
+      "prediction": "drone",
+      "drone_score": 0.9934841990470886
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000169.png",
+      "prediction": "drone",
+      "drone_score": 0.9819069504737854
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000170.png",
+      "prediction": "drone",
+      "drone_score": 0.9753289222717285
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000171.png",
+      "prediction": "drone",
+      "drone_score": 0.994050920009613
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000172.png",
+      "prediction": "drone",
+      "drone_score": 0.9844223260879517
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000173.png",
+      "prediction": "drone",
+      "drone_score": 0.9893465638160706
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000174.png",
+      "prediction": "drone",
+      "drone_score": 0.9610971808433533
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000175.png",
+      "prediction": "non_drone",
+      "drone_score": 0.19142991304397583
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000176.png",
+      "prediction": "drone",
+      "drone_score": 0.8799169063568115
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000177.png",
+      "prediction": "drone",
+      "drone_score": 0.7335106730461121
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000178.png",
+      "prediction": "drone",
+      "drone_score": 0.985637366771698
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000179.png",
+      "prediction": "drone",
+      "drone_score": 0.9858831763267517
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000180.png",
+      "prediction": "drone",
+      "drone_score": 0.9956375956535339
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000181.png",
+      "prediction": "drone",
+      "drone_score": 0.9953770637512207
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000182.png",
+      "prediction": "drone",
+      "drone_score": 0.9366381168365479
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000183.png",
+      "prediction": "drone",
+      "drone_score": 0.9936766028404236
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000184.png",
+      "prediction": "drone",
+      "drone_score": 0.9767484664916992
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000185.png",
+      "prediction": "drone",
+      "drone_score": 0.9902775883674622
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000186.png",
+      "prediction": "drone",
+      "drone_score": 0.9909477829933167
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000187.png",
+      "prediction": "drone",
+      "drone_score": 0.9205965399742126
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000188.png",
+      "prediction": "drone",
+      "drone_score": 0.9920410513877869
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000189.png",
+      "prediction": "drone",
+      "drone_score": 0.9851051568984985
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000190.png",
+      "prediction": "drone",
+      "drone_score": 0.9605562686920166
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000191.png",
+      "prediction": "drone",
+      "drone_score": 0.9864009022712708
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000192.png",
+      "prediction": "drone",
+      "drone_score": 0.9758460521697998
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000193.png",
+      "prediction": "drone",
+      "drone_score": 0.9833480715751648
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000194.png",
+      "prediction": "drone",
+      "drone_score": 0.9764537811279297
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000195.png",
+      "prediction": "drone",
+      "drone_score": 0.9840213656425476
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000196.png",
+      "prediction": "drone",
+      "drone_score": 0.9843367338180542
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000197.png",
+      "prediction": "drone",
+      "drone_score": 0.9456654787063599
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000198.png",
+      "prediction": "drone",
+      "drone_score": 0.9965033531188965
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000199.png",
+      "prediction": "drone",
+      "drone_score": 0.9977936744689941
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms/spectrogram_000200.png",
+      "prediction": "drone",
+      "drone_score": 0.9895440340042114
+    }
+  ]
+}

@@ -164,7 +164,7 @@ def main():
 
     parser.add_argument("--skip-seconds", type=float, default=0.0)
 
-    parser.add_argument("--nfft", type=int, default=4096)
+    parser.add_argument("--nfft", type=int, default=1024)
     parser.add_argument("--nperseg", type=int, default=4096)
 
     parser.add_argument("--save", default=None, help="Save plot to image file, e.g. psd.png")

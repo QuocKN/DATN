@@ -1,0 +1,175 @@
+{
+  "summary": {
+    "method": "convnextv2_finetuned_classifier",
+    "model_name": "balanced_convnextv2_binary",
+    "convnextv2_model": "convnextv2_tiny.fcmae_ft_in22k_in1k",
+    "checkpoint_in": "fine_tune/ConvNext_V2/convnextv2_binary_runs/balanced_convnextv2_binary.pt",
+    "source_images": 30,
+    "detected_drone_count": 30,
+    "detected_non_drone_count": 0,
+    "detected_drone_rate": 1.0,
+    "score_mean": 0.8864861130714417,
+    "score_std": 0.01129518449306488,
+    "class_names": [
+      "non_drone",
+      "drone"
+    ],
+    "class_to_idx": {
+      "non_drone": 0,
+      "drone": 1
+    },
+    "best_valid_macro_f1": 1.0
+  },
+  "predictions": [
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_0-1_000001.png",
+      "prediction": "drone",
+      "drone_score": 0.8991838097572327
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_0-1_000002.png",
+      "prediction": "drone",
+      "drone_score": 0.896138072013855
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_0-1_000003.png",
+      "prediction": "drone",
+      "drone_score": 0.8956677913665771
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_0-1_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.8870702981948853
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_0-1_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.8801802396774292
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_0-1_000006.png",
+      "prediction": "drone",
+      "drone_score": 0.8959128856658936
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_0-1_000007.png",
+      "prediction": "drone",
+      "drone_score": 0.8707834482192993
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_0-1_000008.png",
+      "prediction": "drone",
+      "drone_score": 0.8867923021316528
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_0-1_000009.png",
+      "prediction": "drone",
+      "drone_score": 0.8875442743301392
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_0-1_000010.png",
+      "prediction": "drone",
+      "drone_score": 0.8888457417488098
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_000001.png",
+      "prediction": "drone",
+      "drone_score": 0.8725027441978455
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_000002.png",
+      "prediction": "drone",
+      "drone_score": 0.8858932256698608
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_000003.png",
+      "prediction": "drone",
+      "drone_score": 0.8898206353187561
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.88778156042099
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.8843694925308228
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_000006.png",
+      "prediction": "drone",
+      "drone_score": 0.892099142074585
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_000007.png",
+      "prediction": "drone",
+      "drone_score": 0.8712159395217896
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_000008.png",
+      "prediction": "drone",
+      "drone_score": 0.8991429209709167
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_000009.png",
+      "prediction": "drone",
+      "drone_score": 0.8859105110168457
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_000010.png",
+      "prediction": "drone",
+      "drone_score": 0.8771349191665649
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_1-2_000001.png",
+      "prediction": "drone",
+      "drone_score": 0.8998761773109436
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_1-2_000002.png",
+      "prediction": "drone",
+      "drone_score": 0.8733909130096436
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_1-2_000003.png",
+      "prediction": "drone",
+      "drone_score": 0.89149010181427
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_1-2_000004.png",
+      "prediction": "drone",
+      "drone_score": 0.8876296877861023
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_1-2_000005.png",
+      "prediction": "drone",
+      "drone_score": 0.8892220854759216
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_1-2_000006.png",
+      "prediction": "drone",
+      "drone_score": 0.8928682804107666
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_1-2_000007.png",
+      "prediction": "drone",
+      "drone_score": 0.888460636138916
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_1-2_000008.png",
+      "prediction": "drone",
+      "drone_score": 0.8971306681632996
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_1-2_000009.png",
+      "prediction": "drone",
+      "drone_score": 0.8958717584609985
+    },
+    {
+      "image": "/home/quocnk/Documents/NKQuoc/Data/RF/RFUAV/DJI_Mavic_pro_3/spectrograms/spectrogram_1-2_000010.png",
+      "prediction": "drone",
+      "drone_score": 0.8446536064147949
+    }
+  ]
+}

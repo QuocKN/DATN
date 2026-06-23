@@ -10,6 +10,10 @@ from typing import List, Sequence, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 from PIL import Image
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
@@ -90,8 +94,6 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
     train_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomApply([transforms.ColorJitter(brightness=0.1, contrast=0.1)], p=0.3),
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
@@ -136,21 +138,21 @@ def load_convnextv2_backbone(model_name: str, device: torch.device) -> nn.Module
     last_exc: Exception | None = None
     backbone = None
     for candidate in model_candidates:
-        for use_pretrained in (True, False):
-            try:
-                backbone = timm.create_model(candidate, pretrained=use_pretrained, num_classes=0, global_pool="avg")
-                if candidate != model_name:
-                    print(f"Fallback model name: {candidate} (from {model_name})")
-                if not use_pretrained:
-                    print(f"Using non-pretrained weights for model: {candidate}")
-                break
-            except Exception as exc:
-                last_exc = exc
+        try:
+            backbone = timm.create_model(candidate, pretrained=True, num_classes=0, global_pool="avg")
+            if candidate != model_name:
+                print(f"Fallback model name: {candidate} (from {model_name})")
+            break
+        except Exception as exc:
+            last_exc = exc
         if backbone is not None:
             break
 
     if backbone is None:
-        raise RuntimeError(f"Could not create ConvNeXtV2 model from '{model_name}'.") from last_exc
+        raise RuntimeError(
+            f"Could not load pretrained ConvNeXtV2 weights for '{model_name}'; "
+            "refusing to train from random initialization."
+        ) from last_exc
     backbone.to(device)
     return backbone
 
@@ -310,6 +312,34 @@ def evaluate(
     return total_loss / max(total_count, 1), total_correct / max(total_count, 1), y_true, y_pred
 
 
+def save_confusion_matrix(cm: np.ndarray, class_names: Sequence[str], output_path: Path) -> None:
+    fig, ax = plt.subplots(figsize=(6, 5))
+    im = ax.imshow(cm, interpolation="nearest", cmap="Blues")
+    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+
+    ax.set(
+        title="Confusion Matrix",
+        xlabel="Predicted label",
+        ylabel="True label",
+        xticks=np.arange(len(class_names)),
+        yticks=np.arange(len(class_names)),
+        xticklabels=class_names,
+        yticklabels=class_names,
+    )
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+    threshold = cm.max() / 2.0 if cm.size and cm.max() > 0 else 0.0
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            color = "white" if cm[i, j] > threshold else "black"
+            ax.text(j, i, str(int(cm[i, j])), ha="center", va="center", color=color)
+
+    fig.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine-tune ConvNeXt V2 for binary drone/non-drone spectrogram detection")
     parser.add_argument("--drone-root", type=str, default=DRONE_ROOT)
@@ -416,7 +446,8 @@ def main() -> None:
 
     optimizer = build_optimizer(model, args.backbone_lr, args.head_lr, args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
-    criterion = nn.CrossEntropyLoss(weight=make_class_weights(train_samples, device))
+    class_weights = None if args.use_balanced_sampler else make_class_weights(train_samples, device)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     best_valid_macro_f1 = -1.0
     best_path = out_dir / "convnextv2_binary_best.pt"
@@ -480,7 +511,10 @@ def main() -> None:
     test_loss, test_acc, y_true, y_pred = evaluate(model, loaders["test"], criterion, device)
 
     report = classification_report(y_true, y_pred, target_names=CLASS_NAMES, output_dict=True, zero_division=0)
-    cm = confusion_matrix(y_true, y_pred).tolist()
+    cm_array = confusion_matrix(y_true, y_pred, labels=list(range(len(CLASS_NAMES))))
+    cm = cm_array.tolist()
+    confusion_matrix_path = out_dir / "confusion_matrix.png"
+    save_confusion_matrix(cm_array, CLASS_NAMES, confusion_matrix_path)
     summary = {
         "model_name": "convnextv2_base_binary_finetuned",
         "convnextv2_model": args.convnextv2_model,
@@ -505,6 +539,7 @@ def main() -> None:
         "test_macro_f1": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
         "classification_report": report,
         "confusion_matrix": cm,
+        "confusion_matrix_path": str(confusion_matrix_path),
         "history": history,
     }
 

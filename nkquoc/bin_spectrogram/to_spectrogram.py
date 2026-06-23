@@ -23,12 +23,12 @@ from nkquoc.bin_spectrogram.converter import convert_bin_to_spectrograms
 # ========================
 # CONFIG
 # ========================
-INPUT_BIN_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/2toan.bin"
-OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms_update"
+INPUT_BIN_PATH = r"G:\DATN_DATA\RF\Tu_thu\signal1.bin"
+OUTPUT_DIR = r"G:\DATN_DATA\RF\Tu_thu\signal1_spectrograms_v1"
 # INPUT_BIN_PATH = "E:\\DATN_DATA\\RF\\1toan.bin"
 # OUTPUT_DIR = "E:\\DATN_DATA\\RF\\1toan_spectrograms"
 
-SAMPLE_RATE = 28_000_000
+SAMPLE_RATE = 60_000_000
 STFT_POINT = 1024
 DURATION_TIME = 0.05
 OUTPUT_PREFIX = "spectrogram"
@@ -39,8 +39,8 @@ SAVE_WAVEFORM = True
 MAX_DURATION_SECONDS = 500
 NORMALIZE = False
 
-ENABLE_SPEC_COLUMN_DENOISE = True
-SPEC_COLUMN_QUANTILE = 30.0
+ENABLE_SPEC_COLUMN_DENOISE = False
+SPEC_COLUMN_QUANTILE =40.0
 
 
 def apply_spectrogram_config() -> None:
