@@ -59,7 +59,7 @@ CENTER_FREQUENCY = 2_440_000_000
 RX_GAIN = 30
 RAM_BUFFER_SECONDS = 0.0
 
-ENABLE_SPEC_COLUMN_DENOISE = True
+ENABLE_SPEC_COLUMN_DENOISE = False
 SPEC_COLUMN_QUANTILE = 30.0
 ENABLE_SPEC_DB_CLIP = False
 SPEC_CLIP_DB_MIN = -80.0
@@ -649,7 +649,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--image-renderer",
         choices=["fast", "matplotlib"],
-        default="fast",
+        default="matplotlib",
         help="Use direct OpenCV/Pillow PNG rendering, or the slower Matplotlib renderer.",
     )
     parser.add_argument("--normalize", action="store_true")

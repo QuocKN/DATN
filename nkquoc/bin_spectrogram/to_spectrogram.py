@@ -23,8 +23,8 @@ from nkquoc.bin_spectrogram.converter import convert_bin_to_spectrograms
 # ========================
 # CONFIG
 # ========================
-INPUT_BIN_PATH = r"G:\DATN_DATA\RF\Tu_thu\signal.bin"
-OUTPUT_DIR = r"G:\DATN_DATA\RF\Tu_thu\signal_spectrograms"
+INPUT_BIN_PATH = r"f:\DJI_B1_23_04\dji_fly50_up.bin"
+OUTPUT_DIR = r"G:\DATN_DATA\RF\Tu_thu\dji_50x50_spectrograms"
 # INPUT_BIN_PATH = "E:\\DATN_DATA\\RF\\1toan.bin"
 # OUTPUT_DIR = "E:\\DATN_DATA\\RF\\1toan_spectrograms"
 
@@ -35,7 +35,7 @@ OUTPUT_PREFIX = "spectrogram"
 IMAGE_SIZE = 224
 WAVEFORM_PREFIX = "waveform"
 WAVEFORM_MAX_POINTS = 20_000
-SAVE_WAVEFORM = True
+SAVE_WAVEFORM = False
 MAX_DURATION_SECONDS = 500
 NORMALIZE = False
 # Start reading after this many seconds. Set to 0.0 to start from the file beginning.

@@ -1,0 +1,17 @@
+\documentclass[../DoAn.tex]{subfiles}
+\begin{document}
+
+\begin{center}
+    \Large{\textbf{TÓM TẮT NỘI DUNG ĐỒ ÁN}}\\
+\end{center}
+\vspace{1cm}
+
+Trong bối cảnh thiết bị bay không người lái ngày càng phổ biến, nhu cầu phát hiện và cảnh báo sớm drone trở nên quan trọng đối với an ninh, an toàn hạ tầng và quản lý không phận tầm thấp. Các phương pháp dựa trên camera, âm thanh hoặc radar có thể bị giới hạn bởi điều kiện quan sát, nhiễu môi trường hoặc chi phí triển khai. Trong khi đó, phần lớn drone thương mại duy trì liên kết vô tuyến với bộ điều khiển trong quá trình hoạt động, tạo ra cơ sở để phát hiện thụ động dựa trên tín hiệu RF.
+
+Đồ án tập trung vào bài toán phát hiện drone từ tín hiệu RF theo hướng phân loại nhị phân hai lớp \textit{Drone} và \textit{Non-drone}. Tín hiệu I/Q được phân đoạn, chuyển sang biểu diễn thời gian--tần số bằng spectrogram, chuẩn hóa và đưa vào mô hình học sâu. Nguồn mẫu \textit{Drone} chính được lấy từ DroneDetect v2, trong khi lớp \textit{Non-drone} được xây dựng từ dữ liệu RF tự thu hoặc bổ sung do DroneDetect v2 không cung cấp lớp âm phù hợp cho cấu hình huấn luyện nhị phân của đồ án. Các tập RF tự thu dùng cho đánh giá, chẳng hạn Drone1 và Drone2, được tách khỏi quá trình huấn luyện và lựa chọn checkpoint.
+
+Về mô hình, đồ án khảo sát hai chiến lược khai thác backbone tiền huấn luyện: \textit{Feature Extraction-based Classification} với backbone đóng băng và SVM trên embedding, và \textit{fine-tuning} toàn bộ backbone bằng hàm mất mát cross-entropy. Sáu backbone được so sánh trong cùng pipeline gồm VGG13-BN, ResNet50, EfficientNet-B2, ConvNeXtV2, Swin Transformer và DINOv2. Hệ thống không giải điều chế gói tin RF, mà học trực tiếp từ đặc trưng hình học và phân bố năng lượng trên ảnh spectrogram.
+
+Các thí nghiệm được tổ chức theo ba nhóm kịch bản: kiểm thử nội miền trên tập nhị phân được xây dựng từ mẫu \textit{Drone} của DroneDetect v2 và mẫu \textit{Non-drone} tự thu/bổ sung; kiểm thử trên dữ liệu RF tự thu bằng bladeRF ở băng tần 2,4~GHz; và kiểm thử ngoài miền trên RFUAV, CageDroneRF, DRFF-R1 và DRFF-R2. Kết quả hiện có trên hai tập tự thu cho thấy khả năng tổng quát hóa phụ thuộc mạnh vào từng backbone: VGG13-BN, EfficientNet-B2 và DINOv2 duy trì tỷ lệ nhận diện cao, trong khi ConvNeXtV2, ResNet50 và Swin Transformer suy giảm rõ rệt. Đồ án qua đó cung cấp một pipeline đầu-cuối từ dữ liệu I/Q đến quyết định phát hiện, đồng thời nhấn mạnh sự cần thiết của đánh giá ngoài miền khi triển khai hệ thống phát hiện drone bằng tín hiệu RF.
+
+\end{document}
