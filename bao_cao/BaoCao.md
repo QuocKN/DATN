@@ -45,8 +45,6 @@ console.log("Hello world");
 - Các model được train trên tập balanced
   - Dinov2 ViT s 14
     ![alt text](fine_tune/DINOv2/report/Tu_thu/2toan/results_chart.png)
-  - OpenClip
-  - SigLip
   - Swin v2 s Tranformer Small
   - ResNet18
   - ResNet50
@@ -61,18 +59,19 @@ Mỗi bộ `drone1` và `drone2` gồm 200 ảnh spectrogram. Tỷ lệ dưới 
 | ResNet18                              |  25/200 |        12.5% |  47/200 |        23.5% |
 | ResNet50                              |  41/200 |        20.5% |  33/200 |        16.5% |
 | EfficientNet-B2                       | 193/200 |        96.5% | 191/200 |        95.5% |
+| VGG13-BN                              | 189/200 |        94.5% | 198/200 |          99% |
 | Swin V2 Small                         |   2/200 |           1% |   3/200 |         1.5% |
 | OpenCLIP ViT-B/16                     |  17/200 |         8.5% |  12/200 |           6% |
 | ConvNeXt V2 Small (fine-tune 3 stage) |  99/200 |        49.5% | 122/200 |          61% |
-| SigLIP Base Patch16-224               | 169/200 |        84.5% | 193/200 |        96.5% |
 
 Kết quả tốt nhất:
 
 - `drone1`: EfficientNet-B2 đạt 96.5%.
-- `drone2`: DINOv2 đạt 99%.
-- DINOv2, EfficientNet-B2 và SigLIP có khả năng tổng quát hóa tốt nhất trên hai bộ dữ liệu tự thu.
+- `drone2`: DINOv2 và VGG13-BN đạt 99%.
+- VGG13-BN, EfficientNet-B2 và DINOv2 có khả năng tổng quát hóa tốt nhất trên hai bộ dữ liệu tự thu.
+- Swin V2 Small suy giảm mạnh trên dữ liệu tự thu, chỉ đạt 1% và 1.5% trên hai tập.
 
-  linear probe: <50% cho tất cả model
+  Feature Extraction-based Classification: <50% cho tất cả model
 
 Vậy dataset drone của bạn không chỉ có drone sạch. Nó gồm:
 

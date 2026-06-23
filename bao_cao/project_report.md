@@ -16,7 +16,7 @@ RF Recording / IQ file
     -> Tien xu ly bien do / clipping / spike neu can
     -> STFT hai phia + fftshift
     -> Spectrogram PNG 224x224
-    -> Linear-probe / fine-tune binary classifier
+    -> Feature Extraction-based Classification / fine-tune binary classifier
     -> Detection Result va bao cao JSON/PNG
 ```
 
@@ -37,7 +37,7 @@ Muc tieu ky thuat:
 
 - Xay dung quy trinh xu ly tin hieu RF tu du lieu IQ sang spectrogram.
 - Huan luyen va danh gia cac mo hinh AI phat hien Drone Signal va Non-Drone Signal.
-- So sanh hai chien luoc hoc chinh: fine-tune va linear probe.
+- So sanh hai chien luoc hoc chinh: fine-tune va Feature Extraction-based Classification.
 - Kiem tra kha nang tong quat hoa khi mo hinh gap du lieu khac mien voi du lieu huan luyen.
 
 Muc tieu nghien cuu:
@@ -100,9 +100,8 @@ fine_tune/
   ResNet50/
   EfficientNet_B2/
   ConvNext_V2/
-  Swin_Small/ (khong dua vao bao cao chinh)
+  Swin_Small/
   DINOv2/
-  SigLIP/
 ```
 
 Dac diem chung:
@@ -118,10 +117,10 @@ Mot so backbone/dinh huong dang co:
 
 - CNN: ResNet50, EfficientNet-B2.
 - ConvNeXt: ConvNeXt V2.
-- Self-supervised/vision-language backbone: DINOv2, SigLIP.
-- Cac backbone co thu muc nhung khong dua vao bao cao chinh: ResNet18, Swin Small, OpenCLIP.
+- Transformer/self-supervised backbone: Swin Small, DINOv2.
+- Cac backbone co thu muc nhung khong dua vao bao cao chinh: ResNet18, OpenCLIP va mot so thu muc thu nghiem phu.
 
-### 3.3. Nhom linear probe
+### 3.3. Nhom Feature Extraction-based Classification
 
 Thu muc chinh:
 
@@ -135,7 +134,6 @@ linear_probe/
   Swin_Small/
   ViT_L_16/
   DINOv2/
-  SigLIP/
 ```
 
 Y tuong:
@@ -321,7 +319,7 @@ Mot so script co chien luoc freeze/unfreeze:
 - ConvNeXt V2: co the fine-tune N stage cuoi.
 - EfficientNet-B2: co bien the train last N block.
 
-### 6.2. Linear probe
+### 6.2. Feature Extraction-based Classification
 
 Muc dich:
 
@@ -399,7 +397,7 @@ RQ2. Cac backbone pretrained tu thi giac may tinh co chuyen giao tot sang RF spe
 
 RQ3. Ket qua noi mien 100% co phan anh kha nang hoat dong tren du lieu thuc te hay khong?
 
-RQ4. Fine-tune end-to-end va linear probe khac nhau the nao ve do on dinh, chi phi va kha nang tong quat hoa?
+RQ4. Fine-tune end-to-end va Feature Extraction-based Classification khac nhau the nao ve do on dinh, chi phi va kha nang tong quat hoa?
 
 RQ5. DINOv2, ConvNeXt va CNN truyen thong khac nhau the nao khi gap du lieu tu thu hoac du lieu ngoai phan phoi?
 
@@ -411,7 +409,7 @@ RQ5. DINOv2, ConvNeXt va CNN truyen thong khac nhau the nao khi gap du lieu tu t
 
 - Xay dung pipeline doc IQ va sinh spectrogram tu nhieu dinh dang raw RF.
 - Dong nhat dau ra spectrogram 224x224 de dung voi nhieu backbone AI.
-- Xay dung va so sanh hai huong huan luyen chinh: fine-tune va linear probe.
+- Xay dung va so sanh hai huong huan luyen chinh: fine-tune va Feature Extraction-based Classification.
 - Tu dong luu checkpoint, summary JSON, confusion matrix va chart detect.
 
 ### 9.2. Dong gop thuc nghiem
@@ -497,7 +495,7 @@ Co the bo sung:
 
 - Tin hieu IQ.
 - STFT va spectrogram.
-- CNN, Vision Transformer, self-supervised/vision-language backbone.
+- CNN, Vision Transformer, Transformer phan cap va self-supervised backbone.
 - Metric: accuracy, precision, recall, F1, macro F1, confusion matrix.
 
 ### Chuong 3. Phuong phap de xuat
@@ -505,7 +503,7 @@ Co the bo sung:
 - Pipeline raw IQ -> spectrogram -> classifier.
 - Tien xu ly IQ va kiem tra clipping/spike.
 - Kien truc fine-tune.
-- Linear probe.
+- Feature Extraction-based Classification.
 
 ### Chuong 4. Thuc nghiem
 

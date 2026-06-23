@@ -17,7 +17,7 @@ trong đó $f_{\theta}$ là mô hình có tham số $\theta$, nhãn $0$ tương 
 
 Lớp \textit{Drone} biểu thị đoạn tín hiệu có chứa hoạt động RF của drone theo quy ước gán nhãn của dữ liệu. Lớp \textit{Non-drone} biểu thị đoạn không chứa hoạt động drone, có thể bao gồm nhiễu nền hoặc tín hiệu từ các nguồn phát khác. Cách phát biểu nhị phân phù hợp với mục tiêu chính của đồ án là phát hiện sự hiện diện của drone, thay vì nhận dạng chính xác chủng loại hoặc giao thức truyền thông.
 
-Hướng tiếp cận của đồ án là không giải điều chế nội dung gói tin RF. Thay vào đó, hệ thống học các đặc trưng thời gian--tần số trên spectrogram, chẳng hạn burst, vùng băng thông chiếm dụng, vệt nhảy tần hoặc sự khác biệt giữa tín hiệu drone và nguồn phát nền. Để đánh giá mức độ phù hợp của mô hình tiền huấn luyện với miền spectrogram RF, đồ án khảo sát hai chiến lược: \textit{linear probing} và \textit{fine-tuning}.
+Hướng tiếp cận của đồ án là không giải điều chế nội dung gói tin RF. Thay vào đó, hệ thống học các đặc trưng thời gian--tần số trên spectrogram, chẳng hạn burst, vùng băng thông chiếm dụng, vệt nhảy tần hoặc sự khác biệt giữa tín hiệu drone và nguồn phát nền. Để đánh giá mức độ phù hợp của mô hình tiền huấn luyện với miền spectrogram RF, đồ án khảo sát hai chiến lược: \textit{Feature Extraction-based Classification} và \textit{fine-tuning}.
 
 Đơn vị dự đoán chính trong phương pháp là một đoạn tín hiệu sau phân đoạn. Điều này có nghĩa là mỗi spectrogram tương ứng với một khoảng thời gian ngắn của bản ghi RF và được gán một nhãn duy nhất. Khi cần suy luận ở mức bản ghi hoặc phiên thu, các dự đoán theo đoạn có thể được tổng hợp ở bước sau. Cách tổ chức này giúp chuẩn hóa kích thước đầu vào, tăng số lượng mẫu huấn luyện và cho phép quan sát sự thay đổi quyết định theo thời gian.
 
@@ -84,16 +84,6 @@ Bên cạnh phần \textit{Non-drone} tự thu dùng để huấn luyện, đồ
 Mỗi bản ghi I/Q cần đi kèm metadata tối thiểu gồm nguồn dữ liệu, nhãn, tần số trung tâm, tốc độ lấy mẫu, kiểu dữ liệu, độ lợi thu nếu có và mã phiên thu. Metadata này giúp đọc đúng dữ liệu, tái tạo trục tần số và truy vết các trường hợp dự đoán sai.
 
 Trước khi chia tập, các đoạn sinh ra từ cùng một bản ghi hoặc cùng một phiên thu cần được giữ trong cùng một nhóm. Nếu các đoạn gần nhau của cùng một tín hiệu xuất hiện ở cả tập huấn luyện và tập kiểm thử, mô hình có thể học đặc trưng riêng của bản ghi thay vì học đặc trưng tổng quát của drone. Vì vậy, chia tập theo nguồn là một yêu cầu quan trọng để phép đánh giá có ý nghĩa hơn.
-
-\subsection{Kiểm tra chất lượng tín hiệu}
-
-Kiểm tra chất lượng được thực hiện trước khi tạo spectrogram nhằm phát hiện các bản ghi sai định dạng, bão hòa hoặc chứa artifact mạnh. Mục tiêu không phải loại bỏ toàn bộ nhiễu, vì nhiễu là một phần của môi trường RF thực tế, mà là tránh để mô hình học lỗi thu thay vì học đặc trưng drone.
-
-Các chỉ báo được sử dụng gồm PSD, SNR, clipping, burst và stripe artifact. PSD giúp quan sát phân bố công suất theo tần số và kiểm tra tín hiệu có nằm trong vùng phổ mong đợi hay không. SNR mô tả mức chênh lệch giữa tín hiệu và nền nhiễu, được dùng như thông tin chất lượng. Clipping được phát hiện bằng cách kiểm tra tỷ lệ mẫu nằm gần biên giá trị của kiểu dữ liệu hoặc ADC. Burst và stripe artifact được dùng để mô tả các hoạt động ngắn hạn hoặc cấu trúc bất thường trên spectrogram.
-
-Các chỉ báo chất lượng được lưu cùng mã bản ghi để phục vụ phân tích ở chương thực nghiệm. Chúng không được dùng trực tiếp như nhãn phân loại, mà đóng vai trò kiểm soát dữ liệu và hỗ trợ giải thích kết quả.
-
-Quy trình kiểm tra chất lượng có thể thực hiện theo thứ tự từ định dạng đến tín hiệu. Trước hết, tệp I/Q được kiểm tra khả năng đọc, kích thước tệp, số lượng mẫu và kiểu dữ liệu. Sau đó, phân bố biên độ của $I$ và $Q$ được quan sát để phát hiện giá trị bất thường, mất dữ liệu hoặc clipping. Cuối cùng, PSD và spectrogram xem nhanh được dùng để xác nhận vùng phổ quan sát có hoạt động RF phù hợp với mục tiêu thu hay không.
 
 \subsection{Phân đoạn tín hiệu}
 
@@ -162,9 +152,9 @@ Các phép tăng cường dữ liệu, nếu được sử dụng, chỉ áp d�
 
 \section{Xây dựng mô hình phân loại}
 
-\subsection{Linear Probing}
+\subsection{Feature Extraction-based Classification}
 
-Linear probing được dùng để đánh giá mức độ phù hợp của đặc trưng tiền huấn luyện khi backbone không được cập nhật. Với ảnh spectrogram $\mathbf{S}$, backbone đóng băng $g_{\phi}$ tạo embedding:
+\textit{Feature Extraction-based Classification} được dùng để đánh giá mức độ phù hợp của đặc trưng tiền huấn luyện khi backbone không được cập nhật. Với ảnh spectrogram $\mathbf{S}$, backbone đóng băng $g_{\phi}$ tạo embedding:
 \begin{equation}
     \mathbf{h}=g_{\phi}(\mathbf{S}),
 \end{equation}
@@ -176,7 +166,7 @@ Các embedding của tập huấn luyện được dùng để huấn luyện SV
 \end{equation}
 trong đó $\mathbf{w}$ và $b$ xác định siêu phẳng phân tách. Nhãn dự đoán được xác định theo dấu của $d(\mathbf{h})$ hoặc theo ngưỡng được thiết lập trên tập xác thực.
 
-Ưu điểm của linear probing là chi phí huấn luyện thấp và cho phép kiểm tra trực tiếp chất lượng embedding tiền huấn luyện. Hạn chế là backbone không thích nghi với miền spectrogram RF, nên các đặc trưng quan trọng như burst, dải phổ hoặc mẫu nhảy tần có thể chưa được biểu diễn tốt.
+Ưu điểm của \textit{Feature Extraction-based Classification} là chi phí huấn luyện thấp và cho phép kiểm tra trực tiếp chất lượng embedding tiền huấn luyện. Hạn chế là backbone không thích nghi với miền spectrogram RF, nên các đặc trưng quan trọng như burst, dải phổ hoặc mẫu nhảy tần có thể chưa được biểu diễn tốt.
 
 \subsection{Fine-tuning}
 
@@ -213,13 +203,13 @@ Fine-tuning giúp mô hình điều chỉnh đặc trưng theo cấu trúc riên
 
 \subsection{Backbone được khảo sát}
 
-Đồ án khảo sát sáu backbone gồm VGG13-BN, ResNet50, EfficientNet-B2, ConvNeXtV2, SigLIP và DINOv2. Các backbone này đại diện cho nhiều hướng thiết kế khác nhau, từ CNN tuần tự, CNN residual, CNN tối ưu hiệu quả, CNN hiện đại đến mô hình thị giác--ngôn ngữ và mô hình tự giám sát. Việc dùng nhiều backbone giúp đánh giá ảnh hưởng của kiến trúc và phương pháp tiền huấn luyện đối với miền ảnh spectrogram.
+Đồ án khảo sát sáu backbone gồm VGG13-BN, ResNet50, EfficientNet-B2, ConvNeXtV2, Swin Transformer và DINOv2. Các backbone này đại diện cho nhiều hướng thiết kế khác nhau, từ CNN tuần tự, CNN residual, CNN tối ưu hiệu quả, CNN hiện đại đến Transformer phân cấp và mô hình tự giám sát. Việc dùng nhiều backbone giúp đánh giá ảnh hưởng của kiến trúc và phương pháp tiền huấn luyện đối với miền ảnh spectrogram.
 
 VGG13-BN là CNN tuần tự sử dụng các lớp tích chập, Batch Normalization, hàm kích hoạt và pooling theo từng khối. Kiến trúc này đơn giản hơn các backbone hiện đại, nhưng vẫn có khả năng học các cạnh phổ, vùng sáng và texture cục bộ trên spectrogram. VGG13-BN được đưa vào như một mốc so sánh để xem một CNN cổ điển có Batch Normalization hoạt động ra sao trên dữ liệu RF.
 
 ResNet50 sử dụng các khối residual với kết nối tắt, giúp huấn luyện mạng sâu ổn định hơn. Đối với spectrogram, các tầng tích chập có thể học đặc trưng cục bộ và kết hợp chúng thành đặc trưng cấp cao hơn. EfficientNet-B2 sử dụng chiến lược mở rộng cân bằng giữa độ sâu, độ rộng và độ phân giải, cung cấp một backbone CNN có hiệu quả tham số tương đối tốt.
 
-ConvNeXtV2 là CNN hiện đại, được thiết kế theo nhiều nguyên tắc huấn luyện và tổ chức khối của các mô hình thị giác thế hệ mới. Mô hình này vẫn giữ phép tích chập nhưng có khả năng mô hình hóa ngữ cảnh rộng hơn so với CNN truyền thống. SigLIP đại diện cho nhóm mô hình thị giác--ngôn ngữ, trong đó encoder ảnh được tiền huấn luyện trên lượng dữ liệu lớn. DINOv2 đại diện cho hướng tiền huấn luyện tự giám sát, có thể tạo biểu diễn ảnh tổng quát mà không phụ thuộc trực tiếp vào nhãn lớp của bài toán đích.
+ConvNeXtV2 là CNN hiện đại, được thiết kế theo nhiều nguyên tắc huấn luyện và tổ chức khối của các mô hình thị giác thế hệ mới. Mô hình này vẫn giữ phép tích chập nhưng có khả năng mô hình hóa ngữ cảnh rộng hơn so với CNN truyền thống. Swin Transformer là kiến trúc Transformer thị giác phân cấp, sử dụng cơ chế self-attention theo cửa sổ dịch chuyển để mô hình hóa quan hệ không gian trong ảnh với chi phí tính toán kiểm soát được. DINOv2 đại diện cho hướng tiền huấn luyện tự giám sát, có thể tạo biểu diễn ảnh tổng quát mà không phụ thuộc trực tiếp vào nhãn lớp của bài toán đích.
 
 Tất cả backbone được đưa vào cùng quy trình tạo spectrogram, resize, chuẩn hóa và chia dữ liệu. Cách tổ chức này giúp kết quả phản ánh khác biệt của biểu diễn mô hình và chiến lược huấn luyện, thay vì khác biệt do tiền xử lý.
 
@@ -227,15 +217,15 @@ Tất cả backbone được đưa vào cùng quy trình tạo spectrogram, resi
 
 \subsection{Huấn luyện và lựa chọn mô hình}
 
-Tập dữ liệu được chia thành tập huấn luyện, tập xác thực và tập kiểm thử. Tập huấn luyện dùng để tối ưu SVM trong linear probing hoặc cập nhật tham số trong fine-tuning. Tập xác thực dùng để chọn siêu tham số, checkpoint và ngưỡng quyết định nếu cần. Tập kiểm thử chỉ được sử dụng sau khi quá trình lựa chọn mô hình hoàn tất.
+Tập dữ liệu được chia thành tập huấn luyện, tập xác thực và tập kiểm thử. Tập huấn luyện dùng để tối ưu SVM trong \textit{Feature Extraction-based Classification} hoặc cập nhật tham số trong fine-tuning. Tập xác thực dùng để chọn siêu tham số, checkpoint và ngưỡng quyết định nếu cần. Tập kiểm thử chỉ được sử dụng sau khi quá trình lựa chọn mô hình hoàn tất.
 
-Trong linear probing, spectrogram được đưa qua backbone đóng băng để trích xuất embedding. Các embedding được chuẩn hóa theo thống kê của tập huấn luyện rồi đưa vào SVM. Trong fine-tuning, ảnh spectrogram được đưa trực tiếp qua mô hình, lớp phân loại sinh logits và mô hình được tối ưu bằng cross-entropy. Các cấu hình huấn luyện chi tiết như learning rate, batch size, số epoch và tiêu chí chọn checkpoint được trình bày ở chương thực nghiệm.
+Trong \textit{Feature Extraction-based Classification}, spectrogram được đưa qua backbone đóng băng để trích xuất embedding. Các embedding được chuẩn hóa theo thống kê của tập huấn luyện rồi đưa vào SVM. Trong fine-tuning, ảnh spectrogram được đưa trực tiếp qua mô hình, lớp phân loại sinh logits và mô hình được tối ưu bằng cross-entropy. Các cấu hình huấn luyện chi tiết như learning rate, batch size, số epoch và tiêu chí chọn checkpoint được trình bày ở chương thực nghiệm.
 
 Checkpoint được lựa chọn dựa trên kết quả của tập xác thực thay vì tập kiểm thử. Cách làm này giúp tập kiểm thử giữ vai trò đánh giá độc lập. Trong quá trình huấn luyện, các thông tin như loss, accuracy, learning rate và checkpoint tốt nhất cần được lưu lại để phục vụ tái lập thí nghiệm và so sánh giữa các backbone.
 
 \subsection{Suy luận trên tập kiểm thử nội miền}
 
-Suy luận nội miền được thực hiện trên tập kiểm thử nhị phân không tham gia huấn luyện hoặc lựa chọn mô hình. Tập này gồm mẫu \textit{Drone} từ DroneDetect v2 và mẫu \textit{Non-drone} tự thu/bổ sung, được xử lý bằng cùng pipeline đã dùng khi huấn luyện. Mỗi bản ghi được phân đoạn, chuyển thành spectrogram và chuẩn hóa bằng đúng cấu hình tương ứng. Với linear probing, mô hình tạo embedding rồi SVM đưa ra quyết định. Với fine-tuning, mô hình tạo xác suất hai lớp và nhãn có xác suất lớn hơn được chọn làm dự đoán.
+Suy luận nội miền được thực hiện trên tập kiểm thử nhị phân không tham gia huấn luyện hoặc lựa chọn mô hình. Tập này gồm mẫu \textit{Drone} từ DroneDetect v2 và mẫu \textit{Non-drone} tự thu/bổ sung, được xử lý bằng cùng pipeline đã dùng khi huấn luyện. Mỗi bản ghi được phân đoạn, chuyển thành spectrogram và chuẩn hóa bằng đúng cấu hình tương ứng. Với \textit{Feature Extraction-based Classification}, mô hình tạo embedding rồi SVM đưa ra quyết định. Với fine-tuning, mô hình tạo xác suất hai lớp và nhãn có xác suất lớn hơn được chọn làm dự đoán.
 
 Kết quả suy luận được lưu cùng mã tệp nguồn, vị trí đoạn, nhãn thật và điểm tin cậy. Các thông tin này phục vụ tính accuracy, precision, recall, F1-score và ma trận nhầm lẫn ở chương đánh giá.
 
@@ -253,6 +243,6 @@ Do dữ liệu tự thu có thể chỉ chứa lớp \textit{Drone} trong một 
 
 Chương này đã trình bày phương pháp đề xuất cho bài toán phát hiện drone bằng tín hiệu RF. Pipeline bắt đầu từ mô hình thu tín hiệu RF bằng SDR, lưu dữ liệu I/Q, kiểm tra chất lượng, phân đoạn, tạo spectrogram, chuẩn hóa ảnh và đưa vào mô hình phân loại hai lớp \textit{Drone} / \textit{Non-drone}. Các bước xử lý được thiết kế thống nhất để hạn chế sai lệch giữa dữ liệu huấn luyện, dữ liệu kiểm thử và dữ liệu RF tự thu.
 
-Hai chiến lược khai thác mô hình tiền huấn luyện được xây dựng gồm linear probing với SVM trên embedding đóng băng và fine-tuning toàn bộ backbone bằng cross-entropy. Sáu backbone gồm VGG13-BN, ResNet50, EfficientNet-B2, ConvNeXtV2, SigLIP và DINOv2 được đặt trong cùng pipeline để so sánh công bằng hơn. Quy trình này tạo cơ sở để chương tiếp theo đánh giá hiệu năng nội miền, khả năng tổng quát hóa và ảnh hưởng của chất lượng spectrogram.
+Hai chiến lược khai thác mô hình tiền huấn luyện được xây dựng gồm \textit{Feature Extraction-based Classification} với SVM trên embedding đóng băng và fine-tuning toàn bộ backbone bằng cross-entropy. Sáu backbone gồm VGG13-BN, ResNet50, EfficientNet-B2, ConvNeXtV2, Swin Transformer và DINOv2 được đặt trong cùng pipeline để so sánh công bằng hơn. Quy trình này tạo cơ sở để chương tiếp theo đánh giá hiệu năng nội miền, khả năng tổng quát hóa và ảnh hưởng của chất lượng spectrogram.
 
 \end{document}

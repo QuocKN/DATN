@@ -670,7 +670,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--image-renderer",
         choices=["fast", "matplotlib"],
-        default="fast",
+        default="matplotlib",
         help="Use direct OpenCV/Pillow PNG rendering, or the slower Matplotlib renderer.",
     )
     parser.add_argument("--normalize", action="store_true")

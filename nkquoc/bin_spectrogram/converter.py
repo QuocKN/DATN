@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import os
-from nkquoc.base.iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
-from nkquoc.base.iq_waveform_plotter import WaveformPlotter
+from ..base.iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
+from ..base.iq_waveform_plotter import WaveformPlotter
 from .iq_reader import iter_iq_chunks_from_bin
 
 def convert_bin_to_spectrograms(
@@ -18,6 +18,7 @@ def convert_bin_to_spectrograms(
     save_waveform: bool = True,
     waveform_prefix: str = "waveform",
     waveform_max_points: int = 20_000,
+    start_iq_sample: int = 0,
 ) -> int:
     """Convert binary IQ file into a folder of spectrogram PNG images."""
     if not os.path.exists(bin_path):
@@ -35,6 +36,11 @@ def convert_bin_to_spectrograms(
     if max_duration_seconds is not None:
         max_iq_samples = int(sample_rate * max_duration_seconds)
         print(f"Reading first {max_duration_seconds}s ({max_iq_samples} IQ samples)...")
+    if start_iq_sample:
+        print(
+            f"Skipping first {start_iq_sample} IQ samples "
+            f"({start_iq_sample / sample_rate:.6f}s at {sample_rate} Hz)..."
+        )
 
     min_samples_needed = max(stft_point, int(sample_rate * duration_time))
     if chunk_size < min_samples_needed:
@@ -46,7 +52,13 @@ def convert_bin_to_spectrograms(
         chunk_size = min_samples_needed
 
     saved_count = 0
-    chunks = iter_iq_chunks_from_bin(bin_path, chunk_size, normalize, max_iq_samples)
+    chunks = iter_iq_chunks_from_bin(
+        bin_path,
+        chunk_size,
+        normalize,
+        max_iq_samples,
+        skip_iq_samples=start_iq_sample,
+    )
     for index, iq_chunk in enumerate(chunks, start=1):
         if iq_chunk.size < min_samples_needed:
             print(f"[SKIP] Chunk {index}: only {iq_chunk.size} samples, need {min_samples_needed}")

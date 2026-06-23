@@ -27,7 +27,8 @@ SAMPLE_RATE = 40_000_000
 RF_BANDWIDTH = 28_000_000
 CENTER_FREQUENCY = 2_445_000_000
 RX_GAIN = 30
-
+MAX_SECOND=None
+MAX_SAMPLE=280_000_000
 
 def format_bladerf_value(value: float | int) -> str:
     if float(value).is_integer():
@@ -235,8 +236,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--follow", action="store_true", help="Wait for more data at EOF with --input-bin")
     parser.add_argument("--poll-seconds", type=float, default=0.02)
     parser.add_argument("--read-bytes", type=int, default=8 * 1024 * 1024)
+<<<<<<< HEAD
     parser.add_argument("--max-seconds", type=float, default=None, help="Stop after this many seconds of IQ")
     parser.add_argument("--max-iq-samples", type=int, default=None, help="Stop after this many IQ samples")
+=======
+    parser.add_argument("--max-seconds", type=float, default=MAX_SECOND, help="Stop after this many seconds of IQ")
+    parser.add_argument("--max-iq-samples", type=int, default=MAX_SAMPLE, help="Stop after this many IQ samples")
+>>>>>>> feat/signal_process
     parser.add_argument("--status-seconds", type=float, default=1.0, help="Print status at this interval")
     return parser.parse_args()
 

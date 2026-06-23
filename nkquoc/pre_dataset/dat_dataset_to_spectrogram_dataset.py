@@ -36,32 +36,47 @@ Drone folder information is kept both in folder name (<label>) and filename.
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+from datetime import datetime
+import hashlib
+import json
 import os
+from pathlib import Path
 import random
 import re
-from typing import Generator
+import sys
+import time
+from typing import Callable, Generator
 
 import numpy as np
 from tqdm import tqdm
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 from nkquoc.base.iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
 
 
 # ========================
 # CONFIG
 # ========================
-DATASET_ROOT = r"C:\Users\DiepHM\Documents\data"
+DATASET_ROOT = r"F:\DroneDetect_V2"
 SOURCE_FOLDERS = ("CLEAN", "WIFI", "BLUE", "BOTH")
-OUTPUT_ROOT = r"C:\Users\DiepHM\Documents\data\DroneDetect_spectrogram_dataset"
+OUTPUT_ROOT = r"E:\DATN_Data_21_6\dataset_40_0_1\drone"
 
 SAMPLE_RATE = 40_000_000
 STFT_POINT = 1024
 
-# Each recording is 2 seconds long. Use 100 ms windows with 50% overlap.
+# Each recording is limited to 5 seconds. Use 50 ms windows.
 WINDOW_SECONDS = 0.1
-OVERLAP_RATIO = 0.5
+OVERLAP_RATIO = 0.05
 
-MAX_DURATION_SECONDS = 2
+MAX_DURATION_SECONDS = 5
+
+ENABLE_IMAGE_SCALING = True
+SCALE_TOP_RATIO = 1 / 6
+SCALE_BOTTOM_RATIO = 5 / 6
 
 # Supported values: "float32_iq" or "int16_iq"
 DAT_FORMAT = "float32_iq"
@@ -73,11 +88,16 @@ TEST_RATIO = 0.1
 RANDOM_SEED = 42
 
 SKIP_EXISTING_IMAGES = True
+ENABLE_PROGRESS_LOG = True
+PROGRESS_LOG_PATH = ""  # Empty = OUTPUT_ROOT/_spectrogram_progress.json
+PROGRESS_LOCK_STALE_SECONDS = 60
+CHECKPOINT_EVERY_WINDOWS = 1
+RESUME_FROM_EXISTING_IMAGES = True
 
 # Parallel conversion settings
 ENABLE_PARALLEL = True
 PARALLEL_BACKEND = "process"  # "process" or "thread"
-NUM_WORKERS = 5  # 0 = auto (cpu_count - 1)
+NUM_WORKERS = 4  # 0 = auto (cpu_count - 1)
 
 
 def safe_name(text: str) -> str:
@@ -85,6 +105,288 @@ def safe_name(text: str) -> str:
     cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", text.strip())
     cleaned = cleaned.strip("._-")
     return cleaned or "unknown"
+
+
+def now_text() -> str:
+    """Return a compact local timestamp for progress logs."""
+    return datetime.now().astimezone().isoformat(timespec="seconds")
+
+
+def normalized_path(path: str) -> str:
+    return os.path.abspath(os.path.normpath(path))
+
+
+def get_progress_log_path() -> str:
+    if PROGRESS_LOG_PATH:
+        return normalized_path(PROGRESS_LOG_PATH)
+    return os.path.join(normalized_path(OUTPUT_ROOT), "_spectrogram_progress.json")
+
+
+def progress_config_snapshot() -> dict:
+    return {
+        "dataset_root": normalized_path(DATASET_ROOT),
+        "source_folders": list(SOURCE_FOLDERS),
+        "output_root": normalized_path(OUTPUT_ROOT),
+        "sample_rate": SAMPLE_RATE,
+        "stft_point": STFT_POINT,
+        "window_seconds": WINDOW_SECONDS,
+        "overlap_ratio": OVERLAP_RATIO,
+        "max_duration_seconds": MAX_DURATION_SECONDS,
+        "dat_format": DAT_FORMAT,
+        "normalize_int16": NORMALIZE_INT16,
+        "train_ratio": TRAIN_RATIO,
+        "valid_ratio": VALID_RATIO,
+        "test_ratio": TEST_RATIO,
+        "random_seed": RANDOM_SEED,
+        "enable_image_scaling": ENABLE_IMAGE_SCALING,
+        "scale_top_ratio": SCALE_TOP_RATIO,
+        "scale_bottom_ratio": SCALE_BOTTOM_RATIO,
+        "skip_existing_images": SKIP_EXISTING_IMAGES,
+    }
+
+
+def progress_config_signature() -> str:
+    encoded = json.dumps(
+        progress_config_snapshot(),
+        sort_keys=True,
+        ensure_ascii=True,
+    ).encode("utf-8")
+    return hashlib.sha1(encoded).hexdigest()
+
+
+def new_progress_state() -> dict:
+    config = progress_config_snapshot()
+    encoded = json.dumps(config, sort_keys=True, ensure_ascii=True).encode("utf-8")
+    return {
+        "version": 1,
+        "config_signature": hashlib.sha1(encoded).hexdigest(),
+        "config": config,
+        "created_at": now_text(),
+        "updated_at": now_text(),
+        "records": {},
+    }
+
+
+@contextmanager
+def progress_file_lock() -> Generator[None, None, None]:
+    """Coordinate progress JSON updates across parallel worker processes."""
+    progress_path = get_progress_log_path()
+    progress_dir = os.path.dirname(progress_path)
+    os.makedirs(progress_dir, exist_ok=True)
+
+    lock_path = f"{progress_path}.lock"
+    while True:
+        try:
+            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            with os.fdopen(fd, "w", encoding="utf-8") as lock_file:
+                json.dump({"pid": os.getpid(), "created_at": now_text()}, lock_file)
+            break
+        except FileExistsError:
+            try:
+                lock_age = time.time() - os.path.getmtime(lock_path)
+                if lock_age > PROGRESS_LOCK_STALE_SECONDS:
+                    os.remove(lock_path)
+                    continue
+            except OSError:
+                pass
+            time.sleep(0.1)
+
+    try:
+        yield
+    finally:
+        try:
+            os.remove(lock_path)
+        except FileNotFoundError:
+            pass
+
+
+def read_progress_state_unlocked() -> dict:
+    progress_path = get_progress_log_path()
+    if not os.path.exists(progress_path):
+        return new_progress_state()
+
+    try:
+        with open(progress_path, "r", encoding="utf-8") as progress_file:
+            state = json.load(progress_file)
+    except json.JSONDecodeError:
+        backup_path = f"{progress_path}.corrupt.{int(time.time())}"
+        os.replace(progress_path, backup_path)
+        print(f"[progress] Corrupt progress log moved to: {backup_path}")
+        return new_progress_state()
+
+    if state.get("config_signature") != progress_config_signature():
+        print("[progress] Config changed; current progress log will be ignored.")
+        return new_progress_state()
+
+    state.setdefault("records", {})
+    return state
+
+
+def write_progress_state_unlocked(state: dict) -> None:
+    progress_path = get_progress_log_path()
+    progress_dir = os.path.dirname(progress_path)
+    os.makedirs(progress_dir, exist_ok=True)
+
+    state["updated_at"] = now_text()
+    temp_path = f"{progress_path}.{os.getpid()}.tmp"
+    with open(temp_path, "w", encoding="utf-8") as progress_file:
+        json.dump(state, progress_file, indent=2, sort_keys=True)
+        progress_file.write("\n")
+
+    os.replace(temp_path, progress_path)
+
+
+def progress_record_key(split_name: str, record: dict) -> str:
+    payload = {
+        "split": split_name,
+        "source_group": record["source_group"],
+        "label": record["label"],
+        "dat_path": normalized_path(record["dat_path"]),
+    }
+    encoded = json.dumps(payload, sort_keys=True, ensure_ascii=True).encode("utf-8")
+    return hashlib.sha1(encoded).hexdigest()
+
+
+def upsert_progress_entry(state: dict, split_name: str, record: dict) -> dict:
+    key = progress_record_key(split_name, record)
+    entry = state.setdefault("records", {}).setdefault(key, {})
+    entry.update(
+        {
+            "split": split_name,
+            "source_group": record["source_group"],
+            "label": record["label"],
+            "dat_path": normalized_path(record["dat_path"]),
+            "file_stem": record.get("file_stem", ""),
+        }
+    )
+    return entry
+
+
+def load_progress_records_snapshot() -> dict:
+    if not ENABLE_PROGRESS_LOG:
+        return {}
+
+    with progress_file_lock():
+        state = read_progress_state_unlocked()
+        return dict(state.get("records", {}))
+
+
+def begin_record_progress(split_name: str, record: dict) -> int | None:
+    if not ENABLE_PROGRESS_LOG:
+        return 1
+
+    with progress_file_lock():
+        state = read_progress_state_unlocked()
+        entry = upsert_progress_entry(state, split_name, record)
+        if entry.get("status") == "done":
+            return None
+
+        try:
+            next_window_index = int(entry.get("next_window_index", 1))
+        except (TypeError, ValueError):
+            next_window_index = 1
+
+        next_window_index = max(1, next_window_index)
+        entry.setdefault("started_at", now_text())
+        entry["status"] = "running"
+        entry["next_window_index"] = next_window_index
+        entry["updated_at"] = now_text()
+        write_progress_state_unlocked(state)
+
+    return next_window_index
+
+
+def set_record_next_window(split_name: str, record: dict, next_window_index: int) -> None:
+    if not ENABLE_PROGRESS_LOG:
+        return
+
+    with progress_file_lock():
+        state = read_progress_state_unlocked()
+        entry = upsert_progress_entry(state, split_name, record)
+        if entry.get("status") == "done":
+            return
+
+        entry["status"] = "running"
+        entry["next_window_index"] = max(1, int(next_window_index))
+        entry["updated_at"] = now_text()
+        write_progress_state_unlocked(state)
+
+
+def checkpoint_record_progress(
+    split_name: str,
+    record: dict,
+    next_window_index: int,
+    saved_delta: int,
+) -> None:
+    if not ENABLE_PROGRESS_LOG:
+        return
+
+    with progress_file_lock():
+        state = read_progress_state_unlocked()
+        entry = upsert_progress_entry(state, split_name, record)
+        if entry.get("status") == "done":
+            return
+
+        try:
+            current_next_window = int(entry.get("next_window_index", 1))
+        except (TypeError, ValueError):
+            current_next_window = 1
+
+        entry["status"] = "running"
+        entry["next_window_index"] = max(current_next_window, int(next_window_index))
+        entry["saved_images"] = int(entry.get("saved_images", 0)) + int(saved_delta)
+        entry["updated_at"] = now_text()
+        write_progress_state_unlocked(state)
+
+
+def finish_record_progress(split_name: str, record: dict, saved_count: int) -> None:
+    if not ENABLE_PROGRESS_LOG:
+        return
+
+    with progress_file_lock():
+        state = read_progress_state_unlocked()
+        entry = upsert_progress_entry(state, split_name, record)
+        entry["status"] = "done"
+        entry["last_run_new_images"] = int(saved_count)
+        entry["completed_at"] = now_text()
+        entry["updated_at"] = now_text()
+        write_progress_state_unlocked(state)
+
+
+def infer_next_window_index_from_existing_images(
+    output_dir: str,
+    prefix: str,
+    source_group: str,
+    label: str,
+    dat_path: str,
+) -> int:
+    """Find the first missing output window from already written PNG files."""
+    if not (RESUME_FROM_EXISTING_IMAGES and SKIP_EXISTING_IMAGES):
+        return 1
+    if not os.path.isdir(output_dir):
+        return 1
+
+    safe_prefix = safe_name(prefix)
+    safe_source = safe_name(source_group)
+    safe_label = safe_name(label)
+    base_name = safe_name(os.path.splitext(os.path.basename(dat_path))[0])
+    expected_prefix = f"{safe_prefix}__{safe_source}__{safe_label}__{base_name}__w"
+    expected_suffix = ".png"
+
+    existing_indices = set()
+    for file_name in os.listdir(output_dir):
+        if not file_name.startswith(expected_prefix) or not file_name.endswith(expected_suffix):
+            continue
+
+        index_text = file_name[len(expected_prefix):-len(expected_suffix)]
+        if index_text.isdigit():
+            existing_indices.add(int(index_text))
+
+    next_window_index = 1
+    while next_window_index in existing_indices:
+        next_window_index += 1
+
+    return next_window_index
 
 
 def derive_label(source_root: str, file_path: str) -> str:
@@ -203,6 +505,45 @@ def split_records(records):
     return train_records, valid_records, test_records
 
 
+def maybe_scale_spectrogram_image(output_path: str) -> None:
+    """Apply the same in-place crop/resize used by nkquoc.scale_image."""
+    if not ENABLE_IMAGE_SCALING:
+        return
+
+    from nkquoc.scale_image import scale_image
+
+    scale_image(Path(output_path), SCALE_TOP_RATIO, SCALE_BOTTOM_RATIO)
+
+
+def save_spectrogram_image_atomic(
+    frequencies: np.ndarray,
+    times: np.ndarray,
+    spectrum: np.ndarray,
+    output_path: str,
+) -> None:
+    """Write a PNG through a temp file so interrupted runs do not leave partial output."""
+    temp_output_path = f"{output_path}.{os.getpid()}.tmp.png"
+    if os.path.exists(temp_output_path):
+        os.remove(temp_output_path)
+
+    try:
+        save_spectrogram_image(
+            frequencies=frequencies,
+            times=times,
+            spectrum=spectrum,
+            output_path=temp_output_path,
+        )
+        maybe_scale_spectrogram_image(temp_output_path)
+        os.replace(temp_output_path, output_path)
+    except Exception:
+        try:
+            if os.path.exists(temp_output_path):
+                os.remove(temp_output_path)
+        except OSError:
+            pass
+        raise
+
+
 def iter_iq_chunks_from_dat(
     dat_path: str,
     window_samples: int,
@@ -210,6 +551,7 @@ def iter_iq_chunks_from_dat(
     dat_format: str = "float32_iq",
     normalize_int16: bool = False,
     max_iq_samples: int | None = None,
+    start_window_index: int = 1,
 ) -> Generator[np.ndarray, None, None]:
     """Yield overlapping complex IQ windows from a .dat file."""
     if dat_format not in {"float32_iq", "int16_iq"}:
@@ -223,10 +565,18 @@ def iter_iq_chunks_from_dat(
         bytes_per_scalar = 2
 
     hop_samples = max(1, hop_samples)
-    total_read = 0
+    start_window_index = max(1, int(start_window_index))
+    start_iq_sample = (start_window_index - 1) * hop_samples
+    if max_iq_samples is not None and start_iq_sample >= max_iq_samples:
+        return
+
+    total_read = start_iq_sample
     buffer = np.empty(0, dtype=np.complex64)
 
     with open(dat_path, "rb") as f:
+        if start_iq_sample > 0:
+            f.seek(2 * start_iq_sample * bytes_per_scalar, os.SEEK_SET)
+
         while True:
             if max_iq_samples is not None and total_read >= max_iq_samples:
                 break
@@ -284,6 +634,8 @@ def convert_dat_to_spectrograms(
     source_group: str,
     label: str,
     show_window_progress: bool = True,
+    start_window_index: int = 1,
+    progress_callback: Callable[[int, int], None] | None = None,
 ) -> int:
     """Convert a single .dat recording into multiple spectrogram images."""
     if not os.path.exists(dat_path):
@@ -314,12 +666,34 @@ def convert_dat_to_spectrograms(
     if max_iq_samples is not None and max_iq_samples >= window_samples:
         estimated_windows = ((max_iq_samples - window_samples) // hop_samples) + 1
 
+    start_window_index = max(1, int(start_window_index))
+    if estimated_windows is not None:
+        estimated_windows = max(0, estimated_windows - start_window_index + 1)
+
     safe_prefix = safe_name(prefix)
     safe_source = safe_name(source_group)
     safe_label = safe_name(label)
     base_name = safe_name(os.path.splitext(os.path.basename(dat_path))[0])
 
     saved_count = 0
+    pending_saved_delta = 0
+    windows_since_checkpoint = 0
+    last_next_window_index = start_window_index
+
+    def mark_window_processed(next_window_index: int, saved_delta: int) -> None:
+        nonlocal pending_saved_delta, windows_since_checkpoint, last_next_window_index
+        pending_saved_delta += int(saved_delta)
+        windows_since_checkpoint += 1
+        last_next_window_index = next_window_index
+
+        checkpoint_every = max(1, int(CHECKPOINT_EVERY_WINDOWS))
+        if progress_callback is None or windows_since_checkpoint < checkpoint_every:
+            return
+
+        progress_callback(last_next_window_index, pending_saved_delta)
+        pending_saved_delta = 0
+        windows_since_checkpoint = 0
+
     chunk_iter = iter_iq_chunks_from_dat(
         dat_path=dat_path,
         window_samples=window_samples,
@@ -327,6 +701,7 @@ def convert_dat_to_spectrograms(
         dat_format=dat_format,
         normalize_int16=normalize_int16,
         max_iq_samples=max_iq_samples,
+        start_window_index=start_window_index,
     )
     if show_window_progress:
         chunk_iter = tqdm(
@@ -338,9 +713,9 @@ def convert_dat_to_spectrograms(
             leave=False,
         )
 
-    for index, iq_chunk in enumerate(chunk_iter, start=1):
+    for index, iq_chunk in enumerate(chunk_iter, start=start_window_index):
         if iq_chunk.size < window_samples:
-            continue
+            break
 
         output_path = os.path.join(
             output_dir,
@@ -348,6 +723,7 @@ def convert_dat_to_spectrograms(
         )
 
         if SKIP_EXISTING_IMAGES and os.path.exists(output_path):
+            mark_window_processed(index + 1, saved_delta=0)
             continue
 
         frequencies, times, spectrum = compute_spectrogram(
@@ -357,13 +733,17 @@ def convert_dat_to_spectrograms(
             duration_time=window_seconds,
         )
 
-        save_spectrogram_image(
+        save_spectrogram_image_atomic(
             frequencies=frequencies,
             times=times,
             spectrum=spectrum,
             output_path=output_path,
         )
         saved_count += 1
+        mark_window_processed(index + 1, saved_delta=1)
+
+    if progress_callback is not None and windows_since_checkpoint > 0:
+        progress_callback(last_next_window_index, pending_saved_delta)
 
     return saved_count
 
@@ -376,15 +756,50 @@ def resolve_num_workers() -> int:
 
 
 def process_one_record(split_name: str, total: int, index: int, record: dict) -> int:
-    print(
-        f"[{split_name}] {index}/{total} -> {record['source_group']}/{record['label']} "
-        f"| {os.path.basename(record['dat_path'])}"
-    )
     split_root = os.path.join(OUTPUT_ROOT, split_name)
     source_dir = os.path.join(split_root, safe_name(record["source_group"]))
     label_dir = os.path.join(source_dir, safe_name(record["label"]))
 
-    return convert_dat_to_spectrograms(
+    start_window_index = begin_record_progress(split_name, record)
+    if start_window_index is None:
+        print(
+            f"[{split_name}] {index}/{total} -> {record['source_group']}/{record['label']} "
+            f"| {os.path.basename(record['dat_path'])} | already done"
+        )
+        return 0
+
+    existing_next_window = infer_next_window_index_from_existing_images(
+        output_dir=label_dir,
+        prefix="spectrogram",
+        source_group=record["source_group"],
+        label=record["label"],
+        dat_path=record["dat_path"],
+    )
+    if start_window_index <= 1:
+        start_window_index = existing_next_window
+    else:
+        start_window_index = min(start_window_index, existing_next_window)
+
+    set_record_next_window(split_name, record, start_window_index)
+
+    resume_text = ""
+    if start_window_index > 1:
+        resume_text = f" | resume window {start_window_index}"
+
+    print(
+        f"[{split_name}] {index}/{total} -> {record['source_group']}/{record['label']} "
+        f"| {os.path.basename(record['dat_path'])}{resume_text}"
+    )
+
+    def checkpoint(next_window_index: int, saved_delta: int) -> None:
+        checkpoint_record_progress(
+            split_name=split_name,
+            record=record,
+            next_window_index=next_window_index,
+            saved_delta=saved_delta,
+        )
+
+    saved_count = convert_dat_to_spectrograms(
         dat_path=record["dat_path"],
         output_dir=label_dir,
         sample_rate=SAMPLE_RATE,
@@ -398,15 +813,40 @@ def process_one_record(split_name: str, total: int, index: int, record: dict) ->
         source_group=record["source_group"],
         label=record["label"],
         show_window_progress=True,
+        start_window_index=start_window_index,
+        progress_callback=checkpoint,
     )
+
+    finish_record_progress(split_name, record, saved_count)
+    return saved_count
 
 
 def process_split(split_name: str, records: list[dict]) -> int:
     split_root = os.path.join(OUTPUT_ROOT, split_name)
     os.makedirs(split_root, exist_ok=True)
 
+    original_count = len(records)
     if not records:
         print(f"[{split_name}] recordings=0, images=0")
+        return 0
+
+    skipped_done = 0
+    if ENABLE_PROGRESS_LOG:
+        progress_records = load_progress_records_snapshot()
+        pending_records = []
+        for record in records:
+            key = progress_record_key(split_name, record)
+            if progress_records.get(key, {}).get("status") == "done":
+                skipped_done += 1
+                continue
+            pending_records.append(record)
+        records = pending_records
+
+    if skipped_done:
+        print(f"[{split_name}] resume: skipped {skipped_done} completed recordings")
+
+    if not records:
+        print(f"[{split_name}] recordings={original_count}, processed=0, images=0")
         return 0
 
     total_saved = 0
@@ -441,31 +881,14 @@ def process_split(split_name: str, records: list[dict]) -> int:
         total = len(records)
         completed = 0
         for index, record in enumerate(records, start=1):
-            print(
-                f"[{split_name}] {index}/{total} -> {record['source_group']}/{record['label']} "
-                f"| {os.path.basename(record['dat_path'])}"
-            )
-            source_dir = os.path.join(split_root, safe_name(record["source_group"]))
-            label_dir = os.path.join(source_dir, safe_name(record["label"]))
-            total_saved += convert_dat_to_spectrograms(
-                dat_path=record["dat_path"],
-                output_dir=label_dir,
-                sample_rate=SAMPLE_RATE,
-                stft_point=STFT_POINT,
-                window_seconds=WINDOW_SECONDS,
-                overlap_ratio=OVERLAP_RATIO,
-                dat_format=DAT_FORMAT,
-                normalize_int16=NORMALIZE_INT16,
-                max_duration_seconds=MAX_DURATION_SECONDS,
-                prefix="spectrogram",
-                source_group=record["source_group"],
-                label=record["label"],
-                show_window_progress=True,
-            )
+            total_saved += process_one_record(split_name, total, index, record)
             completed += 1
             print(f"[{split_name}] completed {completed}/{total} files")
 
-    print(f"[{split_name}] recordings={len(records)}, images={total_saved}")
+    print(
+        f"[{split_name}] recordings={original_count}, processed={len(records)}, "
+        f"skipped_done={skipped_done}, images={total_saved}"
+    )
     return total_saved
 
 
@@ -485,6 +908,8 @@ def main() -> None:
         f"Split -> train={len(train_records)}, valid={len(valid_records)}, test={len(test_records)}"
     )
     print(f"Output root: {OUTPUT_ROOT}")
+    if ENABLE_PROGRESS_LOG:
+        print(f"Progress log: {get_progress_log_path()}")
 
     os.makedirs(OUTPUT_ROOT, exist_ok=True)
 

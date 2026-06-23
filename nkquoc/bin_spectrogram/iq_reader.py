@@ -10,19 +10,33 @@ def iter_iq_chunks_from_bin(
     chunk_size: int,
     normalize: bool = False,
     max_iq_samples: int | None = None,
+    skip_iq_samples: int = 0,
 ) -> Generator[np.ndarray, None, None]:
     """
     Yield complex IQ chunks from an int16 interleaved binary file.
 
     Binary layout: I_0, Q_0, I_1, Q_1, ...
+    skip_iq_samples counts complex IQ samples, not int16 scalar values.
     """
+    if skip_iq_samples < 0:
+        raise ValueError("skip_iq_samples must be >= 0")
+
     total_read = 0
     with open(bin_path, "rb") as f:
+        if skip_iq_samples:
+            f.seek(skip_iq_samples * 2 * 2)
+
         while True:
             if max_iq_samples is not None and total_read >= max_iq_samples:
                 break
 
-            raw_bytes = f.read(2 * chunk_size * 2)
+            samples_to_read = chunk_size
+            if max_iq_samples is not None:
+                samples_to_read = min(samples_to_read, max_iq_samples - total_read)
+                if samples_to_read <= 0:
+                    break
+
+            raw_bytes = f.read(2 * samples_to_read * 2)
             if not raw_bytes:
                 break
 
