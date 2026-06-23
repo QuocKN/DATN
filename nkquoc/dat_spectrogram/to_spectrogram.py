@@ -39,13 +39,8 @@ MAX_DURATION_SECONDS = 20
 DAT_FORMAT = "float32_iq"  # "float32_iq" | "int16_iq"
 NORMALIZE_INT16 = False
 
-<<<<<<< Updated upstream
-ENABLE_SPEC_COLUMN_DENOISE = True
-SPEC_COLUMN_QUANTILE = 60.0
-=======
 ENABLE_SPEC_COLUMN_DENOISE = False
 SPEC_COLUMN_QUANTILE = 10.0
->>>>>>> Stashed changes
 
 
 def apply_spectrogram_config() -> None:
