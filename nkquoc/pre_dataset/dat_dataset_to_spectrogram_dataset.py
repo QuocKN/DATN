@@ -55,6 +55,7 @@ from tqdm import tqdm
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from nkquoc.base import iq_spectrogram_core as spectrogram_core
 from nkquoc.base.iq_spectrogram_core import compute_spectrogram, save_spectrogram_image
 
 
@@ -63,13 +64,13 @@ from nkquoc.base.iq_spectrogram_core import compute_spectrogram, save_spectrogra
 # ========================
 DATASET_ROOT = r"F:\DroneDetect_V2"
 SOURCE_FOLDERS = ("CLEAN", "WIFI", "BLUE", "BOTH")
-OUTPUT_ROOT = r"E:\DATN_Data_21_6\dataset_40_0_1\drone"
+OUTPUT_ROOT = r"E:\DATN_Data_21_6\dataset_drone_0_5_non_drone_fixed\dronenew"
 
 SAMPLE_RATE = 40_000_000
 STFT_POINT = 1024
 
 # Each recording is limited to 5 seconds. Use 50 ms windows.
-WINDOW_SECONDS = 0.1
+WINDOW_SECONDS = 0.05
 OVERLAP_RATIO = 0.05
 
 MAX_DURATION_SECONDS = 5
@@ -81,10 +82,17 @@ SCALE_BOTTOM_RATIO = 5 / 6
 # Supported values: "float32_iq" or "int16_iq"
 DAT_FORMAT = "float32_iq"
 NORMALIZE_INT16 = False
+REMOVE_DC = True
+ENABLE_SPEC_DC_MASK = True
+SPEC_DC_MASK_BINS = 1
+ENABLE_SPEC_FIXED_DB_RANGE = False
+SPEC_DB_VMIN = -57.0
+SPEC_DB_VMAX = 16.0
+ENABLE_SPEC_DB_CLIP = False
 
-TRAIN_RATIO = 0.8
-VALID_RATIO = 0.1
-TEST_RATIO = 0.1
+TRAIN_RATIO = 1
+VALID_RATIO = 0
+TEST_RATIO = 0
 RANDOM_SEED = 42
 
 SKIP_EXISTING_IMAGES = True
@@ -122,6 +130,15 @@ def get_progress_log_path() -> str:
     return os.path.join(normalized_path(OUTPUT_ROOT), "_spectrogram_progress.json")
 
 
+def apply_spectrogram_config() -> None:
+    spectrogram_core.ENABLE_SPEC_DC_MASK = ENABLE_SPEC_DC_MASK
+    spectrogram_core.SPEC_DC_MASK_BINS = SPEC_DC_MASK_BINS
+    spectrogram_core.ENABLE_SPEC_FIXED_DB_RANGE = ENABLE_SPEC_FIXED_DB_RANGE
+    spectrogram_core.SPEC_DB_VMIN = SPEC_DB_VMIN
+    spectrogram_core.SPEC_DB_VMAX = SPEC_DB_VMAX
+    spectrogram_core.ENABLE_SPEC_DB_CLIP = ENABLE_SPEC_DB_CLIP
+
+
 def progress_config_snapshot() -> dict:
     return {
         "dataset_root": normalized_path(DATASET_ROOT),
@@ -134,6 +151,13 @@ def progress_config_snapshot() -> dict:
         "max_duration_seconds": MAX_DURATION_SECONDS,
         "dat_format": DAT_FORMAT,
         "normalize_int16": NORMALIZE_INT16,
+        "remove_dc": REMOVE_DC,
+        "enable_spec_dc_mask": ENABLE_SPEC_DC_MASK,
+        "spec_dc_mask_bins": SPEC_DC_MASK_BINS,
+        "enable_spec_fixed_db_range": ENABLE_SPEC_FIXED_DB_RANGE,
+        "spec_db_vmin": SPEC_DB_VMIN,
+        "spec_db_vmax": SPEC_DB_VMAX,
+        "enable_spec_db_clip": ENABLE_SPEC_DB_CLIP,
         "train_ratio": TRAIN_RATIO,
         "valid_ratio": VALID_RATIO,
         "test_ratio": TEST_RATIO,
@@ -629,6 +653,7 @@ def convert_dat_to_spectrograms(
     overlap_ratio: float,
     dat_format: str,
     normalize_int16: bool,
+    remove_dc: bool,
     max_duration_seconds: int | None,
     prefix: str,
     source_group: str,
@@ -638,6 +663,8 @@ def convert_dat_to_spectrograms(
     progress_callback: Callable[[int, int], None] | None = None,
 ) -> int:
     """Convert a single .dat recording into multiple spectrogram images."""
+    apply_spectrogram_config()
+
     if not os.path.exists(dat_path):
         raise FileNotFoundError(f"DAT file not found: {dat_path}")
 
@@ -731,6 +758,7 @@ def convert_dat_to_spectrograms(
             sample_rate=sample_rate,
             stft_point=stft_point,
             duration_time=window_seconds,
+            remove_dc=remove_dc,
         )
 
         save_spectrogram_image_atomic(
@@ -808,6 +836,7 @@ def process_one_record(split_name: str, total: int, index: int, record: dict) ->
         overlap_ratio=OVERLAP_RATIO,
         dat_format=DAT_FORMAT,
         normalize_int16=NORMALIZE_INT16,
+        remove_dc=REMOVE_DC,
         max_duration_seconds=MAX_DURATION_SECONDS,
         prefix="spectrogram",
         source_group=record["source_group"],

@@ -15,6 +15,7 @@ def convert_dat_to_spectrograms(
     prefix: str = "spectrogram",
     dat_format: str = "float32_iq",
     normalize_int16: bool = False,
+    remove_dc: bool = False,
     max_duration_seconds: int | None = None,
     save_waveform: bool = True,
     waveform_prefix: str = "waveform",
@@ -64,6 +65,7 @@ def convert_dat_to_spectrograms(
                 sample_rate=sample_rate,
                 stft_point=stft_point,
                 duration_time=duration_time,
+                remove_dc=remove_dc,
             )
 
             output_path = os.path.join(output_dir, f"{prefix}_{index:06d}.png")

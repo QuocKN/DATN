@@ -23,8 +23,8 @@ from nkquoc.dat_spectrogram.converter import convert_dat_to_spectrograms
 # ========================
 # CONFIG
 # ========================
-INPUT_DAT_PATH = r"F:\Data_22_6"
-OUTPUT_DIR = r"F:\Data_22_6_spectrogram_0_05"
+INPUT_DAT_PATH = r"f:\DroneDetect_V2\BOTH\INS_ON\INS_1100_00.dat"
+OUTPUT_DIR = r"f:\DroneDetect_V2\BOTH\INS_ON\INS_1100_00_spectrograms"
 SAMPLE_RATE = 40_000_000
 STFT_POINT = 1024
 DURATION_TIME = 0.05
@@ -38,15 +38,36 @@ MAX_DURATION_SECONDS = 20
 
 DAT_FORMAT = "float32_iq"  # "float32_iq" | "int16_iq"
 NORMALIZE_INT16 = False
+REMOVE_DC = True
 
 ENABLE_SPEC_COLUMN_DENOISE = False
 SPEC_COLUMN_QUANTILE = 10.0
+ENABLE_SPEC_ROW_DENOISE = False
+SPEC_ROW_QUANTILE = 50.0
+ENABLE_SPEC_DC_MASK = True
+SPEC_DC_MASK_BINS = 1
+ENABLE_SPEC_FIXED_DB_RANGE = True
+SPEC_DB_VMIN = -57.0
+SPEC_DB_VMAX = 16.0
+ENABLE_SPEC_DB_CLIP = False
+SPECTROGRAM_CMAP = "jet"
+SAVE_GRAYSCALE = False
 
 
 def apply_spectrogram_config() -> None:
     spectrogram_core.IMAGE_SIZE = IMAGE_SIZE
     spectrogram_core.ENABLE_SPEC_COLUMN_DENOISE = ENABLE_SPEC_COLUMN_DENOISE
     spectrogram_core.SPEC_COLUMN_QUANTILE = SPEC_COLUMN_QUANTILE
+    spectrogram_core.ENABLE_SPEC_ROW_DENOISE = ENABLE_SPEC_ROW_DENOISE
+    spectrogram_core.SPEC_ROW_QUANTILE = SPEC_ROW_QUANTILE
+    spectrogram_core.ENABLE_SPEC_DC_MASK = ENABLE_SPEC_DC_MASK
+    spectrogram_core.SPEC_DC_MASK_BINS = SPEC_DC_MASK_BINS
+    spectrogram_core.ENABLE_SPEC_FIXED_DB_RANGE = ENABLE_SPEC_FIXED_DB_RANGE
+    spectrogram_core.SPEC_DB_VMIN = SPEC_DB_VMIN
+    spectrogram_core.SPEC_DB_VMAX = SPEC_DB_VMAX
+    spectrogram_core.ENABLE_SPEC_DB_CLIP = ENABLE_SPEC_DB_CLIP
+    spectrogram_core.SPECTROGRAM_CMAP = SPECTROGRAM_CMAP
+    spectrogram_core.SAVE_GRAYSCALE = SAVE_GRAYSCALE
 
 
 def main() -> None:
@@ -74,6 +95,7 @@ def main() -> None:
             prefix=OUTPUT_PREFIX,
             dat_format=DAT_FORMAT,
             normalize_int16=NORMALIZE_INT16,
+            remove_dc=REMOVE_DC,
             max_duration_seconds=MAX_DURATION_SECONDS,
             save_waveform=SAVE_WAVEFORM,
             waveform_prefix=WAVEFORM_PREFIX,
