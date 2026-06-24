@@ -23,8 +23,8 @@ from nkquoc.dat_spectrogram.converter import convert_dat_to_spectrograms
 # ========================
 # CONFIG
 # ========================
-INPUT_DAT_PATH = r"f:\DroneDetect_V2\BOTH\INS_ON\INS_1100_00.dat"
-OUTPUT_DIR = r"f:\DroneDetect_V2\BOTH\INS_ON\INS_1100_00_spectrograms"
+INPUT_DAT_PATH = r"/media/quocnk/Ngocmx_disk/Data_22_6_0_1"
+OUTPUT_DIR = r"/media/quocnk/Ngocmx_disk/Data_22_6_spectrogram_0_05/drone"
 SAMPLE_RATE = 40_000_000
 STFT_POINT = 1024
 DURATION_TIME = 0.05
@@ -46,7 +46,7 @@ ENABLE_SPEC_ROW_DENOISE = False
 SPEC_ROW_QUANTILE = 50.0
 ENABLE_SPEC_DC_MASK = True
 SPEC_DC_MASK_BINS = 1
-ENABLE_SPEC_FIXED_DB_RANGE = True
+ENABLE_SPEC_FIXED_DB_RANGE = False
 SPEC_DB_VMIN = -57.0
 SPEC_DB_VMAX = 16.0
 ENABLE_SPEC_DB_CLIP = False

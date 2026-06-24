@@ -25,7 +25,7 @@ from bin_iq_to_spectrogram import compute_spectrogram, save_spectrogram_image
 INPUT_H5_PATH = "/home/quocnk/Documents/NKQuoc/Data/RF/Wifi_Blue/2_4ghz_bluetooth.h5"
 OUTPUT_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Wifi_Blue/2_4ghz_bluetooth_spectrograms"
 
-SAMPLE_RATE = 30_000_000  # Hz (1 second = 30,000,000 IQ samples)
+SAMPLE_RATE = 40_000_000  # Hz (1 second = 30,000,000 IQ samples)
 STFT_POINT = 1024
 DURATION_TIME = 0.1  # seconds per spectrogram
 CHUNK_SIZE = 1_000_000  # IQ samples per chunk
