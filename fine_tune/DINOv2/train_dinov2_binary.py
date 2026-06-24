@@ -20,8 +20,9 @@ from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 from torchvision import transforms
 from tqdm import tqdm
 
-DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/drone"
-NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/non_drone"
+
+DRONE_ROOT = "/kaggle/input/datasets/quoclop/balanced-dataset-drone-chuan-full-non-done/balanced_dataset_drone_chuan_full_non_done/drone"
+NON_DRONE_ROOT = "/kaggle/input/datasets/quoclop/balanced-dataset-drone-chuan-full-non-done/balanced_dataset_drone_chuan_full_non_done/non_drone"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 IMAGE_SIZE = 224
 CLASS_NAMES = ["non_drone", "drone"]
@@ -343,7 +344,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--early-stop-patience", type=int, default=7, help="Stop if no valid_macro_f1 improvement for N epochs")
     parser.add_argument("--early-stop-min-delta", type=float, default=0.001, help="Minimum valid_macro_f1 gain to count as improvement")
-    return parser.parse_args()
+    return parser.parse_known_args()[0]
+
 
 
 def main() -> None:

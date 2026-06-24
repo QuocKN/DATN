@@ -35,11 +35,14 @@ EXCLUDE_NAME_KEYWORDS = {
 }
 DEFAULT_MEAN = [0.485, 0.456, 0.406]
 DEFAULT_STD = [0.229, 0.224, 0.225]
+DEFAULT_IMAGE_PREPROCESS = "legacy_imagenet"
+DEFAULT_PERCENTILE_LOW = 1.0
+DEFAULT_PERCENTILE_HIGH = 99.0
 
 # Edit these values directly, or override them with command line arguments.
 MODEL_ARCH = "efficientnet_b2"
-CHECKPOINT_IN = "fine_tune/EfficientNet_B2/efficientnet_b2_binary_runs/balanced_efficientnet_b2_binary.pt"
-SOURCE_PATH = r"F:\DroneDetect_V2\CLEAN\MP2_FY\MAV_0010_01_spectrograms"
+CHECKPOINT_IN = "fine_tune/EfficientNet_B2/efficientnet_b2_binary_runs/balanced_efficientnet_b2_binary_new.pt"
+SOURCE_PATH = r"/home/quocnk/Documents/NKQuoc/DATN/fine_tune/grad_cam_outputs/drone_test"
 OUTPUT_DIR = "fine_tune/grad_cam_outputs/efficientnet_b2"
 
 TARGET_CLASS = "drone"  # Use "predicted" to explain the predicted class instead.
@@ -50,18 +53,68 @@ NUM_WORKERS = 4
 TOP_K = 16
 SORT_BY = "drone_score"  # Options: drone_score, confidence, path
 OVERLAY_ALPHA = 0.45
+CASE_FILTER = "all"
+SOURCE_BINARY_LABEL = "auto"
+OCCLUSION_THRESHOLD = 0.75
+OCCLUSION_FILL_MODE = "mean"
+OCCLUSION_FILL_VALUE = 255
+OCCLUSION_COMPARE_MODES = "white,black,mean,median"
+
+
+class PercentileNormalizeTensor:
+    def __init__(self, low: float, high: float, eps: float = 1e-6) -> None:
+        self.low = low / 100.0
+        self.high = high / 100.0
+        self.eps = eps
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        reference = x[:1].flatten()
+        lo = torch.quantile(reference, self.low)
+        hi = torch.quantile(reference, self.high)
+        scale = torch.clamp(hi - lo, min=self.eps)
+        return ((x - lo) / scale).clamp(0.0, 1.0)
+
+
+def make_transform(
+    image_size: int,
+    mean: Sequence[float],
+    std: Sequence[float],
+    image_preprocess: str,
+    percentile_low: float,
+    percentile_high: float,
+) -> transforms.Compose:
+    steps = [
+        transforms.Resize((image_size, image_size)),
+        transforms.Grayscale(num_output_channels=3),
+        transforms.ToTensor(),
+    ]
+    if image_preprocess == "percentile":
+        steps.append(PercentileNormalizeTensor(low=percentile_low, high=percentile_high))
+    elif image_preprocess != "legacy_imagenet":
+        raise ValueError(f"Unsupported image_preprocess: {image_preprocess}")
+    steps.append(transforms.Normalize(mean=mean, std=std))
+    return transforms.Compose(steps)
 
 
 class SpectrogramDataset(Dataset):
-    def __init__(self, image_paths: Sequence[Path], image_size: int, mean: Sequence[float], std: Sequence[float]) -> None:
+    def __init__(
+        self,
+        image_paths: Sequence[Path],
+        image_size: int,
+        mean: Sequence[float],
+        std: Sequence[float],
+        image_preprocess: str,
+        percentile_low: float,
+        percentile_high: float,
+    ) -> None:
         self.image_paths = list(image_paths)
-        self.transform = transforms.Compose(
-            [
-                transforms.Resize((image_size, image_size)),
-                transforms.Grayscale(num_output_channels=3),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=mean, std=std),
-            ]
+        self.transform = make_transform(
+            image_size=image_size,
+            mean=mean,
+            std=std,
+            image_preprocess=image_preprocess,
+            percentile_low=percentile_low,
+            percentile_high=percentile_high,
         )
 
     def __len__(self) -> int:
@@ -93,6 +146,9 @@ class ModelBundle:
     image_size: int
     mean: List[float]
     std: List[float]
+    image_preprocess: str
+    percentile_low: float
+    percentile_high: float
 
 
 @dataclass
@@ -103,6 +159,8 @@ class PredictionRecord:
     confidence: float
     drone_score: float
     probabilities: Dict[str, float]
+    source_label: str | None
+    source_binary_label: str | None
 
 
 def is_probable_spectrogram(path: Path) -> bool:
@@ -122,6 +180,33 @@ def collect_image_paths(source: Path) -> List[Path]:
         for p in source.rglob("*")
         if p.is_file() and p.suffix.lower() in IMAGE_EXTS and is_probable_spectrogram(p)
     )
+
+
+def infer_source_label(path: Path) -> str | None:
+    text = str(path).upper()
+    match = re.search(r"(?:^|__)(" + "|".join(["CLEAN", "WIFI", "DRONE", "NON_DRONE"]) + r")(?:__|$)", path.stem.upper())
+    if match:
+        return match.group(1).lower()
+    for label in ("clean", "wifi", "drone", "non_drone"):
+        if re.search(rf"(^|[^A-Z0-9]){re.escape(label.upper())}([^A-Z0-9]|$)", text):
+            return label
+    return None
+
+
+def source_label_to_binary_label(source_label: str | None) -> str | None:
+    if source_label == "drone":
+        return "drone"
+    if source_label in {"clean", "wifi", "non_drone"}:
+        return "non_drone"
+    return None
+
+
+def resolve_source_binary_label(source_label: str | None, source_binary_label: str) -> str | None:
+    if source_binary_label == "auto":
+        return source_label_to_binary_label(source_label)
+    if source_binary_label == "unknown":
+        return None
+    return source_binary_label
 
 
 def load_checkpoint(path: Path, device: torch.device) -> dict:
@@ -164,6 +249,9 @@ def build_model(arch: str, checkpoint: dict, checkpoint_path: Path, device: torc
     image_size = int(checkpoint.get("image_size", 224))
     mean = list(checkpoint.get("image_mean", DEFAULT_MEAN))
     std = list(checkpoint.get("image_std", DEFAULT_STD))
+    image_preprocess = str(checkpoint.get("image_preprocess", DEFAULT_IMAGE_PREPROCESS))
+    percentile_low = float(checkpoint.get("percentile_low", DEFAULT_PERCENTILE_LOW))
+    percentile_high = float(checkpoint.get("percentile_high", DEFAULT_PERCENTILE_HIGH))
     num_classes = len(class_names)
 
     if arch == "resnet18":
@@ -205,7 +293,18 @@ def build_model(arch: str, checkpoint: dict, checkpoint_path: Path, device: torc
     model.to(device)
     model.load_state_dict(checkpoint["state_dict"], strict=True)
     model.eval()
-    return ModelBundle(model=model, arch=arch, class_names=class_names, class_to_idx=class_to_idx, image_size=image_size, mean=mean, std=std)
+    return ModelBundle(
+        model=model,
+        arch=arch,
+        class_names=class_names,
+        class_to_idx=class_to_idx,
+        image_size=image_size,
+        mean=mean,
+        std=std,
+        image_preprocess=image_preprocess,
+        percentile_low=percentile_low,
+        percentile_high=percentile_high,
+    )
 
 
 def get_module_by_name(model: nn.Module, name: str) -> nn.Module:
@@ -242,14 +341,58 @@ def choose_target_layer(model: nn.Module, arch: str, target_layer_name: str) -> 
 
 
 def colorize_cam(cam: np.ndarray) -> np.ndarray:
-    cmap = plt.get_cmap("jet")
-    return (cmap(cam)[..., :3] * 255).astype(np.uint8)
+    cam_uint8 = (cam * 255).clip(0, 255).astype(np.uint8)
+    return np.repeat(cam_uint8[..., None], 3, axis=2)
 
 
 def overlay_heatmap(image_rgb: np.ndarray, cam: np.ndarray, alpha: float) -> tuple[np.ndarray, np.ndarray]:
     heatmap_rgb = colorize_cam(cam)
     overlay = (image_rgb.astype(np.float32) * (1.0 - alpha) + heatmap_rgb.astype(np.float32) * alpha).clip(0, 255)
     return heatmap_rgb, overlay.astype(np.uint8)
+
+
+def resolve_occlusion_fill_value(image_rgb: np.ndarray, fill_mode: str, fill_value: int) -> int:
+    gray = image_rgb[..., 0]
+    if fill_mode == "value":
+        return int(np.clip(fill_value, 0, 255))
+    if fill_mode == "white":
+        return 255
+    if fill_mode == "black":
+        return 0
+    if fill_mode == "mean":
+        return int(np.clip(round(float(gray.mean())), 0, 255))
+    if fill_mode == "median":
+        return int(np.clip(round(float(np.median(gray))), 0, 255))
+    raise ValueError(f"Unsupported occlusion fill mode: {fill_mode}")
+
+
+def parse_occlusion_compare_modes(value: str) -> List[str]:
+    modes = [item.strip() for item in value.split(",") if item.strip()]
+    allowed = {"white", "black", "mean", "median", "value"}
+    invalid = [mode for mode in modes if mode not in allowed]
+    if invalid:
+        raise ValueError(f"Unsupported occlusion compare mode(s): {', '.join(invalid)}")
+    return modes
+
+
+def make_occluded_image(image_rgb: np.ndarray, cam: np.ndarray, threshold: float, fill_value: int) -> tuple[np.ndarray, np.ndarray]:
+    mask = cam >= threshold
+    occluded = image_rgb.copy()
+    occluded[mask] = np.uint8(fill_value)
+    return occluded, mask
+
+
+@torch.no_grad()
+def predict_image_probabilities(
+    model: nn.Module,
+    image_rgb: np.ndarray,
+    transform: transforms.Compose,
+    device: torch.device,
+) -> np.ndarray:
+    image = Image.fromarray(image_rgb)
+    x = transform(image).unsqueeze(0).to(device)
+    logits = model(x)
+    return torch.softmax(logits, dim=1)[0].detach().cpu().numpy()
 
 
 def sanitize_stem(path: Path) -> str:
@@ -309,17 +452,6 @@ class GradCAM:
             handle.remove()
 
 
-def make_transform(image_size: int, mean: Sequence[float], std: Sequence[float]) -> transforms.Compose:
-    return transforms.Compose(
-        [
-            transforms.Resize((image_size, image_size)),
-            transforms.Grayscale(num_output_channels=3),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=mean, std=std),
-        ]
-    )
-
-
 @torch.no_grad()
 def predict_all(
     image_paths: Sequence[Path],
@@ -327,8 +459,17 @@ def predict_all(
     device: torch.device,
     batch_size: int,
     num_workers: int,
+    source_binary_label: str,
 ) -> List[PredictionRecord]:
-    dataset = SpectrogramDataset(image_paths, image_size=bundle.image_size, mean=bundle.mean, std=bundle.std)
+    dataset = SpectrogramDataset(
+        image_paths,
+        image_size=bundle.image_size,
+        mean=bundle.mean,
+        std=bundle.std,
+        image_preprocess=bundle.image_preprocess,
+        percentile_low=bundle.percentile_low,
+        percentile_high=bundle.percentile_high,
+    )
     loader = DataLoader(
         dataset,
         batch_size=batch_size,
@@ -351,6 +492,7 @@ def predict_all(
             confidence = float(probs[row_idx, int(pred_idx)])
             drone_score = float(probs[row_idx, int(drone_idx)]) if drone_idx is not None else float("nan")
             probabilities = {name: float(probs[row_idx, idx]) for name, idx in bundle.class_to_idx.items()}
+            source_label = infer_source_label(path)
             records.append(
                 PredictionRecord(
                     path=path,
@@ -359,10 +501,30 @@ def predict_all(
                     confidence=confidence,
                     drone_score=drone_score,
                     probabilities=probabilities,
+                    source_label=source_label,
+                    source_binary_label=resolve_source_binary_label(source_label, source_binary_label),
                 )
             )
         offset += len(pred)
     return records
+
+
+def filter_records_by_case(records: Sequence[PredictionRecord], case_filter: str) -> List[PredictionRecord]:
+    if case_filter == "all":
+        return list(records)
+    if case_filter == "correct_drone":
+        return [record for record in records if record.source_binary_label == "drone" and record.pred_label == "drone"]
+    if case_filter == "correct_non_drone":
+        return [record for record in records if record.source_binary_label == "non_drone" and record.pred_label == "non_drone"]
+    if case_filter == "false_positive_drone":
+        return [record for record in records if record.source_binary_label == "non_drone" and record.pred_label == "drone"]
+    if case_filter == "false_negative_drone":
+        return [record for record in records if record.source_binary_label == "drone" and record.pred_label != "drone"]
+    if case_filter == "clean_correct":
+        return [record for record in records if record.source_label == "clean" and record.pred_label == "non_drone"]
+    if case_filter == "wifi_false_positive":
+        return [record for record in records if record.source_label == "wifi" and record.pred_label == "drone"]
+    raise ValueError(f"Unsupported CASE_FILTER: {case_filter}")
 
 
 def select_records(records: Sequence[PredictionRecord], sort_by: str, top_k: int) -> List[PredictionRecord]:
@@ -393,20 +555,22 @@ def save_panel(
     cam: np.ndarray,
     heatmap_rgb: np.ndarray,
     overlay_rgb: np.ndarray,
+    occluded_rgb: np.ndarray,
     title: str,
     output_path: Path,
 ) -> None:
-    fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+    fig, axes = plt.subplots(1, 5, figsize=(20, 4))
     fig.patch.set_facecolor("white")
     panels = [
         ("Input", image_rgb),
         ("Grad-CAM", cam),
         ("Heatmap", heatmap_rgb),
         ("Overlay", overlay_rgb),
+        ("Occluded", occluded_rgb),
     ]
     for ax, (label, data) in zip(axes, panels):
         if label == "Grad-CAM":
-            ax.imshow(data, cmap="jet", vmin=0.0, vmax=1.0)
+            ax.imshow(data, cmap="gray", vmin=0.0, vmax=1.0)
         else:
             ax.imshow(data)
         ax.set_title(label, fontsize=11, fontweight="bold")
@@ -427,6 +591,105 @@ def cam_focus_stats(cam: np.ndarray) -> Dict[str, float]:
     }
 
 
+def summarize_occlusion_tests(results: Sequence[dict], compare_modes: Sequence[str]) -> Dict[str, dict]:
+    summary: Dict[str, dict] = {}
+    for mode in compare_modes:
+        drone_drops = [
+            float(result["occlusion_tests"][mode]["drone_score_drop"])
+            for result in results
+            if mode in result.get("occlusion_tests", {})
+            and result["occlusion_tests"][mode]["drone_score_drop"] is not None
+        ]
+        target_drops = [
+            float(result["occlusion_tests"][mode]["target_score_drop"])
+            for result in results
+            if mode in result.get("occlusion_tests", {})
+            and result["occlusion_tests"][mode].get("target_score_drop") is not None
+        ]
+        scores_after = [
+            float(result["occlusion_tests"][mode]["drone_score"])
+            for result in results
+            if mode in result.get("occlusion_tests", {})
+        ]
+        target_scores_after = [
+            float(result["occlusion_tests"][mode]["target_score"])
+            for result in results
+            if mode in result.get("occlusion_tests", {})
+        ]
+        if not drone_drops:
+            continue
+        summary[mode] = {
+            "mean_target_score_drop": float(np.mean(target_drops)) if target_drops else None,
+            "min_target_score_drop": float(np.min(target_drops)) if target_drops else None,
+            "max_target_score_drop": float(np.max(target_drops)) if target_drops else None,
+            "mean_occluded_target_score": float(np.mean(target_scores_after)) if target_scores_after else None,
+            "target_drop_gt_0_10_count": int(sum(drop > 0.10 for drop in target_drops)),
+            "target_drop_gt_0_50_count": int(sum(drop > 0.50 for drop in target_drops)),
+            "target_negative_drop_count": int(sum(drop < 0.0 for drop in target_drops)),
+            "mean_drone_score_drop": float(np.mean(drone_drops)),
+            "min_drone_score_drop": float(np.min(drone_drops)),
+            "max_drone_score_drop": float(np.max(drone_drops)),
+            "mean_occluded_drone_score": float(np.mean(scores_after)) if scores_after else None,
+            "drone_drop_gt_0_10_count": int(sum(drop > 0.10 for drop in drone_drops)),
+            "drone_drop_gt_0_50_count": int(sum(drop > 0.50 for drop in drone_drops)),
+            "drone_negative_drop_count": int(sum(drop < 0.0 for drop in drone_drops)),
+        }
+    return summary
+
+
+def count_record_values(records: Sequence[PredictionRecord], attr_name: str) -> Dict[str, int]:
+    counts: Dict[str, int] = {}
+    for record in records:
+        value = getattr(record, attr_name)
+        key = str(value) if value is not None else "unknown"
+        counts[key] = counts.get(key, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def summarize_predictions(records: Sequence[PredictionRecord]) -> Dict[str, object]:
+    known_records = [record for record in records if record.source_binary_label is not None]
+    confusion_counts: Dict[str, int] = {}
+    for record in known_records:
+        key = f"{record.source_binary_label}->{record.pred_label}"
+        confusion_counts[key] = confusion_counts.get(key, 0) + 1
+
+    correct_count = sum(record.pred_label == record.source_binary_label for record in known_records)
+    false_positive_drone_count = sum(
+        record.source_binary_label == "non_drone" and record.pred_label == "drone" for record in known_records
+    )
+    false_negative_drone_count = sum(
+        record.source_binary_label == "drone" and record.pred_label != "drone" for record in known_records
+    )
+    return {
+        "source_label_counts": count_record_values(records, "source_label"),
+        "source_binary_label_counts": count_record_values(records, "source_binary_label"),
+        "prediction_counts": count_record_values(records, "pred_label"),
+        "known_label_count": len(known_records),
+        "correct_count": int(correct_count),
+        "accuracy": float(correct_count / len(known_records)) if known_records else None,
+        "false_positive_drone_count": int(false_positive_drone_count),
+        "false_negative_drone_count": int(false_negative_drone_count),
+        "confusion_counts": dict(sorted(confusion_counts.items())),
+    }
+
+
+def summarize_predictions_by_source_label(records: Sequence[PredictionRecord]) -> Dict[str, dict]:
+    source_labels = sorted({record.source_label or "unknown" for record in records})
+    grouped_summary: Dict[str, dict] = {}
+    for source_label in source_labels:
+        group = [record for record in records if (record.source_label or "unknown") == source_label]
+        drone_scores = [record.drone_score for record in group if not np.isnan(record.drone_score)]
+        grouped_summary[source_label] = {
+            "count": len(group),
+            "prediction_counts": count_record_values(group, "pred_label"),
+            "binary_label_counts": count_record_values(group, "source_binary_label"),
+            "mean_drone_score": float(np.mean(drone_scores)) if drone_scores else None,
+            "min_drone_score": float(np.min(drone_scores)) if drone_scores else None,
+            "max_drone_score": float(np.max(drone_scores)) if drone_scores else None,
+        }
+    return grouped_summary
+
+
 def generate_grad_cam_outputs(
     records: Sequence[PredictionRecord],
     bundle: ModelBundle,
@@ -435,10 +698,21 @@ def generate_grad_cam_outputs(
     target_class: str,
     target_layer_name: str,
     overlay_alpha: float,
+    occlusion_threshold: float,
+    occlusion_fill_mode: str,
+    occlusion_fill_value: int,
+    occlusion_compare_modes: Sequence[str],
 ) -> List[dict]:
     target_layer_desc, target_layer = choose_target_layer(bundle.model, bundle.arch, target_layer_name)
     grad_cam = GradCAM(bundle.model, target_layer)
-    transform = make_transform(bundle.image_size, bundle.mean, bundle.std)
+    transform = make_transform(
+        bundle.image_size,
+        bundle.mean,
+        bundle.std,
+        image_preprocess=bundle.image_preprocess,
+        percentile_low=bundle.percentile_low,
+        percentile_high=bundle.percentile_high,
+    )
     idx_to_class = {idx: name for name, idx in bundle.class_to_idx.items()}
     output_dir.mkdir(parents=True, exist_ok=True)
     results: List[dict] = []
@@ -446,7 +720,7 @@ def generate_grad_cam_outputs(
     try:
         for index, record in enumerate(tqdm(records, desc="Grad-CAM", unit="image")):
             with Image.open(record.path) as img:
-                image = img.convert("RGB").resize((bundle.image_size, bundle.image_size), Image.BILINEAR)
+                image = img.convert("L").resize((bundle.image_size, bundle.image_size), Image.BILINEAR).convert("RGB")
             image_rgb = np.asarray(image)
             x = transform(image).unsqueeze(0).to(device)
             target_idx = resolve_target_idx(target_class, bundle.class_to_idx, record.pred_idx)
@@ -455,30 +729,72 @@ def generate_grad_cam_outputs(
             probs = torch.softmax(logits, dim=1)[0].detach().cpu().numpy()
 
             heatmap_rgb, overlay_rgb = overlay_heatmap(image_rgb, cam, alpha=overlay_alpha)
+            panel_fill_value = resolve_occlusion_fill_value(image_rgb, occlusion_fill_mode, occlusion_fill_value)
+            occluded_rgb, occlusion_mask = make_occluded_image(
+                image_rgb,
+                cam,
+                threshold=occlusion_threshold,
+                fill_value=panel_fill_value,
+            )
+            occluded_probs = predict_image_probabilities(bundle.model, occluded_rgb, transform, device)
+            drone_idx = bundle.class_to_idx.get("drone")
+            target_score_before = float(probs[target_idx])
+            target_score_after = float(occluded_probs[target_idx])
+            drone_score_before = float(probs[drone_idx]) if drone_idx is not None else float("nan")
+            drone_score_after = float(occluded_probs[drone_idx]) if drone_idx is not None else float("nan")
+            occlusion_tests = {}
+            for fill_mode in occlusion_compare_modes:
+                test_fill_value = resolve_occlusion_fill_value(image_rgb, fill_mode, occlusion_fill_value)
+                test_occluded_rgb, _ = make_occluded_image(
+                    image_rgb,
+                    cam,
+                    threshold=occlusion_threshold,
+                    fill_value=test_fill_value,
+                )
+                test_probs = predict_image_probabilities(bundle.model, test_occluded_rgb, transform, device)
+                test_target_score = float(test_probs[target_idx])
+                test_drone_score = float(test_probs[drone_idx]) if drone_idx is not None else float("nan")
+                occlusion_tests[fill_mode] = {
+                    "fill_value": int(test_fill_value),
+                    "target_score": test_target_score,
+                    "target_score_drop": target_score_before - test_target_score,
+                    "drone_score": test_drone_score,
+                    "drone_score_drop": drone_score_before - test_drone_score if drone_idx is not None else None,
+                    "probabilities": {name: float(test_probs[idx]) for name, idx in bundle.class_to_idx.items()},
+                }
             stem = f"{index:03d}_{record.pred_label}_target_{target_label}_{sanitize_stem(record.path)}"
-            heatmap_path = output_dir / f"{stem}_heatmap.png"
-            overlay_path = output_dir / f"{stem}_overlay.png"
             panel_path = output_dir / f"{stem}_panel.png"
 
-            Image.fromarray(heatmap_rgb).save(heatmap_path)
-            Image.fromarray(overlay_rgb).save(overlay_path)
             title = (
                 f"{record.path.name} | pred={record.pred_label} ({record.confidence:.3f}) | "
-                f"target={target_label} | drone_score={record.drone_score:.3f}"
+                f"target={target_label}: {target_score_before:.3f}->{target_score_after:.3f} | "
+                f"mask={(occlusion_mask.mean() * 100):.1f}%"
             )
-            save_panel(image_rgb, cam, heatmap_rgb, overlay_rgb, title=title, output_path=panel_path)
+            save_panel(image_rgb, cam, heatmap_rgb, overlay_rgb, occluded_rgb, title=title, output_path=panel_path)
 
             result = {
                 "image": str(record.path),
+                "source_label": record.source_label,
+                "source_binary_label": record.source_binary_label,
                 "prediction": record.pred_label,
+                "is_correct": record.pred_label == record.source_binary_label if record.source_binary_label is not None else None,
                 "confidence": record.confidence,
-                "drone_score": record.drone_score,
+                "drone_score": drone_score_before,
+                "occluded_drone_score": drone_score_after,
+                "drone_score_drop": drone_score_before - drone_score_after if drone_idx is not None else None,
                 "target_class": target_label,
                 "target_index": int(target_idx),
                 "probabilities": {name: float(probs[idx]) for name, idx in bundle.class_to_idx.items()},
+                "occluded_probabilities": {name: float(occluded_probs[idx]) for name, idx in bundle.class_to_idx.items()},
+                "target_score": target_score_before,
+                "occluded_target_score": target_score_after,
+                "target_score_drop": target_score_before - target_score_after,
+                "occlusion_threshold": float(occlusion_threshold),
+                "occlusion_fill_mode": occlusion_fill_mode,
+                "occlusion_fill_value": int(panel_fill_value),
+                "occlusion_tests": occlusion_tests,
+                "occlusion_area_ratio": float(occlusion_mask.mean()),
                 "target_layer": target_layer_desc,
-                "heatmap": str(heatmap_path),
-                "overlay": str(overlay_path),
                 "panel": str(panel_path),
             }
             result.update(cam_focus_stats(cam))
@@ -502,7 +818,30 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-workers", type=int, default=NUM_WORKERS)
     parser.add_argument("--top-k", type=int, default=TOP_K)
     parser.add_argument("--sort-by", default=SORT_BY, choices=["drone_score", "confidence", "path"])
+    parser.add_argument(
+        "--source-binary-label",
+        default=SOURCE_BINARY_LABEL,
+        choices=["auto", "drone", "non_drone", "unknown"],
+        help="Ground-truth binary label override. Use 'drone' when every source image is a drone sample.",
+    )
+    parser.add_argument(
+        "--case-filter",
+        default=CASE_FILTER,
+        choices=[
+            "all",
+            "correct_drone",
+            "correct_non_drone",
+            "false_positive_drone",
+            "false_negative_drone",
+            "clean_correct",
+            "wifi_false_positive",
+        ],
+    )
     parser.add_argument("--overlay-alpha", type=float, default=OVERLAY_ALPHA)
+    parser.add_argument("--occlusion-threshold", type=float, default=OCCLUSION_THRESHOLD)
+    parser.add_argument("--occlusion-fill-mode", default=OCCLUSION_FILL_MODE, choices=["white", "black", "mean", "median", "value"])
+    parser.add_argument("--occlusion-fill-value", type=int, default=OCCLUSION_FILL_VALUE)
+    parser.add_argument("--occlusion-compare-modes", default=OCCLUSION_COMPARE_MODES)
     return parser.parse_args()
 
 
@@ -529,8 +868,11 @@ def main() -> None:
         device=device,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
+        source_binary_label=args.source_binary_label,
     )
-    selected_records = select_records(records, sort_by=args.sort_by, top_k=args.top_k)
+    filtered_records = filter_records_by_case(records, args.case_filter)
+    selected_records = select_records(filtered_records, sort_by=args.sort_by, top_k=args.top_k)
+    occlusion_compare_modes = parse_occlusion_compare_modes(args.occlusion_compare_modes)
     cam_results = generate_grad_cam_outputs(
         records=selected_records,
         bundle=bundle,
@@ -539,6 +881,10 @@ def main() -> None:
         target_class=args.target_class,
         target_layer_name=args.target_layer,
         overlay_alpha=args.overlay_alpha,
+        occlusion_threshold=args.occlusion_threshold,
+        occlusion_fill_mode=args.occlusion_fill_mode,
+        occlusion_fill_value=args.occlusion_fill_value,
+        occlusion_compare_modes=occlusion_compare_modes,
     )
 
     drone_scores = [record.drone_score for record in records if not np.isnan(record.drone_score)]
@@ -549,14 +895,29 @@ def main() -> None:
         "source": str(source_path),
         "output_dir": str(output_dir),
         "scanned_images": len(records),
+        "case_filter": args.case_filter,
+        "case_filtered_images": len(filtered_records),
         "generated_images": len(cam_results),
         "sort_by": args.sort_by,
         "target_class": args.target_class,
+        "source_binary_label_mode": args.source_binary_label,
         "class_names": bundle.class_names,
         "class_to_idx": bundle.class_to_idx,
+        "scanned_prediction_summary": summarize_predictions(records),
+        "scanned_prediction_by_source_label": summarize_predictions_by_source_label(records),
+        "selected_prediction_summary": summarize_predictions(selected_records),
+        "selected_prediction_by_source_label": summarize_predictions_by_source_label(selected_records),
         "image_size": bundle.image_size,
         "image_mean": bundle.mean,
         "image_std": bundle.std,
+        "image_preprocess": bundle.image_preprocess,
+        "percentile_low": bundle.percentile_low,
+        "percentile_high": bundle.percentile_high,
+        "occlusion_threshold": args.occlusion_threshold,
+        "occlusion_fill_mode": args.occlusion_fill_mode,
+        "occlusion_fill_value": args.occlusion_fill_value,
+        "occlusion_compare_modes": occlusion_compare_modes,
+        "occlusion_summary": summarize_occlusion_tests(cam_results, occlusion_compare_modes),
         "drone_score_mean": float(np.mean(drone_scores)) if drone_scores else None,
         "drone_score_std": float(np.std(drone_scores)) if drone_scores else None,
     }

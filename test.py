@@ -1,6 +1,6 @@
 import os
 
-folder_path = r"/home/quocnk/Documents/NKQuoc/Data/Spectrum/dronenew/train"  # Thay bằng đường dẫn của bạn
+folder_path = r"/media/quocnk/Ngocmx_disk/Data_22_6_spectrogram_0_05/non_drone_tu_thu_full"  # Thay bằng đường dẫn của bạn
 
 image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp', '.tiff'}
 
@@ -16,12 +16,12 @@ print(f"Tổng số ảnh: {count}")
 
 # from PIL import Image
 
-# img = Image.open("/home/quocnk/Documents/NKQuoc/Data/Spectrum/dronenew/train/BLUE/MP2_FY/spectrogram__BLUE__MP2_FY__MAV_0110_00__w00003.png")
+# img = Image.open("/media/quocnk/Ngocmx_disk/Data_22_6_spectrogram_0_05/drone/drone_hanhlang_spectrograms/spectrogram_000031.png")
 
 # gray = img.convert("L")
 
 # gray.save("gray.png")
-
+    
 
 # import cv2
 # import numpy as np

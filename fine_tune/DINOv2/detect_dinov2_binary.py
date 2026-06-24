@@ -19,8 +19,8 @@ from tqdm import tqdm
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = "fine_tune/DINOv2/dinov2_binary_runs/balanced_dinov2_vits14_binary.pt"
-SOURCE_DIR =r"G:\DATN_DATA\Spectrum\DroneDetect_spectrogram_dataset\train\WIFI\MP2_FY"
+CHECKPOINT_IN = "fine_tune/DINOv2/dinov2_binary_runs/balanced_dinov2_vits14_binary_new.pt"
+SOURCE_DIR =r"/media/quocnk/Ngocmx_disk/Data_22_6_spectrogram_0_05/drone_tu_thu_full/drone_outdoor_50m_spectrograms"
 OUTPUT_JSON = "fine_tune/DINOv2/report/test/results.json"
 OUTPUT_CHART = "fine_tune/DINOv2/report/test/results_chart.png"
 IMAGE_SIZE = 224

@@ -23,8 +23,8 @@ from nkquoc.dat_spectrogram.converter import convert_dat_to_spectrograms
 # ========================
 # CONFIG
 # ========================
-INPUT_DAT_PATH = r"/media/quocnk/Ngocmx_disk/Data_22_6_0_1"
-OUTPUT_DIR = r"/media/quocnk/Ngocmx_disk/Data_22_6_spectrogram_0_05/drone"
+INPUT_DAT_PATH = r"/media/quocnk/Ngocmx_disk/DroneDetect_V2/WIFI_ONLY/MAV_1010_00.dat"
+OUTPUT_DIR = r"/media/quocnk/Ngocmx_disk/DroneDetect_V2/WIFI_ONLY/spectrograms"
 SAMPLE_RATE = 40_000_000
 STFT_POINT = 1024
 DURATION_TIME = 0.05

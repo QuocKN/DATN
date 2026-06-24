@@ -12,10 +12,10 @@ from typing import Dict, Iterable, List, Mapping, Sequence
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 SPLITS = ("train", "valid", "test")
-DEFAULT_SOURCE_ROOT = Path(r"F:\Data_22_6_spectrogram_0_05")
-DEFAULT_OUTPUT_ROOT = Path(r"F:\Data_22_6_spectrogram_0_05\balanced")
+DEFAULT_SOURCE_ROOT = Path(r"/home/quocnk/Documents/NKQuoc/Data/Spectrum/full_dataset_drone_chuan_full_non_done")
+DEFAULT_OUTPUT_ROOT = Path(r"/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_dataset_drone_chuan_full_non_done")
 DEFAULT_SPLIT_RATIOS = {"train": 0.70, "valid": 0.15, "test": 0.15}
-DEFAULT_DRONE_TO_NON_RATIO = 1.017
+DEFAULT_DRONE_TO_NON_RATIO = 1.5
 DRONE_CONDITIONS = ("BLUE", "BOTH", "CLEAN", "WIFI")
 
 

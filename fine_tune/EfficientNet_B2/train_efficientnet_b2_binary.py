@@ -1,3 +1,5 @@
+#EffcientNet B2
+
 from __future__ import annotations
 
 import argparse
@@ -21,14 +23,21 @@ from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 from torchvision import models, transforms
 from tqdm import tqdm
 
-DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/drone"
-NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/non_drone"
+DRONE_ROOT = "/kaggle/input/datasets/quoclop/balanced-dataset-drone-chuan-full-non-done/balanced_dataset_drone_chuan_full_non_done_1/balanced_dataset_drone_chuan_full_non_done/drone"
+NON_DRONE_ROOT = "/kaggle/input/datasets/quoclop/balanced-dataset-drone-chuan-full-non-done/balanced_dataset_drone_chuan_full_non_done_1/balanced_dataset_drone_chuan_full_non_done/non_drone"
+OUT_DIR = "fine_tune/EfficientNet_B2/efficientnet_b2_binary_runs/percentile_aug_holdout_both"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 IMAGE_SIZE = 260
 CLASS_NAMES = ["non_drone", "drone"]
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
 IMAGE_MODE = "grayscale_rgb"
+IMAGE_PREPROCESS = "percentile"
+PERCENTILE_LOW = 1.0
+PERCENTILE_HIGH = 99.0
+USE_DOMAIN_RANDOMIZATION = True
+HOLDOUT_DRONE_CONDITION = ""
+USE_BALANCED_SAMPLER = True
 
 
 @dataclass(frozen=True)
@@ -52,6 +61,103 @@ class BinarySpectrogramDataset(Dataset):
         return self.transform(image), sample.label
 
 
+class PercentileNormalizeTensor:
+    def __init__(self, low: float, high: float, eps: float = 1e-6) -> None:
+        self.low = low / 100.0
+        self.high = high / 100.0
+        self.eps = eps
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        reference = x[:1].flatten()
+        lo = torch.quantile(reference, self.low)
+        hi = torch.quantile(reference, self.high)
+        scale = torch.clamp(hi - lo, min=self.eps)
+        return ((x - lo) / scale).clamp(0.0, 1.0)
+
+
+class RandomIntensityJitter:
+    def __init__(self, brightness: float = 0.18, contrast: float = 0.35, p: float = 0.8) -> None:
+        self.brightness = brightness
+        self.contrast = contrast
+        self.p = p
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        if torch.rand(()) >= self.p:
+            return x
+        contrast = 1.0 + float(torch.empty(1).uniform_(-self.contrast, self.contrast))
+        brightness = float(torch.empty(1).uniform_(-self.brightness, self.brightness))
+        return (x * contrast + brightness).clamp(0.0, 1.0)
+
+
+class RandomGamma:
+    def __init__(self, gamma_min: float = 0.7, gamma_max: float = 1.5, p: float = 0.5) -> None:
+        self.gamma_min = gamma_min
+        self.gamma_max = gamma_max
+        self.p = p
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        if torch.rand(()) >= self.p:
+            return x
+        gamma = float(torch.empty(1).uniform_(self.gamma_min, self.gamma_max))
+        return x.clamp(0.0, 1.0).pow(gamma)
+
+
+class RandomGaussianNoise:
+    def __init__(self, std_max: float = 0.035, p: float = 0.5) -> None:
+        self.std_max = std_max
+        self.p = p
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        if torch.rand(()) >= self.p:
+            return x
+        std = float(torch.empty(1).uniform_(0.0, self.std_max))
+        return (x + torch.randn_like(x) * std).clamp(0.0, 1.0)
+
+
+class RandomTimeFrequencyMask:
+    def __init__(self, max_time_frac: float = 0.12, max_freq_frac: float = 0.10, p: float = 0.6) -> None:
+        self.max_time_frac = max_time_frac
+        self.max_freq_frac = max_freq_frac
+        self.p = p
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        if torch.rand(()) >= self.p:
+            return x
+        _, height, width = x.shape
+        fill = float(x.mean())
+        x = x.clone()
+        if torch.rand(()) < 0.5:
+            mask_width = max(1, int(width * float(torch.empty(1).uniform_(0.02, self.max_time_frac))))
+            start = int(torch.randint(0, max(width - mask_width + 1, 1), (1,)))
+            x[:, :, start:start + mask_width] = fill
+        if torch.rand(()) < 0.5:
+            mask_height = max(1, int(height * float(torch.empty(1).uniform_(0.02, self.max_freq_frac))))
+            start = int(torch.randint(0, max(height - mask_height + 1, 1), (1,)))
+            x[:, start:start + mask_height, :] = fill
+        return x
+
+
+class RandomSpectrogramErase:
+    def __init__(self, max_area_frac: float = 0.035, p: float = 0.35) -> None:
+        self.max_area_frac = max_area_frac
+        self.p = p
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        if torch.rand(()) >= self.p:
+            return x
+        _, height, width = x.shape
+        area = height * width
+        erase_area = max(1, int(area * float(torch.empty(1).uniform_(0.005, self.max_area_frac))))
+        erase_height = int(np.sqrt(erase_area * float(torch.empty(1).uniform_(0.5, 2.0))))
+        erase_height = min(max(1, erase_height), height)
+        erase_width = min(max(1, erase_area // erase_height), width)
+        top = int(torch.randint(0, max(height - erase_height + 1, 1), (1,)))
+        left = int(torch.randint(0, max(width - erase_width + 1, 1), (1,)))
+        x = x.clone()
+        x[:, top:top + erase_height, left:left + erase_width] = float(x.mean())
+        return x
+
+
 def set_seed(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
@@ -66,6 +172,14 @@ def collect_images(root: Path) -> List[Path]:
     return sorted([p for p in root.rglob("*") if p.is_file() and p.suffix.lower() in IMAGE_EXTS])
 
 
+def infer_drone_condition(path: Path) -> str:
+    text = str(path).upper()
+    for condition in ("CLEAN", "WIFI", "BLUE", "BOTH", "DRONE_TU_THU"):
+        if f"/{condition}/" in text or f"__{condition}__" in path.name.upper():
+            return condition
+    return "UNKNOWN"
+
+
 def choose_subset(paths: Sequence[Path], max_count: int, seed: int) -> List[Path]:
     if max_count <= 0 or len(paths) <= max_count:
         return list(paths)
@@ -74,23 +188,54 @@ def choose_subset(paths: Sequence[Path], max_count: int, seed: int) -> List[Path
     return [paths[i] for i in sorted(indices.tolist())]
 
 
-def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Compose]:
-    train_tf = transforms.Compose(
+def build_transforms(
+    image_size: int,
+    image_preprocess: str,
+    percentile_low: float,
+    percentile_high: float,
+    use_domain_randomization: bool,
+) -> Tuple[transforms.Compose, transforms.Compose]:
+    if image_preprocess not in {"legacy_imagenet", "percentile"}:
+        raise ValueError(f"Unsupported image_preprocess: {image_preprocess}")
+
+    train_steps = []
+    if use_domain_randomization:
+        train_steps.append(transforms.RandomResizedCrop(image_size, scale=(0.90, 1.0), ratio=(0.96, 1.04)))
+    else:
+        train_steps.append(transforms.Resize((image_size, image_size)))
+    train_steps.extend(
         [
-            transforms.Resize((image_size, image_size)),
             transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
-            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
     )
-    eval_tf = transforms.Compose(
-        [
-            transforms.Resize((image_size, image_size)),
-            transforms.Grayscale(num_output_channels=3),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
-        ]
-    )
+    eval_steps = [
+        transforms.Resize((image_size, image_size)),
+        transforms.Grayscale(num_output_channels=3),
+        transforms.ToTensor(),
+    ]
+
+    if image_preprocess == "percentile":
+        percentile_tf = PercentileNormalizeTensor(low=percentile_low, high=percentile_high)
+        train_steps.append(percentile_tf)
+        eval_steps.append(percentile_tf)
+
+    if use_domain_randomization:
+        train_steps.extend(
+            [
+                RandomIntensityJitter(),
+                RandomGamma(),
+                RandomGaussianNoise(),
+                RandomTimeFrequencyMask(),
+                RandomSpectrogramErase(),
+            ]
+        )
+
+    train_steps.append(transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD))
+    eval_steps.append(transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD))
+
+    train_tf = transforms.Compose(train_steps)
+    eval_tf = transforms.Compose(eval_steps)
     return train_tf, eval_tf
 
 
@@ -111,6 +256,7 @@ def build_samples(
     max_drone_train: int,
     max_non_drone_train: int,
     seed: int,
+    holdout_drone_condition: str,
 ) -> Tuple[List[Sample], List[Sample], List[Sample]]:
     drone_train = collect_images(drone_root / "train")
     drone_valid = collect_images(drone_root / "valid")
@@ -131,6 +277,27 @@ def build_samples(
         valid_samples = valid_from_train + [Sample(p, 1) for p in drone_valid]
 
     test_samples = [Sample(p, 1) for p in drone_test] + [Sample(p, 0) for p in non_drone_test]
+
+    holdout_condition = holdout_drone_condition.strip().upper()
+    if holdout_condition:
+        heldout_drone = [
+            Sample(path, 1)
+            for path in [*drone_train, *drone_valid, *drone_test]
+            if infer_drone_condition(path) == holdout_condition
+        ]
+        if not heldout_drone:
+            raise ValueError(f"No drone samples found for holdout condition: {holdout_condition}")
+        train_samples = [
+            sample
+            for sample in train_samples
+            if sample.label != 1 or infer_drone_condition(sample.path) != holdout_condition
+        ]
+        valid_samples = [sample for sample in valid_samples if sample.label == 0] + heldout_drone
+        test_samples = [
+            sample
+            for sample in test_samples
+            if sample.label != 1 or infer_drone_condition(sample.path) != holdout_condition
+        ]
     return train_samples, valid_samples, test_samples
 
 
@@ -176,6 +343,16 @@ def build_model(freeze_backbone: bool, train_last_n_blocks: int) -> tuple[nn.Mod
 def count_labels(samples: Sequence[Sample]) -> dict:
     labels = [s.label for s in samples]
     return {CLASS_NAMES[label]: int(labels.count(label)) for label in range(len(CLASS_NAMES))}
+
+
+def count_drone_conditions(samples: Sequence[Sample]) -> dict:
+    counts: dict[str, int] = {}
+    for sample in samples:
+        if sample.label != 1:
+            continue
+        condition = infer_drone_condition(sample.path)
+        counts[condition] = counts.get(condition, 0) + 1
+    return dict(sorted(counts.items()))
 
 
 def count_unique_images_by_class(samples: Sequence[Sample]) -> dict:
@@ -325,11 +502,20 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine-tune EfficientNet-B2 for binary drone/non-drone spectrogram detection")
     parser.add_argument("--drone-root", type=str, default=DRONE_ROOT)
     parser.add_argument("--non-drone-root", type=str, default=NON_DRONE_ROOT)
-    parser.add_argument("--out-dir", type=str, default="fine_tune/EfficientNet_B2/efficientnet_b2_binary_runs")
+    parser.add_argument("--out-dir", type=str, default=OUT_DIR)
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--image-size", type=int, default=IMAGE_SIZE)
+    parser.add_argument("--image-preprocess", default=IMAGE_PREPROCESS, choices=["legacy_imagenet", "percentile"])
+    parser.add_argument("--percentile-low", type=float, default=PERCENTILE_LOW)
+    parser.add_argument("--percentile-high", type=float, default=PERCENTILE_HIGH)
+    parser.add_argument("--disable-domain-randomization", action="store_true")
+    parser.add_argument(
+        "--holdout-drone-condition",
+        default=HOLDOUT_DRONE_CONDITION,
+        help="Leave one drone condition out of train and use it for validation, e.g. CLEAN, WIFI, BLUE, BOTH.",
+    )
     parser.add_argument("--backbone-lr", type=float, default=1e-5)
     parser.add_argument("--head-lr", type=float, default=1e-4)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
@@ -345,18 +531,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--use-balanced-sampler",
         action="store_true",
+        default=USE_BALANCED_SAMPLER,
         help="Use WeightedRandomSampler for class-balanced mini-batches in training loader",
+    )
+    parser.add_argument(
+        "--no-balanced-sampler",
+        dest="use_balanced_sampler",
+        action="store_false",
+        help="Disable WeightedRandomSampler.",
     )
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--early-stop-patience", type=int, default=7, help="Stop if no valid_macro_f1 improvement for N epochs")
     parser.add_argument("--early-stop-min-delta", type=float, default=0.001, help="Minimum valid_macro_f1 gain to count as improvement")
-    return parser.parse_args()
+    return parser.parse_known_args()[0]
 
 
 def main() -> None:
     args = parse_args()
     set_seed(args.seed)
+    if args.image_preprocess == "percentile" and args.percentile_low >= args.percentile_high:
+        raise ValueError("--percentile-low must be smaller than --percentile-high")
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -368,9 +563,17 @@ def main() -> None:
         max_drone_train=args.max_drone_train,
         max_non_drone_train=args.max_non_drone_train,
         seed=args.seed,
+        holdout_drone_condition=args.holdout_drone_condition,
     )
 
-    train_tf, eval_tf = build_transforms(args.image_size)
+    use_domain_randomization = not args.disable_domain_randomization
+    train_tf, eval_tf = build_transforms(
+        args.image_size,
+        image_preprocess=args.image_preprocess,
+        percentile_low=args.percentile_low,
+        percentile_high=args.percentile_high,
+        use_domain_randomization=use_domain_randomization,
+    )
     train_dataset = BinarySpectrogramDataset(train_samples, train_tf)
     train_sampler = make_balanced_sampler(train_samples) if args.use_balanced_sampler else None
     pin_memory = device.type == "cuda"
@@ -401,10 +604,18 @@ def main() -> None:
     print(f"Device: {device}")
     print("Model: efficientnet_b2")
     print(f"Classes: {CLASS_NAMES}")
+    print(f"image_preprocess: {args.image_preprocess}")
+    if args.image_preprocess == "percentile":
+        print(f"percentile clip: p{args.percentile_low:g}-p{args.percentile_high:g}")
+    print(f"use_domain_randomization: {use_domain_randomization}")
+    print(f"holdout_drone_condition: {args.holdout_drone_condition or 'none'}")
     print(f"train: {len(train_samples)} {count_labels(train_samples)}")
+    print(f"train drone conditions: {count_drone_conditions(train_samples)}")
     print(f"use_balanced_sampler: {args.use_balanced_sampler}")
     print(f"valid: {len(valid_samples)} {count_labels(valid_samples)}")
+    print(f"valid drone conditions: {count_drone_conditions(valid_samples)}")
     print(f"test: {len(test_samples)} {count_labels(test_samples)}")
+    print(f"test drone conditions: {count_drone_conditions(test_samples)}")
 
     model, unfrozen_blocks = build_model(
         freeze_backbone=args.freeze_backbone,
@@ -460,6 +671,10 @@ def main() -> None:
                     "class_to_idx": {"non_drone": 0, "drone": 1},
                     "image_size": args.image_size,
                     "image_mode": IMAGE_MODE,
+                    "image_preprocess": args.image_preprocess,
+                    "percentile_low": args.percentile_low,
+                    "percentile_high": args.percentile_high,
+                    "domain_randomization": use_domain_randomization,
                     "image_mean": IMAGENET_MEAN,
                     "image_std": IMAGENET_STD,
                     "backbone_name": "efficientnet_b2",
@@ -505,6 +720,10 @@ def main() -> None:
         "class_names": CLASS_NAMES,
         "class_to_idx": {"non_drone": 0, "drone": 1},
         "image_mode": IMAGE_MODE,
+        "image_preprocess": args.image_preprocess,
+        "percentile_low": args.percentile_low,
+        "percentile_high": args.percentile_high,
+        "domain_randomization": use_domain_randomization,
         "image_mean": IMAGENET_MEAN,
         "image_std": IMAGENET_STD,
         "backbone_name": "efficientnet_b2",
@@ -515,6 +734,11 @@ def main() -> None:
             "train": train_counts,
             "valid": valid_counts,
             "test": test_counts,
+        },
+        "drone_condition_counts": {
+            "train": count_drone_conditions(train_samples),
+            "valid": count_drone_conditions(valid_samples),
+            "test": count_drone_conditions(test_samples),
         },
         "sample_totals": {
             "train": len(train_samples),
