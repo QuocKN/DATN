@@ -28,6 +28,7 @@ IMAGE_SIZE = 260
 CLASS_NAMES = ["non_drone", "drone"]
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
+IMAGE_MODE = "grayscale_rgb"
 
 
 @dataclass(frozen=True)
@@ -77,6 +78,7 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
     train_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
+            transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
@@ -84,6 +86,7 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
     eval_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
+            transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
@@ -456,6 +459,7 @@ def main() -> None:
                     "class_names": CLASS_NAMES,
                     "class_to_idx": {"non_drone": 0, "drone": 1},
                     "image_size": args.image_size,
+                    "image_mode": IMAGE_MODE,
                     "image_mean": IMAGENET_MEAN,
                     "image_std": IMAGENET_STD,
                     "backbone_name": "efficientnet_b2",
@@ -500,6 +504,7 @@ def main() -> None:
         "checkpoint": str(best_path),
         "class_names": CLASS_NAMES,
         "class_to_idx": {"non_drone": 0, "drone": 1},
+        "image_mode": IMAGE_MODE,
         "image_mean": IMAGENET_MEAN,
         "image_std": IMAGENET_STD,
         "backbone_name": "efficientnet_b2",

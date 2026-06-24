@@ -29,6 +29,7 @@ BATCH_SIZE = 128
 NUM_WORKERS = 4
 DEFAULT_MEAN = [0.485, 0.456, 0.406]
 DEFAULT_STD = [0.229, 0.224, 0.225]
+IMAGE_MODE = "grayscale_rgb"
 
 
 class SpectrogramDataset(Dataset):
@@ -37,6 +38,7 @@ class SpectrogramDataset(Dataset):
         self.transform = transforms.Compose(
             [
                 transforms.Resize((image_size, image_size)),
+                transforms.Grayscale(num_output_channels=3),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std),
             ]
@@ -269,6 +271,7 @@ def main() -> None:
         "score_std": float(np.std(scores)) if total else None,
         "class_names": class_names,
         "class_to_idx": class_to_idx,
+        "image_mode": checkpoint.get("image_mode", IMAGE_MODE),
         "best_valid_macro_f1": checkpoint.get("best_valid_macro_f1"),
     }
 

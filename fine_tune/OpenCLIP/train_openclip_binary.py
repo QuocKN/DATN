@@ -93,6 +93,7 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
     train_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
+            transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
             transforms.Normalize(mean=OPENCLIP_MEAN, std=OPENCLIP_STD),
         ]
@@ -100,6 +101,7 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
     eval_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
+            transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
             transforms.Normalize(mean=OPENCLIP_MEAN, std=OPENCLIP_STD),
         ]

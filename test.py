@@ -1,26 +1,26 @@
-# import os
+import os
 
-# folder_path = r"f:\Data_22_6_spectrogram_0_05\drone"  # Thay bằng đường dẫn của bạn
+folder_path = r"/home/quocnk/Documents/NKQuoc/Data/Spectrum/dronenew/train"  # Thay bằng đường dẫn của bạn
 
-# image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp', '.tiff'}
+image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp', '.tiff'}
 
-# count = 0
+count = 0
 
-# for root, dirs, files in os.walk(folder_path):
-#     for file in files:
-#         ext = os.path.splitext(file)[1].lower()
-#         if ext in image_extensions:
-#             count += 1
+for root, dirs, files in os.walk(folder_path):
+    for file in files:
+        ext = os.path.splitext(file)[1].lower()
+        if ext in image_extensions:
+            count += 1
 
-# print(f"Tổng số ảnh: {count}")
+print(f"Tổng số ảnh: {count}")
 
-from PIL import Image
+# from PIL import Image
 
-img = Image.open(r"f:\DroneDetect_V2\BOTH\INS_ON\INS_1100_00_spectrograms\spectrogram_000019.png")
+# img = Image.open("/home/quocnk/Documents/NKQuoc/Data/Spectrum/dronenew/train/BLUE/MP2_FY/spectrogram__BLUE__MP2_FY__MAV_0110_00__w00003.png")
 
-gray = img.convert("L")
+# gray = img.convert("L")
 
-gray.save(r"spectrogram__CLEAN__MP2_FY__MAV_0010_00__w00014gray.png")
+# gray.save("gray.png")
 
 
 # import cv2

@@ -58,6 +58,7 @@ class SpectrogramDataset(Dataset):
         self.transform = transforms.Compose(
             [
                 transforms.Resize((image_size, image_size)),
+                transforms.Grayscale(num_output_channels=3),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std),
             ]
@@ -312,6 +313,7 @@ def make_transform(image_size: int, mean: Sequence[float], std: Sequence[float])
     return transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
+            transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
             transforms.Normalize(mean=mean, std=std),
         ]

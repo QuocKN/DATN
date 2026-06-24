@@ -95,6 +95,7 @@ def build_transforms(image_size: int, siglip_model: str) -> Tuple[transforms.Com
     train_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
+            transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
             transforms.Normalize(mean=mean, std=std),
         ]
@@ -102,6 +103,7 @@ def build_transforms(image_size: int, siglip_model: str) -> Tuple[transforms.Com
     eval_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
+            transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
             transforms.Normalize(mean=mean, std=std),
         ]
