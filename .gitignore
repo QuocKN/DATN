@@ -8,24 +8,24 @@ __pycache__/
 server.c
 
 # Fine-tune untracked experiments/results
-/fine_tune/DenseNet121/
-/fine_tune/DenseNet161/
-/fine_tune/DenseNet169/
-/fine_tune/DenseNet201/
+# /fine_tune/DenseNet121/
+# /fine_tune/DenseNet161/
+# /fine_tune/DenseNet169/
+# /fine_tune/DenseNet201/
 /fine_tune/EfficientNet_B2/detect_efficientnet_b2_2.py
-/fine_tune/EfficientNet_B4/
-/fine_tune/GoogLeNet/
-/fine_tune/Inception_V3/
-/fine_tune/ResNeXt50_32x4d/
+# /fine_tune/EfficientNet_B4/
+# /fine_tune/GoogLeNet/
+# /fine_tune/Inception_V3/
+# /fine_tune/ResNeXt50_32x4d/
 /fine_tune/ResNet18/report/Tu_thu/results.json
 /fine_tune/ResNet18/report/Tu_thu/results_chart.png
-/fine_tune/ResNet34/
-/fine_tune/OpenCLIP/
-/fine_tune/SigLIP/
-/fine_tune/ConvNext_V2/
-/fine_tune/VGG11/
-/fine_tune/ViT_L16/
-/fine_tune/Wide_ResNet50_2/
+# /fine_tune/ResNet34/
+# /fine_tune/OpenCLIP/
+# /fine_tune/SigLIP/
+# /fine_tune/ConvNext_V2/
+# /fine_tune/VGG11/
+# /fine_tune/ViT_L16/
+# /fine_tune/Wide_ResNet50_2/
 /fine_tune/grad_cam_outputs/efficientnet_b2/*_spectrogram_000*_panel.png
 /fine_tune/grad_cam_outputs/resnet50/
 /fine_tune/grad_cam_outputs/resnet50_2/
