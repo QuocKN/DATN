@@ -1,23 +1,22 @@
+# Core numeric / signal processing
 numpy
+scipy
+h5py
+
+# Image processing and plotting
+Pillow
 opencv-python
+matplotlib
+
+# Deep learning and model utilities
 torch
 torchvision
-scikit-learn
-matplotlib
-scipy
-pandas
-Pillow
-PyYAML
-tqdm
-seaborn
-joblib
-h5py
-imageio
-albumentations
-requests
-psutil
-colorama
-thop
-# pkg_resources
-
 timm
+
+# Training, evaluation, and CLI utilities
+scikit-learn
+joblib
+tqdm
+
+# Optional hardware capture support for nkquoc/realtime_usrp_x300_to_spectrogram.py
+uhd
