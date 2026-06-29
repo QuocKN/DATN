@@ -23,12 +23,12 @@ from nkquoc.dat_spectrogram.converter import convert_dat_to_spectrograms
 # ========================
 # CONFIG
 # ========================
-INPUT_DAT_PATH = r"/media/quocnk/Ngocmx_disk/DroneDetect_V2/WIFI_ONLY/MAV_1010_00.dat"
-OUTPUT_DIR = r"/media/quocnk/Ngocmx_disk/DroneDetect_V2/WIFI_ONLY/spectrograms"
-SAMPLE_RATE = 40_000_000
+INPUT_DAT_PATH = r"f:\Data_22_6_spectrogram_0_05\DJI_MAVIC3_PRO\VTSBW=10\pack2_0-1s.iq"
+OUTPUT_DIR = r"f:\Data_22_6_spectrogram_0_05\DJI_MAVIC3_PRO\VTSBW=10\spectrograms"
+SAMPLE_RATE = 100_000_000
 STFT_POINT = 1024
 DURATION_TIME = 0.05
-OUTPUT_PREFIX = "spectrogram"
+OUTPUT_PREFIX = "spectrogram13"
 IMAGE_SIZE = 224
 WAVEFORM_PREFIX = "waveform"
 WAVEFORM_MAX_POINTS = 20_000

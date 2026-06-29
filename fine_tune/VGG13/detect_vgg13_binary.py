@@ -19,10 +19,10 @@ from tqdm import tqdm
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = "fine_tune/VGG13/vgg13_binary_runs/balanced_vgg13_binary_kaggle.pt"
-SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone1/spectrograms"
-OUTPUT_JSON = "fine_tune/VGG13/report/Tu_thu/1toan_results.json"
-OUTPUT_CHART = "fine_tune/VGG13/report/Tu_thu/1toan_results_chart.png"
+CHECKPOINT_IN = r"D:\balanced_vgg13_binary_data_v4.pt"
+SOURCE_DIR = r"e:\Data_22_6\Drone_tu_thu_full\drone\drone_10m_spectrograms"
+OUTPUT_JSON = "fine_tune/VGG13/report/test/results.json"
+OUTPUT_CHART = "fine_tune/VGG13/report/test/results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 128
@@ -240,6 +240,7 @@ def main() -> None:
         "method": "vgg13_bn_finetuned_classifier",
         "model_name": checkpoint.get("model_name", "vgg13_bn_binary_finetuned"),
         "checkpoint_in": str(checkpoint_path),
+        "source_dir": str(source_root),
         "source_images": total,
         "detected_drone_count": drone_count,
         "detected_non_drone_count": non_drone_count,

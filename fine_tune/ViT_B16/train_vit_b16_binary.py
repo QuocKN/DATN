@@ -136,19 +136,18 @@ def freeze_all_backbone_params(model: nn.Module) -> None:
         param.requires_grad = False
 
 
-def build_swin_small_model(freeze_backbone: bool) -> nn.Module:
+def build_model(freeze_backbone: bool) -> nn.Module:
     try:
-        model = models.swin_v2_s(weights=models.Swin_V2_S_Weights.IMAGENET1K_V1)
+        model = models.vit_b_16(weights=models.ViT_B_16_Weights.IMAGENET1K_V1)
     except Exception as exc:
         raise RuntimeError(
-            "Could not load pretrained Swin V2 Small ImageNet weights; refusing to train from random initialization."
+            "Could not load pretrained ViT-B/16 ImageNet weights; refusing to train from random initialization."
         ) from exc
 
     if freeze_backbone:
         freeze_all_backbone_params(model)
 
-    in_features = model.head.in_features
-    model.head = nn.Linear(in_features, len(CLASS_NAMES))
+    model.heads.head = nn.Linear(model.heads.head.in_features, len(CLASS_NAMES))
     return model
 
 
@@ -186,8 +185,10 @@ def build_optimizer(
     head_lr: float,
     weight_decay: float,
 ) -> torch.optim.Optimizer:
-    backbone_params = [p for n, p in model.named_parameters() if p.requires_grad and not n.startswith("head.")]
-    head_params = [p for n, p in model.named_parameters() if p.requires_grad and n.startswith("head.")]
+    backbone_params = [
+        p for name, p in model.named_parameters() if p.requires_grad and not name.startswith("heads.head.")
+    ]
+    head_params = [p for name, p in model.named_parameters() if p.requires_grad and name.startswith("heads.head.")]
 
     param_groups = []
     if backbone_params:
@@ -295,10 +296,10 @@ def save_confusion_matrix(cm: np.ndarray, class_names: Sequence[str], output_pat
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Fine-tune Swin V2 Small for binary drone/non-drone spectrogram detection")
+    parser = argparse.ArgumentParser(description="Fine-tune ViT-B/16 for binary drone/non-drone spectrogram detection")
     parser.add_argument("--drone-root", type=str, default=DRONE_ROOT)
     parser.add_argument("--non-drone-root", type=str, default=NON_DRONE_ROOT)
-    parser.add_argument("--out-dir", type=str, default="fine_tune/Swin_Small/swin_small_binary_runs")
+    parser.add_argument("--out-dir", type=str, default="fine_tune/ViT_B16/vit_b16_binary_runs")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-workers", type=int, default=4)
@@ -388,7 +389,7 @@ def main() -> None:
     }
 
     print(f"Device: {device}")
-    print("Model: swin_v2_s")
+    print("Model: vit_b_16")
     print(f"Balanced sampler: {args.use_balanced_sampler}")
     print(f"Freeze backbone: {args.freeze_backbone}")
     print(f"Classes: {CLASS_NAMES}")
@@ -396,16 +397,15 @@ def main() -> None:
     print(f"valid: {len(valid_samples)} {count_labels(valid_samples)}")
     print(f"test: {len(test_samples)} {count_labels(test_samples)}")
 
-    model = build_swin_small_model(freeze_backbone=args.freeze_backbone)
+    model = build_model(freeze_backbone=args.freeze_backbone)
     model = model.to(device)
-
     optimizer = build_optimizer(model, args.backbone_lr, args.head_lr, args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
     class_weights = None if args.use_balanced_sampler else make_class_weights(train_samples, device)
     criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     best_valid_macro_f1 = -1.0
-    best_path = out_dir / "balanced_swin_small_binary.pt"
+    best_path = out_dir / "balanced_vit_b16_binary.pt"
     history = []
     epochs_without_improvement = 0
     stopped_early = False
@@ -437,12 +437,12 @@ def main() -> None:
             epochs_without_improvement = 0
             torch.save(
                 {
-                    "model_name": "swin_v2_s_binary_finetuned",
+                    "model_name": "vit_b16_binary_finetuned",
+                    "backbone_name": "vit_b_16",
                     "state_dict": model.state_dict(),
                     "class_names": CLASS_NAMES,
                     "class_to_idx": {"non_drone": 0, "drone": 1},
                     "image_size": args.image_size,
-                    "backbone_name": "swin_v2_s",
                     "image_mean": IMAGENET_MEAN,
                     "image_std": IMAGENET_STD,
                     "args": vars(args),
@@ -479,8 +479,8 @@ def main() -> None:
         "test": count_unique_images_by_class(test_samples),
     }
     summary = {
-        "model_name": "swin_v2_s_binary_finetuned",
-        "backbone_name": "swin_v2_s",
+        "model_name": "vit_b16_binary_finetuned",
+        "backbone_name": "vit_b_16",
         "args": vars(args),
         "drone_root": args.drone_root,
         "non_drone_root": args.non_drone_root,
@@ -524,8 +524,8 @@ def main() -> None:
     print(json.dumps({"test_loss": test_loss, "test_acc": test_acc, "summary": str(summary_path)}, indent=2))
 
 
-DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/drone"
-NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/non_drone"
+DRONE_ROOT = "/kaggle/input/balanced-dataset-drone-chuan-full-non-done/balanced_dataset_drone_chuan_full_non_done/balanced_dataset_drone_chuan_full_non_done/drone"
+NON_DRONE_ROOT = "/kaggle/input/balanced-dataset-drone-chuan-full-non-done/balanced_dataset_drone_chuan_full_non_done/balanced_dataset_drone_chuan_full_non_done/non_drone"
 
 
 if __name__ == "__main__":

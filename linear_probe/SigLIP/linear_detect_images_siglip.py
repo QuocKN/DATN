@@ -48,6 +48,11 @@ def load_feature_model(device: torch.device, model_name: str):
     return model, processor
 
 
+def load_grayscale_rgb(path: Path) -> Image.Image:
+    with Image.open(path) as image:
+        return image.convert("L").convert("RGB")
+
+
 def extract_embeddings(
     image_paths: Sequence[Path],
     model,
@@ -60,7 +65,7 @@ def extract_embeddings(
     with torch.no_grad():
         for start in tqdm(range(0, len(image_paths), batch_size), desc="Extract embeddings", unit="batch"):
             batch_paths = image_paths[start : start + batch_size]
-            images = [Image.open(path).convert("RGB") for path in batch_paths]
+            images = [load_grayscale_rgb(path) for path in batch_paths]
             inputs = processor(images=images, return_tensors="pt")
             pixel_values = inputs["pixel_values"].to(device, non_blocking=True)
 

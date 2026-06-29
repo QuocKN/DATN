@@ -1,0 +1,44 @@
+{
+  "method": "linear_probe_classifier",
+  "selected_model": "dinov2",
+  "feature_extractor": "dinov2_vits14_imagenet_ssl",
+  "model_name": "svm",
+  "artifact_in": "/kaggle/input/datasets/quoclop/model-svm/Feature_extraction/dinov2_trained_classifier.joblib",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 3414,
+  "detected_non_drone_count": 474,
+  "detected_drone_rate": 0.8780864197530864,
+  "score_mean": 0.6018199570974628,
+  "score_std": 0.09891569141840488,
+}
+{
+  "method": "linear_probe_classifier",
+  "selected_model": "dinov2",
+  "feature_extractor": "dinov2_vits14_imagenet_ssl",
+  "model_name": "svm",
+  "artifact_in": "/kaggle/input/datasets/quoclop/model-svm/Feature_extraction/dinov2_trained_classifier.joblib",
+  "source_dir": "/kaggle/input/data-test-spectrograms/non_drone_evaluate/non_drone_evalueate",
+  "source_images": 1691,
+  "detected_drone_count": 410,
+  "detected_non_drone_count": 1281,
+  "detected_drone_rate": 0.24246008279124778,
+  "score_mean": 0.4210228820612584,
+  "score_std": 0.11602825459754934,
+}
+
+
+{
+  "method": "linear_probe_classifier",
+  "selected_model": "vit_b16",
+  "feature_extractor": "vit_b_16_imagenet_cls_token",
+  "model_name": "svm",
+  "artifact_in": "/kaggle/input/datasets/quoclop/model-svm/Feature_extraction/vit_b16_trained_classifier.joblib",
+  "source_dir": "/kaggle/input/data-test-spectrograms/non_drone_evaluate/non_drone_evalueate",
+  "source_images": 1691,
+  "detected_drone_count": 0,
+  "detected_non_drone_count": 1691,
+  "detected_drone_rate": 0.0,
+  "score_mean": 0.270700631762909,
+  "score_std": 0.028851618577280327,
+}

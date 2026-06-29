@@ -3,19 +3,19 @@
 
 \label{chap:danh_gia_thuc_nghiem}
 
-Chương này trình bày thiết kế thực nghiệm và phân tích kết quả của hệ thống phát hiện drone dựa trên tín hiệu RF. Các thí nghiệm được xây dựng nhằm đánh giá hai chiến lược sử dụng mô hình tiền huấn luyện là \textit{Feature Extraction-based Classification} và \textit{fine-tuning}, đồng thời khảo sát khả năng chuyển giao của sáu backbone thị giác gồm VGG13-BN, ResNet50, EfficientNet-B2, ConvNeXtV2, Swin Transformer và DINOv2 sang miền ảnh spectrogram. Ngoài phép đánh giá trên tập kiểm thử nội miền được xây dựng từ mẫu \textit{Drone} của DroneDetect v2 và mẫu \textit{Non-drone} tự thu/bổ sung, các mô hình còn được kiểm tra trên hai tập dữ liệu RF tự thu bằng bladeRF tại băng tần 2,4~GHz và các bộ dữ liệu ngoài miền gồm RFUAV, CageDroneRF, DRFF-R1 và DRFF-R2. Cách tổ chức này cho phép xem xét đồng thời hiệu năng trong miền dữ liệu chuẩn, mức độ tổng quát hóa sang điều kiện thu mới và ảnh hưởng của chất lượng spectrogram đến kết quả nhận dạng.
+Chương này trình bày quá trình đánh giá thực nghiệm của hệ thống phát hiện drone dựa trên tín hiệu RF. Nội dung bao gồm thiết kế các kịch bản thí nghiệm, cấu hình training, các metrics đánh giá và phân tích kết quả trên nhiều tập dữ liệu khác nhau. Hệ thống được đánh giá trên cả dữ liệu in-domain được xây dựng trong đồ án và các bộ dữ liệu out-of-domain nhằm kiểm tra khả năng generalization của mô hình khi điều kiện thu tín hiệu thay đổi. Thông qua các kết quả thực nghiệm, chương hướng đến việc so sánh hiệu quả của hai chiến lược transfer learning và đánh giá mức độ phù hợp của từng backbone đối với bài toán phân loại ảnh spectrogram RF. Bên cạnh việc trình bày các metrics định lượng, chương cũng phân tích những trường hợp dự đoán đúng và sai để làm rõ ảnh hưởng của chất lượng tín hiệu RF và đặc trưng của dữ liệu đến hiệu năng của mô hình.
 
-Các nhận xét trong chương được giới hạn theo số liệu thực nghiệm hiện có. Những bảng liên quan đến cấu hình phần cứng, tham số huấn luyện, kết quả trên tập kiểm thử nội miền và kết quả trên các bộ dữ liệu ngoài miền được tạo dưới dạng khung LaTeX để bổ sung số liệu chính xác sau khi tổng hợp nhật ký thí nghiệm. Đối với dữ liệu tự thu, các tỷ lệ nhận dạng đã xác định được trình bày trực tiếp và được quy đổi sang số mẫu tương ứng trên mỗi tập gồm 200 spectrogram. Chương không sử dụng kết quả của một kiến trúc riêng lẻ để suy rộng thành kết luận cho toàn bộ nhóm CNN hoặc Transformer, bởi sáu backbone khác nhau đồng thời về kiến trúc, quy mô và phương pháp tiền huấn luyện.
 
 \section{Mục tiêu và thiết kế thực nghiệm}
 
-Thực nghiệm được tổ chức nhằm so sánh hai chiến lược khai thác mô hình tiền huấn luyện và đánh giá mức độ phù hợp của từng backbone đối với ảnh spectrogram RF. Ở chiến lược \textit{Feature Extraction-based Classification}, backbone được đóng băng và SVM được huấn luyện trên embedding trích xuất từ ảnh. Ở chiến lược fine-tuning, lớp phân loại cuối được thay thế và toàn bộ tham số backbone được cập nhật theo tập dữ liệu nhị phân gồm mẫu \textit{Drone} từ DroneDetect v2 và mẫu \textit{Non-drone} tự thu/bổ sung. Việc áp dụng hai chiến lược trên cùng các backbone giúp xác định lợi ích của quá trình thích nghi đặc trưng với miền RF.
+Thực nghiệm được thiết kế nhằm đánh giá khả năng áp dụng các pretrained vision backbone vào bài toán phát hiện drone từ ảnh spectrogram RF. Hai chiến lược transfer learning được khảo sát gồm \textit{feature extraction + SVM}, trong đó backbone được freeze và SVM được huấn luyện trên vector đặc trưng trích xuất, và \textit{fine-tuning}, trong đó toàn bộ mô hình được cập nhật trên tập dữ liệu của bài toán. Sáu backbone được lựa chọn để so sánh bao gồm VGG13-BN, ResNet50, EfficientNet-B2, ViT-B/16, Swin Transformer và DINOv2.
 
-Sáu backbone được khảo sát gồm VGG13-BN, ResNet50, EfficientNet-B2, ConvNeXtV2, Swin Transformer và DINOv2. Hiệu năng trên tập kiểm thử nội miền được đánh giá bằng accuracy, precision, recall, F1-score và ma trận nhầm lẫn. Các chỉ số này cho phép xem xét đồng thời tỷ lệ dự đoán đúng, khả năng hạn chế cảnh báo sai và khả năng tránh bỏ sót drone. Phép so sánh được thực hiện riêng cho từng backbone để phân biệt ảnh hưởng của chiến lược huấn luyện với ảnh hưởng của kiến trúc.
+Đối với dữ liệu in-domain, các mô hình được huấn luyện trên tập dữ liệu nhị phân gồm lớp \textit{Drone} từ DroneDetect v2 và lớp \textit{Non-drone} tự thu. Hiệu năng được đánh giá trên test set bằng các metrics Accuracy, Precision, Recall, F1-score và confusion matrix nhằm phân tích đồng thời khả năng nhận dạng drone và hạn chế false alarm.
 
-Bên cạnh tập kiểm thử nội miền, các mô hình được suy luận trên Drone1 và Drone2, là hai tập RF tự thu bằng bladeRF, và trên bốn tập ngoài miền RFUAV, CageDroneRF, DRFF-R1, DRFF-R2. Các dữ liệu này không được sử dụng để cập nhật tham số hoặc lựa chọn checkpoint. Thiết kế này nhằm kiểm tra khả năng duy trì hiệu năng khi thiết bị thu, mức nhiễu, bộ dữ liệu và điều kiện môi trường khác với dữ liệu huấn luyện. Kết quả còn được đối chiếu với chất lượng spectrogram để phân tích ảnh hưởng của SNR, clipping và stripe artifact.
+Để đánh giá generalization, các mô hình sau khi huấn luyện tiếp tục được kiểm thử trên dữ liệu RF tự thu bằng bladeRF và các bộ dữ liệu công khai khác training set như RFUAV, DroneRF. Các tập dữ liệu này không tham gia vào quá trình training, lựa chọn tham số hay chọn checkpoint, do đó kết quả phản ánh khả năng thích ứng của mô hình đối với các điều kiện thu khác về thiết bị, môi trường và chất lượng tín hiệu RF.
 
-Với backbone $m$, mức cải thiện accuracy của fine-tuning so với \textit{Feature Extraction-based Classification} được tính bởi
+
+Với backbone $m$, mức cải thiện Accuracy của fine-tuning so với \textit{feature extraction + SVM} được tính bởi
 \begin{equation}
     \Delta \mathrm{Acc}_{m}
     =
@@ -24,193 +24,200 @@ Với backbone $m$, mức cải thiện accuracy của fine-tuning so với \tex
     \mathrm{Acc}^{\mathrm{FE}}_{m},
     \label{eq:accuracy_gain}
 \end{equation}
-trong đó $\mathrm{Acc}^{\mathrm{FT}}_{m}$ và $\mathrm{Acc}^{\mathrm{FE}}_{m}$ lần lượt là accuracy của hai chiến lược. Giá trị dương cho thấy fine-tuning cải thiện chỉ số đang xét. Chênh lệch này được phân tích cùng precision, recall và F1-score thay vì sử dụng độc lập.
-
-Để khảo sát thay đổi giữa nội miền và dữ liệu tự thu, recall của lớp drone trên tập kiểm thử nội miền được đặt cạnh tỷ lệ nhận diện trung bình trên Drone1 và Drone2. Hai đại lượng có cùng ý nghĩa là tỷ lệ mẫu drone được phát hiện đúng. Việc sử dụng recall tránh so sánh trực tiếp accuracy của một tập hai lớp với tỷ lệ nhận diện của các tập chỉ chứa lớp drone.
+trong đó $\mathrm{Acc}^{\mathrm{FT}}_{m}$ và $\mathrm{Acc}^{\mathrm{FE}}_{m}$ lần lượt là Accuracy của hai chiến lược. Giá trị dương cho thấy fine-tuning cải thiện chỉ số đang xét. Chênh lệch này được phân tích cùng Precision, Recall và F1-score thay vì sử dụng độc lập.
 
 \section{Dữ liệu và môi trường thực nghiệm}
 
-\subsection{Bộ dữ liệu DroneDetect v2}
+\subsection{Bộ dữ liệu huấn luyện}
 
-DroneDetect v2 là nguồn dữ liệu chính cho lớp \textit{Drone} trong quá trình xây dựng mô hình. Dữ liệu ban đầu chứa tín hiệu RF được lưu dưới dạng I/Q cùng thông tin nhãn. Theo phương pháp ở Chương~3, các chuỗi I/Q được kiểm tra, phân đoạn và chuyển thành spectrogram bằng STFT. Mỗi spectrogram kế thừa nhãn và mã nguồn của bản ghi ban đầu để hỗ trợ chia tập và truy vết dữ liệu.
-
-Trong phạm vi đề tài, DroneDetect v2 không cung cấp lớp \textit{Non-drone} tương ứng để huấn luyện trực tiếp bộ phân loại nhị phân. Vì vậy, lớp \textit{Drone} được lấy từ DroneDetect v2, còn lớp \textit{Non-drone} được xây dựng từ dữ liệu RF tự thu hoặc bổ sung, bao gồm các đoạn không chứa hoạt động drone. Cách tổ chức này phù hợp với mục tiêu phát hiện sự hiện diện của drone, đồng thời tạo được cả mẫu dương và mẫu âm cho bài toán hai lớp.
-
-Dữ liệu nhị phân sau khi kết hợp hai nguồn được chia thành tập huấn luyện, tập xác thực và tập kiểm thử. Tập huấn luyện dùng để tối ưu SVM hoặc tham số mạng trong fine-tuning. Tập xác thực dùng để lựa chọn siêu tham số và checkpoint. Tập kiểm thử chỉ được sử dụng sau khi quá trình lựa chọn mô hình hoàn tất. Các spectrogram sinh từ cùng một bản ghi hoặc phiên thu cần được giữ trong cùng một tập để hạn chế rò rỉ đặc trưng nguồn.
+Mô hình được huấn luyện trên tập dữ liệu nhị phân gồm lớp \textit{Drone} lấy từ DroneDetect v2 và lớp \textit{Non-drone} được xây dựng từ các bản ghi RF tự thu. Toàn bộ dữ liệu đã được xử lý theo quy trình trình bày ở Chương~3, bao gồm phân đoạn tín hiệu I/Q, tạo ảnh spectrogram và chia thành training set, validation set và test set in-domain. Bảng~\ref{tab:dronedetect_statistics} trình bày thống kê các tập dữ liệu được sử dụng trong quá trình training và đánh giá in-domain.
 
 \begin{table}[H]
     \centering
-    \caption{Thống kê tập dữ liệu nhị phân dùng cho huấn luyện và kiểm thử nội miền}
     \label{tab:dronedetect_statistics}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.23\textwidth}|c|c|c|p{0.25\textwidth}|}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{|p{0.16\textwidth}|p{0.18\textwidth}|p{0.16\textwidth}|c|p{0.27\textwidth}|}
         \hline
-        \textbf{Tập dữ liệu} & \textbf{Drone} & \textbf{Non-drone} & \textbf{Tổng số} & \textbf{Mục đích} \\ \hline
-        Huấn luyện & DroneDetect v2 & Tự thu/bổ sung & -- & Tối ưu tham số mô hình \\ \hline
-        Xác thực & DroneDetect v2 & Tự thu/bổ sung & -- & Chọn siêu tham số và checkpoint \\ \hline
-        Kiểm thử & DroneDetect v2 & Tự thu/bổ sung & -- & Báo cáo kết quả nội miền \\ \hline
+        \textbf{Tập dữ liệu} & \textbf{Nguồn Drone} & \textbf{Nguồn Non-drone} & \textbf{Tổng số} & \textbf{Mục đích} \\ \hline
+        Huấn luyện & DroneDetect v2 & Tự thu & 5337 & Tối ưu tham số mô hình \\ \hline
+        Xác thực & DroneDetect v2 & Tự thu & 2124 & Chọn siêu tham số và mô hình lưu \\ \hline
+        Kiểm thử & DroneDetect v2 & Tự thu & 1959 & Báo cáo kết quả trong miền \\ \hline
     \end{tabular}
+    \caption{Thống kê tập dữ liệu nhị phân dùng cho huấn luyện và kiểm thử}
 \end{table}
-
-Bảng~\ref{tab:dronedetect_statistics} cần được điền bằng số lượng ảnh thực tế sau bước loại bỏ mẫu lỗi và chia theo nguồn. Cột \textit{Drone} được sinh từ DroneDetect v2, trong khi cột \textit{Non-drone} đến từ dữ liệu tự thu/bổ sung. Tỷ lệ giữa hai lớp có ảnh hưởng đến cách diễn giải accuracy. Nếu tập kiểm thử cân bằng, mức $50\%$ tương ứng với dự đoán một lớp cố định; nếu tập không cân bằng, cần đối chiếu thêm phân bố lớp, balanced accuracy hoặc macro F1-score trước khi đánh giá mô hình có tốt hơn mức nền hay không.
 
 \subsection{Thiết lập thu tín hiệu RF bằng bladeRF}
 
-Bên cạnh dữ liệu DroneDetect v2, đồ án xây dựng thêm các bản ghi RF tự thu để kiểm tra khả năng hoạt động của mô hình trong điều kiện khác miền. Hệ thống thu sử dụng thiết bị SDR bladeRF kết hợp với anten làm việc trong băng 2,4~GHz. Phần mềm điều khiển SDR được dùng để cấu hình tần số trung tâm, tốc độ lấy mẫu, băng thông và quá trình ghi mẫu I/Q xuống tệp.
-
-Thiết lập thu được tổ chức theo mô hình đã trình bày ở Chương~3: tín hiệu RF từ drone hoặc bộ điều khiển được anten thu nhận, đưa vào bladeRF, hạ tần về băng gốc và lưu thành chuỗi mẫu I/Q. Trong các phiên thu phục vụ đánh giá, hệ thống không giải điều chế tín hiệu drone và không sử dụng thông tin gói tin ở tầng giao thức. Toàn bộ quyết định sau cùng được thực hiện trên ảnh spectrogram sinh ra từ dữ liệu I/Q.
+Để xây dựng dữ liệu \textit{Non-drone} và thu thập dữ liệu phục vụ đánh giá, đồ án sử dụng thiết bị SDR bladeRF kết hợp với anten hoạt động trong băng tần 2,4~GHz. Quá trình thu tín hiệu được thực hiện theo mô hình đã trình bày ở Chương~3, trong đó tín hiệu RF được ghi trực tiếp dưới dạng dữ liệu I/Q, với mỗi thành phần I và Q được lưu dưới kiểu số thực 32 bit (\texttt{float32}). Các tham số thu được giữ cố định trong toàn bộ các phiên thu nhằm đảm bảo tính nhất quán của dữ liệu.
 
 \begin{table}[H]
     \centering
-    \caption{Cấu hình thu tín hiệu RF tự thu bằng bladeRF}
     \label{tab:bladerf_capture_setup}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.34\textwidth}|p{0.48\textwidth}|}
+    \small
+    \begin{tabular}{|p{0.32\textwidth}|p{0.50\textwidth}|}
         \hline
-        \textbf{Tham số} & \textbf{Giá trị sử dụng} \\ \hline
-        Thiết bị thu & bladeRF \\ \hline
-        Phần mềm điều khiển & GNU Radio \\ \hline
+        \textbf{Tham số} & \textbf{Giá trị} \\ \hline
+        Thiết bị SDR & bladeRF 2.0 micro xA4\\ \hline
+        Phần mềm điều khiển & GNU Radio / Python code \\ \hline
         Băng tần quan sát & 2,4~GHz \\ \hline
-        Tần số trung tâm & 2,4375~GHz \\ \hline
-        Tốc độ lấy mẫu & 28~MS/s \\ \hline
-        Băng thông thu & 28~MHz \\ \hline
-        Dạng dữ liệu lưu & I/Q xen kẽ, \texttt{int16} \\ \hline
-        Đầu ra sau thu & Tệp I/Q thô dùng để tạo spectrogram \\ \hline
+        Tần số trung tâm & 2,44~GHz \\ \hline
+        Tốc độ lấy mẫu & 40~MS/s \\ \hline
+        Băng thông RF & 28~MHz \\ \hline
+        Định dạng lưu trữ & Dữ liệu I/Q xen kẽ, \texttt{float32} \\ \hline
+        Đầu ra & Tệp I/Q thô dùng để tạo spectrogram \\ \hline
     \end{tabular}
+    \caption{Cấu hình thu tín hiệu RF tự thu bằng bladeRF}
 \end{table}
-
-Các thông số trong Bảng~\ref{tab:bladerf_capture_setup} được giữ nhất quán khi sinh spectrogram. Tốc độ lấy mẫu xác định trục tần số của STFT, trong khi tần số trung tâm cho biết vùng phổ thực tế đang được quan sát. Nếu thay đổi các tham số này giữa các phiên thu, dữ liệu đầu vào của mô hình có thể thay đổi về độ rộng phổ, vị trí năng lượng và độ tương phản, từ đó ảnh hưởng trực tiếp đến kết quả suy luận.
-
-Trong quá trình thu, vị trí tương đối giữa drone, bộ điều khiển và anten thu có thể làm thay đổi đáng kể công suất nhận được. Ngoài khoảng cách, các yếu tố như hướng anten, vật cản, phản xạ trong môi trường, nhiễu đồng kênh từ Wi-Fi/Bluetooth và thiết lập gain của bladeRF đều có thể tạo khác biệt giữa các bản ghi. Vì vậy, mỗi phiên thu cần được lưu kèm mã phiên hoặc ghi chú điều kiện thu để hỗ trợ diễn giải kết quả ở các phần phân tích sau.
 
 \subsection{Dữ liệu RF tự thu}
 
-Dữ liệu RF tự thu trong đồ án có hai vai trò khác nhau. Một phần dữ liệu tự thu không chứa drone được dùng để xây dựng lớp \textit{Non-drone} cho quá trình huấn luyện nhị phân. Phần còn lại, gồm các phiên thu có tín hiệu drone như Drone1 và Drone2, được giữ riêng để đánh giá khả năng phát hiện trong điều kiện thực tế và không tham gia quá trình huấn luyện hoặc lựa chọn checkpoint.
-
-Hai tập đánh giá được ký hiệu là Drone1 và Drone2. Mỗi tập gồm 200 ảnh spectrogram có chứa tín hiệu drone, tương ứng tổng cộng 400 mẫu. Việc tách thành hai tập cho phép quan sát mức ổn định của mô hình giữa hai lần thu hoặc hai điều kiện tín hiệu. Thông tin chi tiết về khoảng cách, độ lợi, tốc độ lấy mẫu và điều kiện môi trường cần được bổ sung từ nhật ký thu để hỗ trợ giải thích chênh lệch kết quả.
+Ngoài in-domain test set, đồ án sử dụng thêm các tập dữ liệu RF tự thu gồm cả mẫu \textit{Drone} và \textit{Non-drone} để đánh giá khả năng hoạt động của mô hình trên dữ liệu thực tế. Các tập dữ liệu này được thu độc lập với dữ liệu dùng cho training và không tham gia vào quá trình lựa chọn hyperparameter hoặc checkpoint. Bên cạnh đó, mô hình còn được kiểm thử trên hai bộ dữ liệu out-of-domain là RFUAV và DroneRF nhằm đánh giá generalization khi nguồn dữ liệu và điều kiện thu thay đổi.
 
 \begin{table}[H]
     \centering
-    \caption{Thống kê dữ liệu RF tự thu}
     \label{tab:real_data_statistics}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.19\textwidth}|c|c|p{0.39\textwidth}|}
+
+    \small
+    \begin{tabular}{|p{0.38\textwidth}|c|}
         \hline
-        \textbf{Tập} & \textbf{Số ảnh} & \textbf{Nhãn} & \textbf{Điều kiện thu} \\ \hline
-        Drone1 & 200 & Drone & -- \\ \hline
-        Drone2 & 200 & Drone & -- \\ \hline
+        \textbf{Bộ dữ liệu} & \textbf{Số ảnh} \\ \hline
+        Drone trong nhà & 1768 \\ \hline
+        Drone ngoài trời & 2120 \\ \hline
+        Non-drone trong nhà & 120 \\ \hline
+        Non-drone ngoài trời & 1571 \\ \hline
     \end{tabular}
+    \caption{Thống kê dữ liệu RF tự thu}
+
 \end{table}
 
-Do Drone1 và Drone2 chỉ chứa lớp \textit{Drone}, chỉ số thu được trên hai tập là tỷ lệ nhận diện đúng lớp drone, tương đương recall của lớp dương trong từng tập. Các tập này không cho phép tính precision, specificity hoặc tỷ lệ cảnh báo giả vì không có mẫu \textit{Non-drone}. Hạn chế này cần được giữ trong cách diễn giải: kết quả cao chứng minh khả năng nhận diện drone trong các phiên thu đã xét, nhưng chưa đủ để khẳng định hệ thống hạn chế tốt cảnh báo sai trong môi trường thực tế.
+\subsection{Các bộ dữ liệu out-of-domain}
 
-\subsection{Các bộ dữ liệu kiểm thử ngoài miền}
-
-Để đánh giá khả năng tổng quát hóa rộng hơn, ngoài tập kiểm thử nội miền và dữ liệu tự thu, đồ án bổ sung kịch bản kiểm thử trên các bộ dữ liệu RF ngoài miền gồm RFUAV, CageDroneRF, DRFF-R1 và DRFF-R2. Các bộ dữ liệu này không được sử dụng trong quá trình huấn luyện, lựa chọn siêu tham số hoặc chọn checkpoint. Vai trò của chúng là tạo phép thử chuyển miền giữa các nguồn RF khác nhau.
-
-Các bộ dữ liệu ngoài miền có thể khác tập dữ liệu nhị phân nội miền về thiết bị thu, loại drone, băng tần, tốc độ lấy mẫu, quy trình tạo spectrogram, môi trường nhiễu và phân bố lớp. Vì vậy, kết quả trên các bộ này cần được diễn giải như phép đánh giá khả năng chuyển giao của mô hình, không phải là kết quả cùng miền. Nếu một bộ dữ liệu chỉ chứa tín hiệu drone, chỉ số phù hợp là tỷ lệ nhận diện drone hoặc recall của lớp dương. Nếu bộ dữ liệu có cả \textit{Drone} và \textit{Non-drone}, có thể báo cáo đầy đủ accuracy, precision, recall, F1-score và ma trận nhầm lẫn.
+Để đánh giá generalization của mô hình, ngoài dữ liệu tự thu, đồ án sử dụng thêm hai bộ dữ liệu RF out-of-domain là RFUAV và DroneRF. Các bộ dữ liệu này không được sử dụng trong quá trình training hoặc model selection mà chỉ phục vụ đánh giá khả năng transfer sang các nguồn dữ liệu RF khác. Trong phạm vi đánh giá của đồ án, RFUAV và DroneRF chỉ gồm các mẫu thuộc lớp \textit{Drone}, vì vậy kết quả trên hai bộ này được diễn giải là drone recall.
 
 \begin{table}[H]
     \centering
     \caption{Các bộ dữ liệu ngoài miền dùng để kiểm thử bổ sung}
     \label{tab:external_domain_datasets}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.17\textwidth}|p{0.18\textwidth}|c|c|c|p{0.2\textwidth}|}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{|p{0.16\textwidth}|p{0.18\textwidth}|c|c|p{0.30\textwidth}|}
         \hline
-        \textbf{Bộ dữ liệu} & \textbf{Miền dữ liệu} & \textbf{Drone} & \textbf{Non-drone} & \textbf{Tổng số} & \textbf{Vai trò đánh giá} \\ \hline
-        RFUAV & RF ngoài miền & -- & -- & -- & Kiểm thử chuyển miền theo nguồn RF khác \\ \hline
-        CageDroneRF & RF ngoài miền & -- & -- & -- & Kiểm thử trên điều kiện thu/dataset khác \\ \hline
-        DRFF-R1 & RF ngoài miền & -- & -- & -- & Kiểm thử bổ sung trên miền DRFF-R1 \\ \hline
-        DRFF-R2 & RF ngoài miền & -- & -- & -- & Kiểm thử bổ sung trên miền DRFF-R2 \\ \hline
+        \textbf{Bộ dữ liệu} & \textbf{Miền dữ liệu} & \textbf{Lớp} & \textbf{Số ảnh} & \textbf{Vai trò đánh giá} \\ \hline
+        RFUAV & RF ngoài miền & Drone & 256 & Kiểm thử dịch miền theo nguồn RF khác \\ \hline
+        DroneRF & RF ngoài miền & Drone & 260 & Kiểm thử trên điều kiện thu/bộ dữ liệu khác \\ \hline
     \end{tabular}
 \end{table}
 
-Bảng~\ref{tab:external_domain_datasets} cần được điền sau khi hoàn tất bước chuẩn hóa và sinh spectrogram cho từng bộ dữ liệu. Nếu một bộ dữ liệu có nhiều nhãn gốc, các nhãn cần được quy về hai lớp \textit{Drone} và \textit{Non-drone} theo cùng quy tắc đã dùng ở Chương~3. Các mẫu không rõ nhãn hoặc không phù hợp với bài toán nhị phân cần được loại khỏi tập đánh giá hoặc ghi chú riêng.
-
 \subsection{Môi trường huấn luyện}
 
-Môi trường thực nghiệm ảnh hưởng trực tiếp đến khả năng tái lập thời gian huấn luyện, kích thước batch và một số sai khác số học. Các thí nghiệm được triển khai bằng framework học sâu và thư viện học máy để thực hiện tiền xử lý, fine-tuning và huấn luyện SVM. Thông tin phần cứng và phiên bản phần mềm cần được ghi chính xác theo máy đã sử dụng.
+Môi trường thực nghiệm ảnh hưởng trực tiếp đến khả năng tái lập thời gian training, batch size và một số sai khác số học. Các thí nghiệm được triển khai bằng deep learning framework và machine learning library để thực hiện preprocessing, fine-tuning và huấn luyện SVM. Thông tin phần cứng và phiên bản phần mềm cần được ghi chính xác theo máy đã sử dụng.
 
 \begin{table}[H]
     \centering
     \caption{Cấu hình môi trường huấn luyện và đánh giá}
     \label{tab:training_environment}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.34\textwidth}|p{0.51\textwidth}|}
+    \small
+    \begin{tabular}{|p{0.32\textwidth}|p{0.52\textwidth}|}
         \hline
         \textbf{Thành phần} & \textbf{Cấu hình} \\ \hline
-        Hệ điều hành & -- \\ \hline
-        CPU & -- \\ \hline
-        GPU & -- \\ \hline
-        RAM & -- \\ \hline
-        Ngôn ngữ lập trình & Python -- \\ \hline
-        Framework học sâu & PyTorch -- \\ \hline
-        Thư viện mô hình & -- \\ \hline
-        Thư viện học máy & scikit-learn -- \\ \hline
-        Thư viện xử lý tín hiệu & NumPy, SciPy -- \\ \hline
-        Thiết bị SDR & bladeRF -- \\ \hline
+        Môi trường chạy & Kaggle Notebook \\ \hline
+        Hệ điều hành & Ubuntu Linux (64-bit) \\ \hline
+        CPU & Intel Xeon @ 2.00 GHz (4 vCPU) \\ \hline
+        GPU & 2 $\times$ NVIDIA Tesla T4 (15 GB VRAM/GPU) \\ \hline
+        RAM & 31 GB \\ \hline
+        Ngôn ngữ lập trình & Python 3.12.13 \\ \hline
+        Thư viện deep learning & PyTorch 2.10.0 (CUDA 12.8) \\ \hline
+        Thư viện mô hình & timm 1.0.26, torchvision \\ \hline
+        Thư viện machine learning & scikit-learn 1.6.1 \\ \hline
+        Thư viện xử lý tín hiệu & NumPy 2.4.6, SciPy 1.16.3 \\ \hline
+        Thiết bị SDR & bladeRF 2.0 micro xA4 \\ \hline
     \end{tabular}
 \end{table}
 
-Cấu hình huấn luyện cũng cần được báo cáo để phân biệt ảnh hưởng của backbone với ảnh hưởng của siêu tham số. Bảng~\ref{tab:training_configuration} tạo khung cho các tham số chung. Nếu từng backbone sử dụng cấu hình riêng, bảng có thể được mở rộng thành một cột cho mỗi mô hình.
-
 \begin{table}[H]
     \centering
-    \caption{Cấu hình huấn luyện và tiền xử lý}
     \label{tab:training_configuration}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.37\textwidth}|p{0.45\textwidth}|}
+    \small
+    \begin{tabular}{|p{0.32\textwidth}|p{0.52\textwidth}|}
         \hline
         \textbf{Tham số} & \textbf{Giá trị} \\ \hline
-        Kích thước ảnh đầu vào & -- \\ \hline
-        Kích thước FFT & -- \\ \hline
-        Cửa sổ STFT & Hann \\ \hline
-        Hop length & -- \\ \hline
-        Batch size & -- \\ \hline
-        Số epoch tối đa & -- \\ \hline
-        Hàm mất mát & -- \\ \hline
-        Bộ tối ưu & -- \\ \hline
-        Learning rate & -- \\ \hline
-        Learning-rate scheduler & -- \\ \hline
-        Tiêu chí chọn checkpoint & -- \\ \hline
-        Cấu hình SVM & -- \\ \hline
+        Kích thước ảnh đầu vào & $224 \times 224$ pixel; riêng EfficientNet-B2 dùng $260 \times 260$ pixel\\ \hline
+        Kích thước FFT & 1024 điểm \\ \hline
+        Cửa sổ STFT & Hamming \\ \hline
+        Bước nhảy & 512 mẫu \\ \hline
+        Kích thước batch & 32 cho fine-tuning; 128 cho feature extraction \\ \hline
+        Số epoch tối đa & 20 \\ \hline
+        Hàm mất mát & Cross-Entropy Loss\\ \hline
+        Bộ tối ưu & AdamW, weight decay $10^{-4}$ \\ \hline
+        Tốc độ học & $10^{-5}$ cho backbone, $10^{-4}$ cho classifier head \\ \hline
+        Lịch điều chỉnh tốc độ học & CosineAnnealingLR với $T_{\max}=20$ \\ \hline
+        Tiêu chí chọn mô hình & Chọn mô hình lưu có Macro-F1 xác thực cao nhất; dừng sớm nếu không cải thiện quá $0{,}001$ trong 7 epoch \\ \hline
+        Cấu hình SVM & StandardScaler + SVC (RBF, $C=1.0$, $\gamma=\mathrm{scale}$) \\ \hline
     \end{tabular}
+    \caption{Cấu hình huấn luyện và tiền xử lý}
+
 \end{table}
 
 \section{Các phương pháp so sánh và tiêu chí đánh giá}
 
 \subsection{Các backbone được khảo sát}
 
-VGG13-BN là backbone CNN tuần tự gồm các khối tích chập, Batch Normalization, hàm kích hoạt và pooling. Kiến trúc này đơn giản hơn các backbone hiện đại nhưng vẫn có khả năng học các cạnh phổ, vùng năng lượng tập trung và texture cục bộ trên spectrogram. VGG13-BN được đưa vào như một mốc so sánh để kiểm tra hiệu quả của một CNN cổ điển có chuẩn hóa batch trong bài toán RF spectrogram.
+VGG13-BN là backbone CNN tuần tự gồm các khối tích chập, Batch Normalization, hàm kích hoạt và pooling. Kiến trúc này đơn giản hơn các backbone hiện đại nhưng vẫn có khả năng học các cạnh phổ, vùng năng lượng tập trung và kết cấu cục bộ trên spectrogram. VGG13-BN được đưa vào như một baseline để kiểm tra hiệu quả của một CNN cổ điển có Batch Normalization trong bài toán RF spectrogram.
 
-ResNet50 là backbone CNN sử dụng các khối residual và kết nối tắt. Mô hình được chọn làm kiến trúc tham chiếu phổ biến cho bài toán thị giác. Trong spectrogram, các phép tích chập có thể nhận biết cấu trúc cục bộ như biên dải phổ, vùng năng lượng tập trung và burst ngắn theo thời gian.
+ResNet50 là backbone CNN sử dụng residual block và skip connection. Mô hình được chọn làm kiến trúc tham chiếu phổ biến cho bài toán thị giác. Trong spectrogram, các phép tích chập có thể nhận biết cấu trúc cục bộ như biên dải phổ, vùng năng lượng tập trung và burst ngắn theo thời gian.
 
 EfficientNet-B2 sử dụng chiến lược compound scaling để cân bằng độ sâu, độ rộng và độ phân giải đầu vào. Mô hình có hiệu quả tham số tương đối tốt và cung cấp một điểm so sánh với ResNet50. Kết quả của EfficientNet-B2 còn giúp kiểm tra liệu kiến trúc CNN được tối ưu về quy mô có duy trì được đặc trưng hữu ích khi miền dữ liệu chuyển từ ảnh tự nhiên sang spectrogram hay không.
 
-ConvNeXtV2 là CNN hiện đại với các khối tích chập được thiết kế theo nhiều nguyên tắc của kiến trúc thị giác thế hệ mới. Kernel lớn và cách tổ chức tầng cho phép mô hình tổng hợp ngữ cảnh rộng hơn so với CNN truyền thống. Việc đưa ConvNeXtV2 vào thực nghiệm giúp so sánh một CNN hiện đại với ResNet50 và EfficientNet-B2 trong cùng quy trình.
+ViT-B/16 là kiến trúc Vision Transformer cơ bản, chia ảnh đầu vào thành các patch kích thước $16 \times 16$ và xử lý chuỗi patch bằng self-attention. Việc đưa ViT-B/16 vào thực nghiệm giúp so sánh một Transformer toàn cục với Swin Transformer phân cấp và các backbone CNN trong cùng quy trình spectrogram RF.
 
-Swin Transformer, cụ thể là biến thể Swin V2 Small trong thí nghiệm, là kiến trúc Transformer thị giác phân cấp. Mô hình sử dụng self-attention theo các cửa sổ cục bộ và cơ chế dịch cửa sổ giữa các tầng để trao đổi thông tin không gian. Việc đưa Swin Transformer vào thực nghiệm giúp kiểm tra khả năng chuyển giao của một backbone Transformer có cấu trúc phân cấp sang ảnh spectrogram RF.
+Swin Transformer, cụ thể là biến thể Swin V2 Small trong thí nghiệm, là kiến trúc Transformer thị giác phân cấp. Mô hình sử dụng window attention và shifted window để trao đổi thông tin không gian. Việc đưa Swin Transformer vào thực nghiệm giúp kiểm tra khả năng transfer của một backbone Transformer phân cấp sang ảnh spectrogram RF.
 
-DINOv2 là backbone thị giác được tiền huấn luyện tự giám sát. Mô hình hướng tới việc học biểu diễn tổng quát mà không phụ thuộc trực tiếp vào nhãn lớp của bài toán đích. DINOv2 được khảo sát vì các đặc trưng tự giám sát có thể mô tả cấu trúc hình học và quan hệ giữa các vùng ảnh, từ đó có khả năng chuyển giao sang mẫu thời gian--tần số.
+DINOv2 là backbone thị giác được pretrained bằng self-supervised learning. Mô hình hướng tới việc học biểu diễn tổng quát mà không phụ thuộc trực tiếp vào nhãn lớp của bài toán đích. DINOv2 được khảo sát vì các đặc trưng self-supervised có thể mô tả cấu trúc hình học và quan hệ giữa các vùng ảnh, từ đó có khả năng transfer sang mẫu thời gian--tần số.
 
-Mỗi backbone được đánh giá bằng cùng hai chiến lược \textit{Feature Extraction-based Classification} và fine-tuning, với điều kiện dữ liệu và tiêu chí lựa chọn mô hình tương ứng. Việc so sánh được tiến hành ở mức từng mô hình. Không sử dụng kết quả của DINOv2 hoặc Swin Transformer để đại diện tuyệt đối cho mọi Transformer, cũng không sử dụng kết quả của ResNet50 để đại diện cho mọi CNN.
+Mỗi backbone được đánh giá bằng cùng hai chiến lược \textit{feature extraction + SVM} và \textit{fine-tuning}, với điều kiện dữ liệu và tiêu chí lựa chọn mô hình tương ứng. Việc so sánh được tiến hành ở mức từng mô hình. Không sử dụng kết quả của DINOv2 hoặc Swin Transformer để đại diện tuyệt đối cho mọi Transformer, cũng không sử dụng kết quả của ResNet50 để đại diện cho mọi CNN.
 
-\subsection{Accuracy}
+\section{Các chỉ số đánh giá}
 
-Accuracy là tỷ lệ số mẫu được dự đoán đúng trên tổng số mẫu:
+Để đánh giá hiệu năng của các mô hình trong bài toán phát hiện drone, đồ án sử dụng Accuracy, Precision, Recall, F1-score và confusion matrix. Các metrics này được báo cáo đồng thời vì mỗi chỉ số phản ánh một khía cạnh khác nhau: tỷ lệ dự đoán đúng tổng thể, độ tin cậy của cảnh báo, khả năng hạn chế bỏ sót drone và mức cân bằng giữa hai mục tiêu đó.
+
+\subsection{Ký hiệu ma trận nhầm lẫn}
+
+Trong bài toán nhị phân, lớp \textit{Drone} được xem là lớp dương và lớp \textit{Non-drone} được xem là lớp âm. Các chỉ số đánh giá được xây dựng từ bốn đại lượng trong Bảng~\ref{tab:confusion_terms}.
+
+\begin{table}[H]
+    \centering
+    \caption{Ý nghĩa các đại lượng trong ma trận nhầm lẫn}
+    \label{tab:confusion_terms}
+    \renewcommand{\arraystretch}{1.3}
+    \small
+    \begin{tabular}{|c|p{0.24\textwidth}|p{0.50\textwidth}|}
+        \hline
+        \textbf{Ký hiệu} & \textbf{Tên tiếng Anh} & \textbf{Ý nghĩa trong bài toán} \\ \hline
+        $TP$ & True Positive & Mẫu \textit{Drone} được dự đoán đúng là \textit{Drone}. \\ \hline
+        $TN$ & True Negative & Mẫu \textit{Non-drone} được dự đoán đúng là \textit{Non-drone}. \\ \hline
+        $FP$ & False Positive & Mẫu \textit{Non-drone} bị dự đoán nhầm thành \textit{Drone}. \\ \hline
+        $FN$ & False Negative & Mẫu \textit{Drone} bị dự đoán nhầm thành \textit{Non-drone}. \\ \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Công thức các chỉ số}
+
+Accuracy là tỷ lệ số mẫu được dự đoán đúng trên toàn bộ test set:
 \begin{equation}
     \mathrm{Accuracy}
     =
-    \frac{TP+TN}{TP+TN+FP+FN},
+    \frac{TP+TN}{TP+TN+FP+FN}.
     \label{eq:accuracy_ch4}
 \end{equation}
-trong đó $TP$ là số mẫu drone được dự đoán đúng, $TN$ là số mẫu non-drone được dự đoán đúng, $FP$ là số mẫu non-drone bị dự đoán thành drone và $FN$ là số mẫu drone bị bỏ sót.
 
-Accuracy cung cấp đánh giá tổng thể khi phân bố hai lớp tương đối cân bằng. Nếu tập kiểm thử mất cân bằng, một mô hình dự đoán thiên về lớp chiếm đa số vẫn có thể đạt accuracy cao. Vì vậy, chỉ số này được phân tích cùng precision, recall, F1-score và ma trận nhầm lẫn.
-
-\subsection{Precision}
-
-Precision của lớp \textit{Drone} đo tỷ lệ mẫu thực sự là drone trong số các mẫu được mô hình dự đoán là drone:
+Precision của lớp \textit{Drone} cho biết trong các mẫu được mô hình cảnh báo là drone, có bao nhiêu mẫu thực sự là drone:
 \begin{equation}
     \mathrm{Precision}
     =
@@ -218,11 +225,7 @@ Precision của lớp \textit{Drone} đo tỷ lệ mẫu thực sự là drone t
     \label{eq:precision_ch4}
 \end{equation}
 
-Precision thấp cho thấy hệ thống tạo nhiều cảnh báo sai. Trong bối cảnh triển khai, cảnh báo sai liên tục có thể làm giảm độ tin cậy của hệ thống. Chỉ số này không thể tính trên Drone1 và Drone2 nếu hai tập không chứa mẫu \textit{Non-drone}, bởi khi đó không xác định được số lượng false positive.
-
-\subsection{Recall}
-
-Recall đo tỷ lệ drone thực tế được phát hiện đúng:
+Recall của lớp \textit{Drone} đo tỷ lệ drone thực tế được mô hình phát hiện đúng:
 \begin{equation}
     \mathrm{Recall}
     =
@@ -230,569 +233,456 @@ Recall đo tỷ lệ drone thực tế được phát hiện đúng:
     \label{eq:recall_ch4}
 \end{equation}
 
-Recall phản ánh trực tiếp khả năng hạn chế bỏ sót drone. Với Drone1 và Drone2, toàn bộ 200 mẫu của mỗi tập mang nhãn \textit{Drone}; do đó tỷ lệ nhận diện được báo cáo chính là recall. Chẳng hạn, tỷ lệ $91\%$ trên 200 mẫu tương ứng 182 mẫu được phát hiện và 18 mẫu bị bỏ sót.
-
-\subsection{F1-score}
-
-F1-score là trung bình điều hòa của precision và recall:
+F1-score là trung bình điều hòa của Precision và Recall:
 \begin{equation}
     \mathrm{F1}
     =
-    2
-    \frac{
-        \mathrm{Precision}\times\mathrm{Recall}
-    }{
-        \mathrm{Precision}+\mathrm{Recall}
-    }.
+    2\times
+    \frac{\mathrm{Precision}\times\mathrm{Recall}}
+    {\mathrm{Precision}+\mathrm{Recall}}.
     \label{eq:f1_ch4}
 \end{equation}
 
-Chỉ số này giảm mạnh khi một trong hai thành phần precision hoặc recall thấp, vì vậy phù hợp để đánh giá sự cân bằng giữa cảnh báo sai và bỏ sót. Đối với bài toán hai lớp, macro F1-score có thể được tính bằng trung bình F1-score của hai lớp để tránh lớp có nhiều mẫu chi phối kết quả. Bảng kết quả nội miền cần ghi rõ sử dụng F1-score của lớp drone hay macro F1-score.
+\subsection{Diễn giải kết quả}
 
-\subsection{Confusion Matrix}
+Accuracy phù hợp để phản ánh hiệu năng chung khi số lượng mẫu giữa hai lớp tương đối cân bằng. Tuy nhiên, nếu dữ liệu mất cân bằng, một mô hình thiên về lớp chiếm đa số vẫn có thể đạt Accuracy cao mặc dù khả năng phát hiện drone còn hạn chế. Vì vậy, chỉ số này không được sử dụng độc lập mà luôn được phân tích cùng Precision, Recall và F1-score.
 
-Ma trận nhầm lẫn mô tả phân bố dự đoán theo nhãn thật và cho biết trực tiếp số lượng TP, TN, FP và FN. So với một chỉ số tổng hợp, ma trận này giúp nhận biết mô hình thiên về lớp nào. Một mô hình có accuracy thấp do chủ yếu bỏ sót drone cần được xử lý khác với mô hình có cùng accuracy nhưng tạo nhiều cảnh báo sai.
+Precision phản ánh mức độ tin cậy của các cảnh báo. Giá trị thấp cho thấy hệ thống tạo nhiều false alarm, làm tăng khối lượng kiểm tra của người vận hành. Recall phản ánh khả năng hạn chế bỏ sót drone; trong bối cảnh giám sát, chỉ số này đặc biệt quan trọng vì bỏ sót drone thường nghiêm trọng hơn một số false alarm.
+
+F1-score chỉ đạt giá trị cao khi cả Precision và Recall đều cao, do đó thể hiện mức cân bằng giữa phát hiện đúng drone và hạn chế false alarm. Trong quá trình chọn checkpoint, macro-F1 trên validation set được dùng để tránh việc mô hình chỉ tối ưu tốt cho một lớp.
+
+Confusion matrix được sử dụng để phân tích chi tiết hướng lỗi của từng mô hình. Từ số lượng $TP$, $TN$, $FP$ và $FN$, có thể xác định mô hình đang có xu hướng bỏ sót drone hay tạo nhiều false alarm. Cấu trúc confusion matrix được trình bày trong Bảng~\ref{tab:confusion_matrix}.
 
 \begin{table}[H]
     \centering
-    \caption{Cấu trúc ma trận nhầm lẫn của bài toán phát hiện drone}
     \label{tab:confusion_matrix}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|c|c|c|}
+    \small
+    \begin{tabular}{|p{0.22\textwidth}|p{0.25\textwidth}|p{0.27\textwidth}|}
         \hline
         \textbf{Nhãn thực tế} & \textbf{Dự đoán Drone} & \textbf{Dự đoán Non-drone} \\ \hline
-        Drone & TP & FN \\ \hline
-        Non-drone & FP & TN \\ \hline
+        Drone & $TP$ & $FN$ \\ \hline
+        Non-drone & $FP$ & $TN$ \\ \hline
     \end{tabular}
+    \caption{Cấu trúc ma trận nhầm lẫn của bài toán phát hiện drone}
+
 \end{table}
 
-Trong phần kết quả nội miền, ma trận nhầm lẫn của từng cấu hình tốt nhất cần được bổ sung dưới dạng hình hoặc bảng. Việc báo cáo số lượng tuyệt đối cùng tỷ lệ phần trăm giúp tránh cách diễn giải sai khi số mẫu giữa hai lớp khác nhau.
+\section{Kết quả trên in-domain test set}
 
-\section{Kết quả trên tập kiểm thử nội miền}
+\subsection{Kết quả feature extraction + SVM}
 
-\subsection{Kết quả Feature Extraction-based Classification}
-
-Trong thí nghiệm \textit{Feature Extraction-based Classification}, ảnh spectrogram được đưa qua backbone đã đóng băng để trích xuất embedding. Các embedding của tập huấn luyện được dùng để huấn luyện SVM, trong khi embedding của tập kiểm thử chỉ được sử dụng để dự đoán. Kết quả cần được tổng hợp theo Bảng~\ref{tab:feature_extraction_internal}.
+Trong thí nghiệm \textit{feature extraction + SVM}, ảnh spectrogram được đưa qua backbone đã freeze để trích xuất feature vector. Các feature vector của training set được dùng để huấn luyện SVM, trong khi feature vector của tập xác thực trong miền chỉ được sử dụng để dự đoán và tính metric. Tệp tổng hợp SVM hiện báo cáo kết quả trên tập xác thực gồm 996 ảnh \textit{Drone} và 1168 ảnh \textit{Non-drone}; do đó Bảng~\ref{tab:feature_extraction_internal} được dùng để đánh giá khả năng phân tách của phương án feature extraction cố định.
 
 \begin{table}[H]
     \centering
-    \caption{Kết quả Feature Extraction-based Classification trên tập kiểm thử nội miền}
     \label{tab:feature_extraction_internal}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.25\textwidth}|c|c|c|c|}
+    \scriptsize
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{|p{0.17\textwidth}|c|c|c|c|c|c|}
         \hline
-        \textbf{Backbone} & \textbf{Accuracy (\%)} & \textbf{Precision (\%)} & \textbf{Recall (\%)} & \textbf{F1-score (\%)} \\ \hline
-        VGG13-BN & -- & -- & -- & -- \\ \hline
-        ResNet50 & -- & -- & -- & -- \\ \hline
-        EfficientNet-B2 & -- & -- & -- & -- \\ \hline
-        ConvNeXtV2 & -- & -- & -- & -- \\ \hline
-        Swin Transformer & -- & -- & -- & -- \\ \hline
-        DINOv2 & -- & -- & -- & -- \\ \hline
+        \textbf{Mô hình} &
+        \shortstack{\textbf{Accuracy}\\\textbf{(\%)}} &
+        \shortstack{\textbf{Precision}\\\textbf{Drone (\%)}} &
+        \shortstack{\textbf{Recall}\\\textbf{Drone (\%)}} &
+        \shortstack{\textbf{F1}\\\textbf{Drone (\%)}} &
+        \shortstack{\textbf{Recall}\\\textbf{Non-drone (\%)}} &
+        \shortstack{\textbf{Macro-F1}\\\textbf{(\%)}} \\ \hline
+        VGG13-BN & 73,84 & 63,89 & 99,30 & 77,75 & 52,14 & 73,01 \\ \hline
+        ResNet50 & 77,82 & 67,70 & 99,10 & 80,44 & 59,67 & 77,41 \\ \hline
+        EfficientNet-B2 & 82,99 & 74,01 & 97,19 & 84,03 & 70,89 & 82,92 \\ \hline
+        ViT-B/16 & 81,98 & 72,08 & 99,30 & 83,53 & 67,21 & 81,82 \\ \hline
+        Swin Transformer & 85,95 & 77,07 & 98,90 & 86,63 & 74,91 & 85,92 \\ \hline
+        DINOv2 & 89,42 & 81,51 & 99,60 & 89,65 & 80,74 & 89,41 \\ \hline
     \end{tabular}
+    \caption{Kết quả trích xuất đặc trưng + SVM trên tập xác thực trong miền}
+
 \end{table}
 
-Theo kết quả tổng hợp hiện có, accuracy của các cấu hình \textit{Feature Extraction-based Classification} trong Bảng~\ref{tab:feature_extraction_internal} đều dưới $50\%$. Xu hướng này cho thấy embedding cố định chưa tạo ra không gian đặc trưng phù hợp để SVM phân tách ổn định hai lớp trong cấu hình thí nghiệm. Nếu tập kiểm thử cân bằng, các giá trị dưới $50\%$ còn thấp hơn mức đạt được khi luôn chọn một lớp; nếu tập không cân bằng, cần đối chiếu phân bố lớp trước khi so sánh với mức nền.
+Theo Bảng~\ref{tab:feature_extraction_internal}, \textit{feature extraction + SVM} đạt Accuracy từ $73{,}84\%$ đến $89{,}42\%$ trên tập xác thực trong miền. DINOv2 cho kết quả tốt nhất với Macro-F1 $89{,}41\%$, tiếp theo là Swin Transformer với Macro-F1 $85{,}92\%$. Các backbone đều đạt Recall lớp \textit{Drone} rất cao, từ $97{,}19\%$ đến $99{,}60\%$, cho thấy feature vector cố định vẫn chứa thông tin hữu ích để nhận diện tín hiệu drone.
 
-Nguyên nhân thứ nhất có thể xuất phát từ khoảng cách miền dữ liệu. Các backbone được tiền huấn luyện chủ yếu trên ảnh tự nhiên hoặc cặp ảnh--văn bản, trong khi spectrogram biểu diễn năng lượng theo thời gian và tần số. Các texture, cạnh và bố cục có ý nghĩa trong ảnh tự nhiên không nhất thiết tương ứng với dải truyền, burst hoặc nền nhiễu RF. Khi backbone bị đóng băng, các tầng không có cơ hội điều chỉnh bộ lọc và vùng chú ý theo cấu trúc này.
+Tuy nhiên, Recall lớp \textit{Non-drone} thấp hơn đáng kể so với Recall lớp \textit{Drone}. VGG13-BN và ResNet50 chỉ đạt lần lượt $52{,}14\%$ và $59{,}67\%$ Recall lớp \textit{Non-drone}, nghĩa là SVM còn tạo nhiều false alarm. Ngay cả DINOv2, mô hình tốt nhất trong nhóm SVM, cũng mới đạt $80{,}74\%$ Recall lớp \textit{Non-drone}. Do đó, hạn chế chính của feature extraction cố định không nằm ở khả năng phát hiện drone, mà nằm ở khả năng phân biệt ổn định drone với tín hiệu nền.
 
-Nguyên nhân thứ hai liên quan đến cách tổng hợp embedding. Một vector toàn cục có thể làm giảm thông tin về vị trí tương đối của tín hiệu trên trục tần số hoặc thời gian. Nếu hai lớp khác nhau chủ yếu ở một vùng nhỏ của spectrogram, phép pooling toàn cục có thể pha loãng đặc trưng cần thiết. SVM chỉ nhận vector cuối nên không thể phục hồi thông tin đã mất ở bước trích xuất.
+Nguyên nhân thứ nhất có thể xuất phát từ domain gap. Các backbone pretrained chủ yếu trên ảnh tự nhiên hoặc cặp ảnh--văn bản, trong khi spectrogram biểu diễn năng lượng theo thời gian và tần số. Các kết cấu, cạnh và bố cục có ý nghĩa trong ảnh tự nhiên không nhất thiết tương ứng với dải truyền, burst hoặc nền nhiễu RF. Khi backbone bị freeze, các tầng không có cơ hội điều chỉnh bộ lọc và vùng chú ý theo cấu trúc này.
 
-Nguyên nhân thứ ba có thể liên quan đến chuẩn hóa embedding và siêu tham số SVM. Tuy nhiên, vì các backbone đều dưới $50\%$, việc chỉ điều chỉnh SVM khó giải thích toàn bộ xu hướng nếu quy trình đã sử dụng tập xác thực hợp lệ. Các giá trị precision, recall và ma trận nhầm lẫn sau khi được bổ sung sẽ cho biết mô hình đang thiên về \textit{Drone} hay \textit{Non-drone}, từ đó xác định lỗi chủ yếu đến từ ranh giới phân loại hay từ biểu diễn không phân tách.
+Nguyên nhân thứ hai liên quan đến cách tổng hợp vector đặc trưng. Một vector toàn cục có thể làm giảm thông tin về vị trí tương đối của tín hiệu trên trục tần số hoặc thời gian. Nếu hai lớp khác nhau chủ yếu ở một vùng nhỏ của spectrogram, phép gộp toàn cục có thể pha loãng đặc trưng cần thiết. SVM chỉ nhận vector cuối nên không thể phục hồi thông tin đã mất ở bước trích xuất.
 
-\subsection{Kết quả Fine-tuning}
+Nguyên nhân thứ ba có thể liên quan đến feature normalization, class weight và hyperparameter của SVM. Trong thí nghiệm này, SVM sử dụng \texttt{class\_weight=balanced}, RBF kernel, $C=1{,}0$ và $\gamma=\mathrm{scale}$. Cấu hình này giúp tăng Recall lớp \textit{Drone}, nhưng chưa đủ để cân bằng hoàn toàn Precision và Recall khi đặc trưng cố định chưa tách rõ lớp \textit{Non-drone}.
 
-Trong thí nghiệm fine-tuning, lớp phân loại cuối được thay bằng lớp hai đầu ra và toàn bộ backbone được cập nhật trên dữ liệu huấn luyện. Checkpoint dùng để kiểm thử phải được lựa chọn bằng tập xác thực. Kết quả được trình bày theo Bảng~\ref{tab:finetune_internal}.
+Kết quả \textit{feature extraction + SVM} bổ sung trên dữ liệu RF tự thu có đủ hai lớp được trình bày trong Bảng~\ref{tab:svm_self_collected}. Tập này gồm 3888 ảnh \textit{Drone} và 1691 ảnh \textit{Non-drone}. Kết quả không thay thế Bảng~\ref{tab:feature_extraction_internal} vì đây là dữ liệu tự thu ngoài training set, nhưng cung cấp thêm căn cứ về mức hiệu quả của phương án feature extraction cố định khi chuyển sang dữ liệu thực tế.
 
 \begin{table}[H]
     \centering
-    \caption{Kết quả fine-tuning trên tập kiểm thử nội miền}
+    \caption{Kết quả trích xuất đặc trưng + SVM trên dữ liệu RF tự thu}
+    \label{tab:svm_self_collected}
+    \renewcommand{\arraystretch}{1.3}
+    \scriptsize
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{|p{0.17\textwidth}|c|c|c|c|c|c|}
+        \hline
+        \textbf{Mô hình} & \textbf{Drone đúng} & \textbf{Non-drone đúng} & \textbf{Accuracy (\%)} & \textbf{Precision (\%)} & \textbf{Recall (\%)} & \textbf{F1-score (\%)} \\ \hline
+        VGG13-BN & 2808/3888 & 960/1691 & 67,54 & 79,34 & 72,22 & 75,62 \\ \hline
+        ResNet50 & 3650/3888 & 1115/1691 & 85,41 & 86,37 & 93,88 & 89,97 \\ \hline
+        EfficientNet-B2 & 3094/3888 & 1339/1691 & 79,46 & 89,79 & 79,58 & 84,37 \\ \hline
+        ViT-B/16 & 3370/3888 & 1200/1691 & 81,91 & 87,28 & 86,68 & 86,98 \\ \hline
+        Swin Transformer & 3457/3888 & 1242/1691 & 84,23 & 88,50 & 88,91 & 88,71 \\ \hline
+        DINOv2 & 3404/3888 & 1219/1691 & 82,86 & 87,82 & 87,55 & 87,69 \\ \hline
+    \end{tabular}
+\end{table}
+
+Trên dữ liệu RF tự thu, ResNet50 đạt Accuracy cao nhất trong nhóm SVM với $85{,}41\%$ nhờ Recall lớp \textit{Drone} đạt $93{,}88\%$. Swin Transformer và DINOv2 có F1-score lớp \textit{Drone} lần lượt $88{,}71\%$ và $87{,}69\%$. EfficientNet-B2 có Precision cao nhất ($89{,}79\%$) nhưng Recall lớp \textit{Drone} thấp hơn, cho thấy mô hình thận trọng hơn khi cảnh báo drone. Kết quả này xác nhận rằng SVM có thể hoạt động được trên dữ liệu thực tế, nhưng độ cân bằng giữa phát hiện drone và hạn chế false alarm vẫn phụ thuộc mạnh vào backbone.
+
+\subsection{Kết quả fine-tuning}
+
+Trong thí nghiệm fine-tuning, classifier head được thay bằng lớp hai đầu ra và toàn bộ backbone được cập nhật trên training set. Checkpoint dùng để test phải được lựa chọn bằng validation set. Kết quả được trình bày theo Bảng~\ref{tab:finetune_internal}.
+
+\begin{table}[H]
+    \centering
     \label{tab:finetune_internal}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.25\textwidth}|c|c|c|c|}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{|p{0.22\textwidth}|c|c|c|c|}
         \hline
-        \textbf{Backbone} & \textbf{Accuracy (\%)} & \textbf{Precision (\%)} & \textbf{Recall (\%)} & \textbf{F1-score (\%)} \\ \hline
-        VGG13-BN & -- & -- & -- & -- \\ \hline
-        ResNet50 & -- & -- & -- & -- \\ \hline
-        EfficientNet-B2 & -- & -- & -- & -- \\ \hline
-        ConvNeXtV2 & -- & -- & -- & -- \\ \hline
-        Swin Transformer & -- & -- & -- & -- \\ \hline
-        DINOv2 & -- & -- & -- & -- \\ \hline
+        \textbf{Mô hình} & \textbf{Accuracy (\%)} & \textbf{Precision (\%)} & \textbf{Recall (\%)} & \textbf{F1-score (\%)} \\ \hline
+        VGG13-BN & 96,48 & 95,55 & 98,83 & 97,16 \\ \hline
+        ResNet50 & 92,70 & 90,59 & 98,24 & 94,26 \\ \hline
+        EfficientNet-B2 & 93,87 & 92,03 & 98,49 & 95,15 \\ \hline
+        ViT-B/16 & 94,74 & 93,34 & 98,41 & 95,81 \\ \hline
+        Swin Transformer & 98,01 & 97,85 & 98,91 & 98,38 \\ \hline
+        DINOv2 & 99,64 & 99,83 & 99,58 & 99,71 \\ \hline
     \end{tabular}
+    \caption{Kết quả tinh chỉnh mô hình trên tập kiểm thử trong miền}
+
 \end{table}
 
-Sau khi điền số liệu, nhận xét giữa các backbone cần dựa trực tiếp vào chênh lệch trong Bảng~\ref{tab:finetune_internal}. Backbone có accuracy cao nhất chỉ được xem là tốt nhất về tỷ lệ dự đoán đúng tổng thể. Nếu một mô hình khác có recall cao hơn, mô hình đó bỏ sót ít drone hơn; nếu precision cao hơn, mô hình tạo ít cảnh báo sai hơn. Vì vậy, việc lựa chọn mô hình phải gắn với mục tiêu vận hành thay vì chỉ dựa trên thứ hạng accuracy.
+Kết quả trong Bảng~\ref{tab:finetune_internal} cho thấy toàn bộ mô hình fine-tuning đều đạt Recall lớp \textit{Drone} trên $98\%$ trên in-domain test set. DINOv2 đạt kết quả cao nhất với Accuracy $99{,}64\%$ và F1-score lớp \textit{Drone} $99{,}71\%$. Swin Transformer đứng thứ hai với Accuracy $98{,}01\%$. ResNet50 và EfficientNet-B2 vẫn phát hiện được phần lớn mẫu drone, nhưng Precision thấp hơn, cho thấy hai mô hình này tạo nhiều false alarm hơn so với DINOv2 và Swin Transformer.
 
-Fine-tuning cho phép các tầng đầu và tầng sâu thay đổi theo spectrogram. Những bộ lọc ban đầu có thể điều chỉnh để phản ứng với cấu trúc năng lượng đơn sắc, còn các tầng sau có thể học quan hệ giữa vùng tần số và thời gian. Đây là cơ chế có khả năng giải thích mức cải thiện so với embedding cố định. Tuy nhiên, nếu một backbone đạt kết quả gần tuyệt đối trên tập kiểm thử nội miền, cần kiểm tra cách chia tập theo nguồn để loại trừ rò rỉ giữa các đoạn cùng bản ghi.
+Fine-tuning cho phép các tầng đầu và tầng sâu thay đổi theo spectrogram. Những bộ lọc ban đầu có thể điều chỉnh để phản ứng với cấu trúc năng lượng đơn sắc, còn các tầng sau có thể học quan hệ giữa vùng tần số và thời gian. Đây là cơ chế có khả năng giải thích mức cải thiện so với feature vector cố định. Tuy nhiên, nếu một backbone đạt kết quả gần tuyệt đối trên in-domain test set, cần kiểm tra cách chia tập theo nguồn để loại trừ rò rỉ giữa các đoạn cùng bản ghi.
 
-% Gợi ý chèn hình: Ma trận nhầm lẫn của sáu mô hình fine-tuning trên tập kiểm thử nội miền.
-
-\subsection{So sánh Feature Extraction-based Classification và Fine-tuning}
-
-Bảng~\ref{tab:fe_ft_comparison} được sử dụng để so sánh trực tiếp hai chiến lược trên cùng backbone. Cột chênh lệch phải được tính từ các giá trị đã điền trong hai bảng trước, không nhập bằng ước lượng.
+% Gợi ý chèn hình: Confusion matrix của sáu mô hình fine-tuning trên in-domain test set.
 
 \begin{table}[H]
     \centering
-    \caption{So sánh Feature Extraction-based Classification và fine-tuning trên tập kiểm thử nội miền}
+    \caption{Tóm tắt mô hình được chọn và ma trận nhầm lẫn trên tập kiểm thử trong miền}
+    \label{tab:finetune_training_summary}
+    \renewcommand{\arraystretch}{1.25}
+    {\scriptsize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{|p{0.18\textwidth}|c|c|c|c|c|c|c|}
+        \hline
+        \textbf{Mô hình} & \textbf{Epoch tốt nhất} & \textbf{Macro-F1 xác thực (\%)} & \textbf{Test loss} & $TN$ & $FP$ & $FN$ & $TP$ \\ \hline
+        VGG13-BN & 7 & 78,27 & 0,1023 & 708 & 55 & 14 & 1182 \\ \hline
+        ResNet50 & 10 & 76,22 & 0,1924 & 641 & 122 & 21 & 1175 \\ \hline
+        EfficientNet-B2 & 8 & 77,30 & 0,1930 & 661 & 102 & 18 & 1178 \\ \hline
+        ViT-B/16 & 1 & 94,37 & 0,1162 & 679 & 84 & 19 & 1177 \\ \hline
+        Swin Transformer & 11 & 96,67 & 0,0940 & 737 & 26 & 13 & 1183 \\ \hline
+        DINOv2 & 7 & 99,76 & 0,0150 & 761 & 2 & 5 & 1191 \\ \hline
+    \end{tabular}
+    }
+\end{table}
+
+\subsection{So sánh feature extraction và fine-tuning}
+
+Kết quả về Accuracy và chênh lệch giữa hai training strategy được trình bày trong bảng sau:
+
+\begin{table}[H]
+    \centering
+    \caption{So sánh trích xuất đặc trưng + SVM và tinh chỉnh mô hình trong miền}
     \label{tab:fe_ft_comparison}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.24\textwidth}|c|c|c|c|}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{|p{0.21\textwidth}|c|c|c|p{0.19\textwidth}|}
         \hline
-        \textbf{Backbone} & $\mathbf{Acc_{FE}}$ \textbf{(\%)} & $\mathbf{Acc_{FT}}$ \textbf{(\%)} & $\boldsymbol{\Delta Acc}$ & $\boldsymbol{\Delta F1}$ \\ \hline
-        VGG13-BN & -- & -- & [TÍNH] & [TÍNH] \\ \hline
-        ResNet50 & -- & -- & [TÍNH] & [TÍNH] \\ \hline
-        EfficientNet-B2 & -- & -- & [TÍNH] & [TÍNH] \\ \hline
-        ConvNeXtV2 & -- & -- & [TÍNH] & [TÍNH] \\ \hline
-        Swin Transformer & -- & -- & [TÍNH] & [TÍNH] \\ \hline
-        DINOv2 & -- & -- & [TÍNH] & [TÍNH] \\ \hline
+        \textbf{Mô hình} & $\mathbf{Acc_{FE}}$ \textbf{(\%)} & $\mathbf{Acc_{FT}}$ \textbf{(\%)} & $\boldsymbol{\Delta Acc}$ & $\boldsymbol{\Delta F1_{Drone}}$ \\ \hline
+        VGG13-BN & 73,84 & 96,48 & +22,64 & +19,41 \\ \hline
+        ResNet50 & 77,82 & 92,70 & +14,88 & +13,82 \\ \hline
+        EfficientNet-B2 & 82,99 & 93,87 & +10,88 & +11,12 \\ \hline
+        ViT-B/16 & 81,98 & 94,74 & +12,76 & +12,28 \\ \hline
+        Swin Transformer & 85,95 & 98,01 & +12,06 & +11,75 \\ \hline
+        DINOv2 & 89,42 & 99,64 & +10,22 & +10,06 \\ \hline
     \end{tabular}
 \end{table}
 
-% Gợi ý chèn hình: Biểu đồ cột nhóm so sánh accuracy của Feature Extraction-based Classification và Fine-tuning cho từng backbone.
+% Gợi ý chèn hình: Biểu đồ cột nhóm so sánh Accuracy của feature extraction + SVM và fine-tuning cho từng backbone.
 
-Với thông tin hiện có rằng toàn bộ \textit{Feature Extraction-based Classification} dưới $50\%$, fine-tuning chỉ được kết luận vượt trội cho từng backbone sau khi cột $\mathrm{Acc_{FT}}$ được điền và lớn hơn giá trị tương ứng. Nếu điều kiện này đúng cho toàn bộ các dòng, kết quả hỗ trợ nhận định rằng thích nghi toàn bộ backbone hiệu quả hơn việc chỉ huấn luyện SVM trên embedding cố định trong bài toán này. Mức cải thiện tuyệt đối cần được báo cáo bằng điểm phần trăm, không dùng tỷ lệ phần trăm tương đối nếu không nêu rõ cách tính.
+Các giá trị trong Bảng~\ref{tab:fe_ft_comparison} cho thấy fine-tuning vẫn cải thiện rõ rệt so với \textit{feature extraction + SVM}. Mức tăng Accuracy nằm trong khoảng $10{,}22$ đến $22{,}64$ điểm phần trăm, còn mức tăng F1-score lớp \textit{Drone} nằm trong khoảng $10{,}06$ đến $19{,}41$ điểm phần trăm. Do kết quả SVM được lấy từ tập xác thực trong miền, bảng này chủ yếu được dùng để phản ánh xu hướng định lượng giữa hai chiến lược trong cùng pipeline tiền xử lý.
 
-Nguyên nhân chính của chênh lệch dự kiến là fine-tuning tối ưu trực tiếp biểu diễn theo nhãn RF. \textit{Feature Extraction-based Classification} chỉ dịch chuyển ranh giới quyết định trong một không gian cố định, trong khi fine-tuning đồng thời thay đổi không gian đặc trưng và ranh giới phân loại. Điều này đặc biệt quan trọng khi tín hiệu drone được phân biệt bằng các cấu trúc không phải mục tiêu của quá trình tiền huấn luyện ban đầu.
+Nguyên nhân chính của chênh lệch dự kiến là fine-tuning tối ưu trực tiếp biểu diễn theo nhãn RF. \textit{Feature extraction + SVM} chỉ dịch chuyển decision boundary trong một không gian cố định, trong khi fine-tuning đồng thời thay đổi feature space và classifier. Điều này đặc biệt quan trọng khi tín hiệu drone được phân biệt bằng các cấu trúc không phải mục tiêu của quá trình pretraining ban đầu.
 
-Mặt khác, kết quả nội miền cao hơn không tự động chứng minh fine-tuning tổng quát hóa tốt hơn. Quá trình cập nhật toàn bộ tham số có thể làm mô hình học cả đặc trưng tín hiệu lẫn đặc trưng riêng của tập nhị phân được xây dựng từ DroneDetect v2 và dữ liệu \textit{Non-drone} tự thu. Do đó, kết quả trên Drone1 và Drone2 được sử dụng như phép kiểm tra bổ sung cho lợi ích của fine-tuning.
+Mặt khác, kết quả in-domain cao hơn không tự động chứng minh fine-tuning generalize tốt hơn. Quá trình cập nhật toàn bộ tham số có thể làm mô hình học cả đặc trưng tín hiệu lẫn đặc trưng riêng của tập nhị phân được xây dựng từ DroneDetect v2 và dữ liệu \textit{Non-drone} tự thu. Do đó, kết quả trên dữ liệu công khai khác training set và dữ liệu RF tự thu được sử dụng như phép kiểm tra bổ sung cho lợi ích của fine-tuning.
 
 \section{Kết quả trên dữ liệu RF thực tế}
 
-\subsection{Kịch bản thử nghiệm}
+\subsection{Kịch bản đánh giá ngoài training set}
 
-Kịch bản thử nghiệm sử dụng các mô hình đã được huấn luyện và lựa chọn trên tập nhị phân gồm mẫu \textit{Drone} từ DroneDetect v2 và mẫu \textit{Non-drone} tự thu/bổ sung. Không thực hiện cập nhật tham số bằng Drone1 hoặc Drone2. Tín hiệu RF được thu bằng bladeRF tại băng 2,4~GHz, lưu dưới dạng I/Q, phân đoạn và chuyển thành spectrogram. Ảnh được chuẩn hóa theo cấu hình tương ứng của từng backbone trước khi đưa qua mô hình. Luồng xử lý có thể biểu diễn như sau:
+Kịch bản đánh giá sử dụng các checkpoint đã được huấn luyện và lựa chọn trên tập nhị phân gồm mẫu \textit{Drone} từ DroneDetect v2 và mẫu \textit{Non-drone} tự thu dùng cho training. Các checkpoint này không được cập nhật thêm trên những tập đánh giá ngoài training set. Mỗi tập RF được chuyển thành spectrogram bằng cùng preprocessing configuration, sau đó được normalize theo backbone tương ứng trước khi inference. Luồng đánh giá tổng quát được biểu diễn như sau:
 \begin{equation}
-    \text{RF thực tế}
+    \text{RF/IQ hoặc spectrogram ngoài training set}
     \longrightarrow
-    \text{Spectrogram}
-    \longrightarrow
-    \text{Mô hình}
-    \longrightarrow
-    \text{Kết quả nhận dạng}.
-\end{equation}
-
-Mỗi tập Drone1 và Drone2 gồm 200 spectrogram mang nhãn \textit{Drone}. Mô hình đưa ra dự đoán nhị phân cho từng ảnh. Tỷ lệ nhận diện được tính bằng số ảnh dự đoán đúng là drone chia cho 200. Vì không có mẫu \textit{Non-drone}, thí nghiệm này tập trung vào khả năng phát hiện và số lượng bỏ sót, không đánh giá khả năng hạn chế cảnh báo giả.
-
-% Gợi ý chèn hình: Pipeline suy luận trên dữ liệu thực tế từ bladeRF, tệp I/Q, spectrogram đến nhãn dự đoán.
-
-\subsection{Kịch bản kiểm thử trên các bộ dữ liệu ngoài miền}
-
-Kịch bản kiểm thử ngoài miền sử dụng cùng các checkpoint đã được lựa chọn trên tập nhị phân huấn luyện. Mô hình không được fine-tune lại bằng RFUAV, CageDroneRF, DRFF-R1 hoặc DRFF-R2. Mỗi bộ dữ liệu được chuyển về định dạng spectrogram đầu vào giống với pipeline huấn luyện, bao gồm kích thước ảnh, chuẩn hóa và thứ tự nhãn \textit{Non-drone}/\textit{Drone}. Luồng đánh giá được mô tả như sau:
-\begin{equation}
-    \text{External RF Dataset}
-    \longrightarrow
-    \text{Spectrogram chuẩn hóa}
+    \text{Preprocessing thống nhất}
     \longrightarrow
     \text{Checkpoint đã huấn luyện}
     \longrightarrow
-    \text{Metric ngoài miền}.
+    \text{Metrics}.
 \end{equation}
 
-Mục tiêu của kịch bản này là đo mức suy giảm khi miền dữ liệu thay đổi. Nếu mô hình đạt kết quả cao trên tập kiểm thử nội miền nhưng giảm mạnh trên RFUAV hoặc DRFF, điều đó cho thấy mô hình có thể đã phụ thuộc vào đặc trưng riêng của nguồn huấn luyện. Ngược lại, mô hình duy trì recall và F1-score cao trên nhiều bộ dữ liệu ngoài miền sẽ có bằng chứng tốt hơn về khả năng ứng dụng trong điều kiện thực tế.
+Phần này gồm hai nhóm thử nghiệm. Nhóm thứ nhất sử dụng các bộ dữ liệu công khai khác training set, gồm RFUAV và DroneRF, để kiểm tra domain shift giữa các nguồn dữ liệu RF. Hai bộ dữ liệu công khai này chỉ có lớp \textit{Drone} trong phạm vi đánh giá của đồ án, vì vậy chỉ dùng để tính drone recall. Nhóm thứ hai sử dụng dữ liệu RF tự thu bằng bladeRF, gồm tín hiệu drone trong môi trường indoor và outdoor, cùng tín hiệu \textit{Non-drone} trong indoor và outdoor. Riêng nhóm drone outdoor có thêm kết quả tách theo khoảng cách thu 10~m, 30~m, 60~m, 80~m và 100~m cho hai mô hình VGG13-BN và DINOv2.
 
-Đối với các tập chỉ chứa mẫu drone, chỉ số chính được báo cáo là tỷ lệ nhận diện drone:
+Với tập đánh giá có nhãn \textit{Drone}, metric chính là Recall của lớp drone:
 \begin{equation}
-    R_{m,d}
+    R^{\mathrm{Drone}}_{m,d}
     =
-    \frac{N^{\mathrm{correct}}_{m,d}}
-    {N^{\mathrm{drone}}_{d}},
+    \frac{TP_{m,d}}
+    {TP_{m,d}+FN_{m,d}},
     \label{eq:external_drone_recall}
 \end{equation}
-trong đó $R_{m,d}$ là tỷ lệ nhận diện của mô hình $m$ trên bộ dữ liệu $d$, $N^{\mathrm{correct}}_{m,d}$ là số mẫu drone được dự đoán đúng và $N^{\mathrm{drone}}_{d}$ là tổng số mẫu drone của bộ dữ liệu đó. Với các tập có cả hai lớp, ngoài $R_{m,d}$ cần báo cáo thêm precision và F1-score để đánh giá cảnh báo sai.
-
-\begin{table}[H]
-    \centering
-    \caption{Tỷ lệ nhận diện drone trên các bộ dữ liệu ngoài miền}
-    \label{tab:external_domain_recognition_results}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.22\textwidth}|c|c|c|c|c|}
-        \hline
-        \textbf{Mô hình} & \textbf{RFUAV (\%)} & \textbf{CageDroneRF (\%)} & \textbf{DRFF-R1 (\%)} & \textbf{DRFF-R2 (\%)} & \textbf{Trung bình (\%)} \\ \hline
-        VGG13-BN & -- & -- & -- & -- & -- \\ \hline
-        ResNet50 & -- & -- & -- & -- & -- \\ \hline
-        EfficientNet-B2 & -- & -- & -- & -- & -- \\ \hline
-        ConvNeXtV2 & -- & -- & -- & -- & -- \\ \hline
-        Swin Transformer & -- & -- & -- & -- & -- \\ \hline
-        DINOv2 & -- & -- & -- & -- & -- \\ \hline
-    \end{tabular}
-\end{table}
-
-\begin{table}[H]
-    \centering
-    \caption{Khung báo cáo metric đầy đủ trên các bộ dữ liệu ngoài miền}
-    \label{tab:external_domain_full_metrics}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.17\textwidth}|p{0.18\textwidth}|c|c|c|c|c|}
-        \hline
-        \textbf{Bộ dữ liệu} & \textbf{Mô hình} & \textbf{Số mẫu} & \textbf{Accuracy (\%)} & \textbf{Precision (\%)} & \textbf{Recall (\%)} & \textbf{F1-score (\%)} \\ \hline
-        RFUAV & -- & -- & -- & -- & -- & -- \\ \hline
-        CageDroneRF & -- & -- & -- & -- & -- & -- \\ \hline
-        DRFF-R1 & -- & -- & -- & -- & -- & -- \\ \hline
-        DRFF-R2 & -- & -- & -- & -- & -- & -- \\ \hline
-    \end{tabular}
-\end{table}
-
-Bảng~\ref{tab:external_domain_recognition_results} dùng để so sánh trực tiếp khả năng phát hiện drone giữa các backbone trên từng bộ dữ liệu ngoài miền. Bảng~\ref{tab:external_domain_full_metrics} dùng khi từng bộ dữ liệu có đủ hai lớp để tính metric đầy đủ. Nếu chỉ có lớp \textit{Drone}, các cột accuracy, precision và F1-score không nên được diễn giải như đánh giá đầy đủ; khi đó cần ghi rõ kết quả tương ứng với recall của lớp drone.
-
-\subsection{Thử nghiệm theo khoảng cách thu}
-
-Bên cạnh hai tập Drone1 và Drone2, một thí nghiệm riêng được thiết kế để khảo sát ảnh hưởng của khoảng cách giữa nguồn phát và hệ thống thu. Tín hiệu được thu tại bốn khoảng cách 5~m, 10~m, 15~m và 20~m. Mục tiêu của thí nghiệm là xác định mức thay đổi của tỷ lệ nhận diện khi công suất tín hiệu tại đầu thu suy giảm theo khoảng cách, đồng thời đánh giá độ ổn định của từng backbone trong các điều kiện thu khác nhau.
-
-Để khoảng cách là biến số chính, các yếu tố còn lại cần được giữ ổn định trong toàn bộ quá trình thu. Cùng một drone, bladeRF, ăng-ten, tần số trung tâm, tốc độ lấy mẫu, băng thông, độ lợi và thời lượng thu được sử dụng tại bốn vị trí. Hướng và độ cao tương đối của ăng-ten cũng cần được duy trì trong phạm vi có thể kiểm soát. Không nên điều chỉnh gain riêng cho từng khoảng cách nếu mục tiêu là quan sát trực tiếp ảnh hưởng của suy hao đường truyền. Nếu bắt buộc phải thay đổi gain để tránh mất tín hiệu, giá trị tương ứng phải được báo cáo và kết quả không còn phản ánh riêng tác động của khoảng cách.
-
-Mỗi khoảng cách cần có cùng số lượng spectrogram và được tạo bằng cùng cấu hình phân đoạn, STFT, chuẩn hóa và resize. Các đoạn nên được lấy từ những phiên thu độc lập hoặc từ các khoảng thời gian không chồng lấn để giảm tương quan giữa các mẫu. Bảng~\ref{tab:distance_capture_setup} trình bày thông tin cần ghi nhận cho từng khoảng cách.
-
-\begin{table}[H]
-    \centering
-    \caption{Cấu hình dữ liệu RF thu theo khoảng cách}
-    \label{tab:distance_capture_setup}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|c|c|c|c|c|p{0.22\textwidth}|}
-        \hline
-        \textbf{Khoảng cách} & \textbf{Số ảnh} & \textbf{Gain} & \textbf{SNR TB (dB)} & \textbf{Công suất TB (dB)} & \textbf{Điều kiện thu} \\ \hline
-        5~m & -- & -- & -- & -- & -- \\ \hline
-        10~m & -- & -- & -- & -- & -- \\ \hline
-        15~m & -- & -- & -- & -- & -- \\ \hline
-        20~m & -- & -- & -- & -- & -- \\ \hline
-    \end{tabular}
-\end{table}
-
-Trong điều kiện truyền sóng lý tưởng, công suất thu có xu hướng giảm khi khoảng cách tăng. Tuy nhiên, môi trường thực tế còn chịu ảnh hưởng của phản xạ, che khuất, giao thoa đa đường và nguồn nhiễu trong băng 2,4~GHz. Vì vậy, khoảng cách không nên được dùng thay thế trực tiếp cho SNR. Việc báo cáo đồng thời khoảng cách, SNR và công suất trung bình giúp xác định hiệu năng giảm do tín hiệu yếu hơn hay do một điều kiện nhiễu cục bộ tại vị trí thu.
-
-Các mô hình được suy luận trên từng tập khoảng cách mà không huấn luyện lại bằng dữ liệu này. Vì các tập chỉ chứa tín hiệu drone, chỉ số chính là tỷ lệ nhận diện, tương đương recall của lớp \textit{Drone}. Kết quả được trình bày trong Bảng~\ref{tab:distance_recognition_results}.
-
-\begin{table}[H]
-    \centering
-    \caption{Tỷ lệ nhận diện drone theo khoảng cách thu}
-    \label{tab:distance_recognition_results}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.25\textwidth}|c|c|c|c|c|}
-        \hline
-        \textbf{Mô hình} & \textbf{5 m (\%)} & \textbf{10 m (\%)} & \textbf{15 m (\%)} & \textbf{20 m (\%)} & \textbf{Trung bình (\%)} \\ \hline
-        VGG13-BN & -- & -- & -- & -- & -- \\ \hline
-        ResNet50 & -- & -- & -- & -- & -- \\ \hline
-        EfficientNet-B2 & -- & -- & -- & -- & -- \\ \hline
-        ConvNeXtV2 & -- & -- & -- & -- & -- \\ \hline
-        Swin Transformer & -- & -- & -- & -- & -- \\ \hline
-        DINOv2 & -- & -- & -- & -- & -- \\ \hline
-    \end{tabular}
-\end{table}
-
-% Gợi ý chèn hình: Biểu đồ đường biểu diễn tỷ lệ nhận diện của từng backbone tại các khoảng cách 5 m, 10 m, 15 m và 20 m.
-
-Mức suy giảm từ khoảng cách gần nhất đến xa nhất của mô hình $m$ được tính bởi
+trong đó $TP_{m,d}$ là số mẫu drone của tập $d$ được mô hình $m$ dự đoán đúng, còn $FN_{m,d}$ là số mẫu drone bị dự đoán nhầm thành \textit{Non-drone}. Với tập đánh giá \textit{Non-drone}, báo cáo non-drone recall, tương đương specificity nếu vẫn xem \textit{Drone} là lớp dương:
 \begin{equation}
-    \Delta R_m
+    R^{\mathrm{Non\text{-}drone}}_{m,d}
     =
-    R_{m,5\mathrm{m}}
-    -
-    R_{m,20\mathrm{m}},
-    \label{eq:distance_recall_drop}
+    \frac{TN_{m,d}}
+    {TN_{m,d}+FP_{m,d}}.
+    \label{eq:nondrone_recall}
 \end{equation}
-trong đó $R_{m,5\mathrm{m}}$ và $R_{m,20\mathrm{m}}$ lần lượt là tỷ lệ nhận diện tại 5~m và 20~m. Giá trị $\Delta R_m$ nhỏ cho thấy mô hình duy trì kết quả ổn định hơn trong dải khoảng cách khảo sát, nhưng chỉ có ý nghĩa tích cực khi tỷ lệ nhận diện tuyệt đối vẫn đủ cao.
+Chỉ số này cho biết tỷ lệ tín hiệu nền được mô hình giữ đúng là \textit{Non-drone}; giá trị thấp tương ứng với nhiều false alarm.
+
+\subsection{Thử nghiệm trên dữ liệu công khai khác training set}
+
+Các bộ dữ liệu công khai được dùng như out-of-domain test set vì chúng khác DroneDetect v2 về thiết bị thu, loại drone, môi trường đo, cấu hình lấy mẫu và quy trình tạo nhãn. Mục tiêu của thử nghiệm này không phải tối ưu lại mô hình cho từng bộ dữ liệu, mà đo mức độ duy trì khả năng nhận dạng khi nguồn dữ liệu thay đổi. Do RFUAV và DroneRF chỉ có lớp \textit{Drone} trong kịch bản đánh giá, kết quả trên hai bộ này được diễn giải là Recall lớp \textit{Drone}, chưa dùng để kết luận về Precision hoặc false alarm rate.
 
 \begin{table}[H]
     \centering
-    \caption{Mức thay đổi tỷ lệ nhận diện theo khoảng cách}
-    \label{tab:distance_degradation}
+    \caption{Thống kê các bộ dữ liệu công khai dùng để đánh giá ngoài tập huấn luyện}
+    \label{tab:public_external_dataset_statistics}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.25\textwidth}|c|c|c|c|}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{|p{0.20\textwidth}|p{0.18\textwidth}|c|p{0.34\textwidth}|}
         \hline
-        \textbf{Mô hình} & $\mathbf{R_{5m}}$ \textbf{(\%)} & $\mathbf{R_{20m}}$ \textbf{(\%)} & $\boldsymbol{\Delta R}$ \textbf{(điểm \%)} & \textbf{Xu hướng} \\ \hline
-        VGG13-BN & -- & -- & -- & -- \\ \hline
-        ResNet50 & -- & -- & -- & -- \\ \hline
-        EfficientNet-B2 & -- & -- & -- & -- \\ \hline
-        ConvNeXtV2 & -- & -- & -- & -- \\ \hline
-        Swin Transformer & -- & -- & -- & -- \\ \hline
-        DINOv2 & -- & -- & -- & -- \\ \hline
+        \textbf{Bộ dữ liệu} & \textbf{Lớp} & \textbf{Số ảnh} & \textbf{Vai trò đánh giá} \\ \hline
+        RFUAV & Drone & 256 & Kiểm thử Recall lớp Drone trên nguồn RF công khai khác \\ \hline
+        DroneRF & Drone & 260 & Kiểm thử Recall lớp Drone trên điều kiện thu/bộ dữ liệu khác \\ \hline
     \end{tabular}
 \end{table}
-
-Kết quả không nhất thiết giảm đơn điệu từ 5~m đến 20~m. Một vị trí xa hơn vẫn có thể cho SNR tốt hơn nếu ít vật cản, ít nhiễu đồng kênh hoặc có điều kiện đa đường thuận lợi. Do đó, nhận xét phải dựa trên số liệu trong Bảng~\ref{tab:distance_capture_setup} và Bảng~\ref{tab:distance_recognition_results}. Nếu tỷ lệ nhận diện giảm đồng thời với SNR, kết quả hỗ trợ nhận định rằng suy hao tín hiệu theo khoảng cách làm giảm khả năng nhận dạng. Nếu hai đại lượng không biến đổi cùng chiều, cần xem xét thêm PSD, clipping, stripe artifact và điều kiện truyền sóng tại từng vị trí.
-
-\subsection{Kết quả nhận dạng}
-
-Kết quả nhận dạng của sáu mô hình trên Drone1 và Drone2 được trình bày trong Bảng~\ref{tab:real_recognition_results}. Số mẫu nhận diện đúng được suy ra trực tiếp bằng tỷ lệ nhân với 200; số mẫu bỏ sót là phần còn lại.
 
 \begin{table}[H]
     \centering
-    \caption{Kết quả nhận diện drone trên hai tập dữ liệu RF tự thu}
-    \label{tab:real_recognition_results}
+    \caption{Recall lớp Drone trên các bộ dữ liệu công khai ngoài tập huấn luyện}
+    \label{tab:public_external_recall_results}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.22\textwidth}|c|c|c|c|c|}
+    \small
+    \setlength{\tabcolsep}{5pt}
+    \begin{tabular}{|p{0.24\textwidth}|c|c|c|}
         \hline
-        \textbf{Mô hình} & \textbf{Drone1 (\%)} & \textbf{Đúng/200} & \textbf{Drone2 (\%)} & \textbf{Đúng/200} & \textbf{Trung bình (\%)} \\ \hline
-        DINOv2 & 91,0 & 182 & 99,0 & 198 & 95,0 \\ \hline
-        EfficientNet-B2 & 96,5 & 193 & 95,5 & 191 & 96,0 \\ \hline
-        VGG13-BN & 94,5 & 189 & 99,0 & 198 & 96,5 \\ \hline
-        Swin Transformer & 1,0 & 2 & 1,5 & 3 & 1,25 \\ \hline
-        ConvNeXtV2 & 49,5 & 99 & 61,0 & 122 & 55,25 \\ \hline
-        ResNet50 & 20,5 & 41 & 16,5 & 33 & 18,5 \\ \hline
+        \textbf{Mô hình} & \textbf{RFUAV (\%)} & \textbf{DroneRF (\%)} & \textbf{Trung bình (\%)} \\ \hline
+        VGG13-BN & 100,00 & 97,31 & 98,64 \\ \hline
+        ResNet50 & 100,00 & 100,00 & 100,00 \\ \hline
+        EfficientNet-B2 & 100,00 & 99,62 & 99,81 \\ \hline
+        ViT-B/16 & 100,00 & 100,00 & 100,00 \\ \hline
+        Swin Transformer & 100,00 & 100,00 & 100,00 \\ \hline
+        DINOv2 & 100,00 & 100,00 & 100,00 \\ \hline
     \end{tabular}
 \end{table}
 
-VGG13-BN có tỷ lệ trung bình cao nhất, đạt $96,5\%$, tương ứng nhận diện đúng 387 trên 400 ảnh. EfficientNet-B2 đạt $96,0\%$, tương ứng 384 ảnh đúng, và DINOv2 đạt $95,0\%$, tương ứng 380 ảnh đúng. Chênh lệch giữa ba mô hình dẫn đầu chỉ từ 0,5 đến 1,5 điểm phần trăm, vì vậy cần diễn giải cùng số lượng mẫu, điều kiện thu và kết quả trên các bộ dữ liệu ngoài miền trước khi kết luận mô hình nào tổng quát hóa tốt nhất.
+Bảng~\ref{tab:public_external_recall_results} chỉ phản ánh khả năng phát hiện drone trên hai bộ dữ liệu công khai. Kết quả cho thấy phần lớn mô hình nhận diện đúng toàn bộ mẫu RFUAV và DroneRF trong kịch bản đánh giá này. VGG13-BN bỏ sót 7/260 mẫu trên DroneRF, còn EfficientNet-B2 bỏ sót 1/260 mẫu; các mô hình còn lại đạt $100\%$ trên cả hai bộ. Vì không có mẫu \textit{Non-drone}, bảng này không đo được khả năng hạn chế false alarm; chỉ số đó được đánh giá bằng dữ liệu \textit{Non-drone} tự thu ở Bảng~\ref{tab:self_nondrone_recall_results}.
 
-Swin Transformer chỉ đạt trung bình $1,25\%$, tương ứng 5 trên 400 ảnh đúng. Kết quả này cho thấy mô hình gần như dự đoán phần lớn mẫu drone tự thu thành \textit{Non-drone}. Dù checkpoint của Swin Transformer có kết quả nội miền cao, tỷ lệ nhận diện trên Drone1 và Drone2 giảm rất mạnh, cho thấy mô hình chịu ảnh hưởng lớn của domain shift trong kịch bản tự thu.
+\subsection{Thử nghiệm trên dữ liệu RF tự thu}
 
-ConvNeXtV2 đạt trung bình $55,25\%$, tương ứng 221 trên 400 ảnh đúng và chỉ cao hơn một mức nhận diện $50\%$ là 5,25 điểm phần trăm. ResNet50 đạt trung bình $18,5\%$, tương ứng 74 trên 400 ảnh đúng và bỏ sót 326 ảnh. Swin Transformer có kết quả thấp nhất với 395 ảnh bị bỏ sót. Số liệu cho thấy các backbone này tổng quát hóa kém hơn rõ rệt trong kịch bản tự thu, dù nguyên nhân cần được đối chiếu với kết quả nội miền và ma trận nhầm lẫn.
+Dữ liệu RF tự thu được dùng để đánh giá khả năng hoạt động trong điều kiện gần triển khai hơn so với training set. Tín hiệu được thu bằng bladeRF tại băng 2,4~GHz, lưu dưới dạng I/Q, phân đoạn và tạo spectrogram theo quy trình ở Chương~3. Các tập đánh giá tự thu được tách khỏi dữ liệu dùng để training và chọn checkpoint.
 
-Kết quả cũng cho thấy không thể kết luận Transformer luôn tốt hơn CNN. DINOv2 duy trì tỷ lệ nhận diện cao, nhưng Swin Transformer suy giảm rất mạnh trên cùng kịch bản tự thu. Ngược lại, VGG13-BN và EfficientNet-B2 là CNN nhưng đạt tỷ lệ trung bình cao, trong khi ConvNeXtV2 và ResNet50 cũng thuộc nhóm CNN nhưng có kết quả thấp hơn rõ rệt. Vì vậy, khả năng tổng quát hóa phụ thuộc vào từng backbone, trọng số tiền huấn luyện và quá trình fine-tuning, không chỉ phụ thuộc tên nhóm kiến trúc.
+\begin{table}[H]
+    \centering
+    \caption{Thống kê dữ liệu RF tự thu dùng cho đánh giá}
+    \label{tab:self_collected_eval_statistics}
+    \renewcommand{\arraystretch}{1.3}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{|p{0.20\textwidth}|p{0.18\textwidth}|c|p{0.34\textwidth}|}
+        \hline
+        \textbf{Nhóm} & \textbf{Môi trường} & \textbf{Số ảnh} & \textbf{Chỉ số chính} \\ \hline
+        Drone & Trong nhà & 1768 & Recall lớp Drone \\ \hline
+        Drone & Ngoài trời & 2120 & Recall lớp Drone; một phần được tách theo khoảng cách \\ \hline
+        Non-drone & Trong nhà & 120 & Recall lớp Non-drone \\ \hline
+        Non-drone & Ngoài trời & 1571 & Recall lớp Non-drone \\ \hline
+    \end{tabular}
+\end{table}
 
-% Gợi ý chèn hình: Biểu đồ cột nhóm thể hiện tỷ lệ nhận diện của sáu mô hình trên Drone1 và Drone2.
+Đối với tín hiệu drone outdoor, một phần dữ liệu được chia theo khoảng cách giữa drone và hệ thống thu. Phân tích theo khoảng cách chỉ sử dụng hai mô hình VGG13-BN và DINOv2. Cách tổ chức này giúp phân tích sơ bộ xem hai mô hình đại diện suy giảm do khoảng cách tăng hay do khác biệt chung giữa indoor và outdoor.
+
+\begin{table}[H]
+    \centering
+    \caption{Thống kê dữ liệu Drone ngoài trời theo khoảng cách}
+    \label{tab:self_collected_outdoor_distance_statistics}
+    \renewcommand{\arraystretch}{1.3}
+    \small
+    \begin{tabular}{|c|c|p{0.46\textwidth}|}
+        \hline
+        \textbf{Khoảng cách} & \textbf{Số ảnh} & \textbf{Ghi chú} \\ \hline
+        10~m & 120 & Một phiên thu ngoài trời \\ \hline
+        30~m & 200 & Một phiên thu ngoài trời \\ \hline
+        60~m & 200 & Một phiên thu ngoài trời \\ \hline
+        80~m & 200 & Một phiên thu ngoài trời \\ \hline
+        100~m & 200 & Một phiên thu ngoài trời \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Recall lớp Drone theo khoảng cách của hai mô hình được chọn}
+    \label{tab:distance_recognition_results}
+    \renewcommand{\arraystretch}{1.25}
+    {\scriptsize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{|p{0.18\textwidth}|c|c|c|c|c|c|}
+        \hline
+        \textbf{Mô hình}  & \textbf{Recall ngoài trời TB} & \textbf{10~m} & \textbf{30~m} & \textbf{60~m} & \textbf{80~m} & \textbf{100~m} \\ \hline
+        VGG13-BN & 93,44 & 98,33 & 95,50 & 98,50 & 93,00 & 86,00 \\ \hline
+        DINOv2  & 95,66 & 100,00 & 99,50 & 96,50 & 97,50 & 91,00 \\ \hline
+    \end{tabular}
+    }
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Recall lớp Non-drone trên dữ liệu tự thu}
+    \label{tab:self_nondrone_recall_results}
+    \renewcommand{\arraystretch}{1.3}
+    \scriptsize
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{|p{0.19\textwidth}|c|c|c|p{0.31\textwidth}|}
+        \hline
+        \textbf{Mô hình} & \textbf{Trong nhà (\%)} & \textbf{Ngoài trời (\%)} & \textbf{Trung bình (\%)} & \textbf{Lỗi chính} \\ \hline
+        VGG13-BN & 100,00 & 70,15 & 72,26 & 469/1571 mẫu ngoài trời bị dự đoán nhầm thành \textit{Drone} \\ \hline
+        ResNet50 & 100,00 & 63,78 & 66,35 & 569/1571 mẫu ngoài trời bị dự đoán nhầm thành \textit{Drone} \\ \hline
+        EfficientNet-B2 & 100,00 & 66,14 & 68,54 & 532/1571 mẫu ngoài trời bị dự đoán nhầm thành \textit{Drone} \\ \hline
+        ViT-B/16 & 100,00 & 87,65 & 88,53 & 194/1571 mẫu ngoài trời bị dự đoán nhầm thành \textit{Drone} \\ \hline
+        Swin Transformer & 100,00 & 93,95 & 94,38 & 95/1571 mẫu ngoài trời bị dự đoán nhầm thành \textit{Drone} \\ \hline
+        DINOv2 & 100,00 & 99,75 & 99,76 & 4/1571 mẫu ngoài trời bị dự đoán nhầm thành \textit{Drone} \\ \hline
+    \end{tabular}
+\end{table}
+
+Với dữ liệu \textit{Non-drone}, tất cả mô hình đều nhận diện đúng 120/120 mẫu trong nhà. Khác biệt chủ yếu xuất hiện ở tập ngoài trời: DINOv2 chỉ nhầm 4/1571 mẫu thành \textit{Drone}, trong khi ResNet50, EfficientNet-B2 và VGG13-BN tạo nhiều false alarm hơn. Cột Trung bình trong Bảng~\ref{tab:self_nondrone_recall_results} được tính bằng số mẫu được dự đoán đúng là \textit{Non-drone} chia cho tổng số mẫu \textit{Non-drone}, không dùng trực tiếp tỷ lệ bị dự đoán nhầm thành \textit{Drone}.
+
+Hai bảng trên cần được đọc cùng nhau. Drone recall cao nhưng non-drone recall thấp cho thấy mô hình nhạy với drone nhưng dễ tạo false alarm. Ngược lại, non-drone recall cao nhưng drone recall thấp cho thấy mô hình quá bảo thủ và có nguy cơ bỏ sót mục tiêu. Vì vậy, dữ liệu tự thu không chỉ kiểm tra khả năng phát hiện drone, mà còn kiểm tra khả năng phân biệt drone với môi trường RF nền trong cả indoor và outdoor.
 
 \subsection{Phân tích mức suy giảm hiệu năng}
 
-Mức suy giảm từ tập kiểm thử nội miền sang dữ liệu thực tế chỉ có thể tính chính xác sau khi điền recall nội miền. Bảng~\ref{tab:internal_real_drop} tạo khung đối chiếu giữa recall lớp drone trên tập nội miền và tỷ lệ nhận diện trung bình trên Drone1, Drone2. Recall được sử dụng thay cho accuracy để bảo đảm hai đại lượng cùng đo khả năng nhận đúng lớp drone.
+Mức suy giảm từ in-domain test set sang dữ liệu ngoài training set được tính bằng cách đối chiếu drone recall in-domain với drone recall trên dữ liệu tự thu. Bảng~\ref{tab:internal_external_self_drop} cũng bổ sung recall trung bình trên hai bộ dữ liệu công khai RFUAV và DroneRF. Recall được sử dụng thay cho Accuracy để bảo đảm các đại lượng cùng đo khả năng nhận đúng lớp drone.
 
 \begin{table}[H]
     \centering
-    \caption{Đối chiếu khả năng nhận diện drone giữa tập nội miền và dữ liệu tự thu}
-    \label{tab:internal_real_drop}
+    \label{tab:internal_external_self_drop}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.24\textwidth}|c|c|c|}
+    \small
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{|p{0.18\textwidth}|c|c|c|c|}
         \hline
-        \textbf{Mô hình} & \textbf{Recall nội miền (\%)} & \textbf{Recall thực tế TB (\%)} & \textbf{Chênh lệch (điểm \%)} \\ \hline
-        VGG13-BN & -- & 96,5 & [TÍNH] \\ \hline
-        DINOv2 & -- & 95,0 & [TÍNH] \\ \hline
-        EfficientNet-B2 & -- & 96,0 & [TÍNH] \\ \hline
-        Swin Transformer & -- & 1,25 & [TÍNH] \\ \hline
-        ConvNeXtV2 & -- & 55,25 & [TÍNH] \\ \hline
-        ResNet50 & -- & 18,5 & [TÍNH] \\ \hline
+        \textbf{Mô hình} &
+        \shortstack{\textbf{Recall}\\\textbf{trong miền}} &
+        \shortstack{\textbf{Recall}\\\textbf{ngoài miền}\\\textbf{công khai}} &
+        \shortstack{\textbf{Recall}\\\textbf{dữ liệu}\\\textbf{tự thu}} &
+        \shortstack{\textbf{Mức suy giảm}\\\textbf{trong miền --}\\\textbf{tự thu}} \\ \hline
+
+        VGG13-BN         & 98,83 & 98,64  & 93,65 & 5,18  \\ \hline
+        ResNet50         & 98,24 & 100,00 & 88,97 & 9,27  \\ \hline
+        EfficientNet-B2  & 98,49 & 99,81  & 86,78 & 11,71 \\ \hline
+        ViT-B/16         & 98,41 & 100,00 & 93,83 & 4,58  \\ \hline
+        Swin Transformer & 98,91 & 100,00 & 92,21 & 6,70  \\ \hline
+        DINOv2           & 99,58 & 100,00 & 94,70 & 4,88  \\ \hline
     \end{tabular}
+    \caption{Đối chiếu Recall lớp Drone giữa dữ liệu trong miền, ngoài miền công khai và dữ liệu tự thu}
 \end{table}
 
-Domain shift là nguyên nhân chính cần xem xét khi tập nội miền và dữ liệu thực tế có chênh lệch. Tập nội miền và dữ liệu bladeRF dùng cho đánh giá có thể khác nhau về đáp ứng tần số của thiết bị, mức khuếch đại, băng thông, tốc độ lấy mẫu và nhiễu nền. Ngay cả khi cùng chứa tín hiệu drone, các khác biệt này làm thay đổi độ tương phản, độ rộng dải và texture của spectrogram.
 
-Môi trường 2,4~GHz còn chứa các nguồn phát khác như Wi-Fi và Bluetooth. Năng lượng từ các nguồn này có thể chồng lấn với vùng tần số của tín hiệu cần phát hiện hoặc làm nền phổ không giống dữ liệu huấn luyện nội miền. Nếu mô hình học dựa nhiều vào mức nền, vị trí dải hoặc artifact của nguồn dữ liệu huấn luyện, hiệu năng sẽ giảm khi các dấu hiệu đó thay đổi.
+Domain shift là nguyên nhân chính cần xem xét khi tập in-domain và dữ liệu ngoài training set có chênh lệch. Trên hai bộ public chỉ gồm lớp \textit{Drone}, hầu hết mô hình duy trì recall gần tuyệt đối. Tuy nhiên, trên dữ liệu tự thu bằng bladeRF, drone recall giảm rõ hơn, đặc biệt với EfficientNet-B2 và ResNet50. Tập in-domain và dữ liệu bladeRF tự thu có thể khác nhau về đáp ứng tần số của thiết bị, mức khuếch đại, băng thông, tốc độ lấy mẫu và nhiễu nền. Ngay cả khi cùng chứa tín hiệu drone, những khác biệt này làm thay đổi độ tương phản, độ rộng dải và kết cấu của spectrogram.
 
-Kết quả thực tế trong Bảng~\ref{tab:real_recognition_results} cho thấy mức ảnh hưởng của domain shift không đồng đều giữa các backbone. VGG13-BN, EfficientNet-B2 và DINOv2 đều duy trì trung bình ít nhất $95\%$, trong khi ResNet50 chỉ đạt $18,5\%$ và Swin Transformer chỉ đạt $1,25\%$. Do các mô hình nhận cùng các tập Drone1 và Drone2, chênh lệch này cho thấy biểu diễn và quá trình thích nghi của từng backbone có vai trò đáng kể. Tuy nhiên, chưa thể tách riêng ảnh hưởng của kiến trúc, trọng số tiền huấn luyện và siêu tham số nếu chưa có thí nghiệm kiểm soát từng yếu tố.
+Môi trường 2,4~GHz còn chứa các nguồn phát khác như Wi-Fi và Bluetooth. Năng lượng từ các nguồn này có thể chồng lấn với vùng tần số của tín hiệu cần phát hiện hoặc làm nền phổ không giống dữ liệu training in-domain. Nếu mô hình học dựa nhiều vào mức nền, vị trí dải hoặc artifact của nguồn dữ liệu training, hiệu năng sẽ giảm khi các dấu hiệu đó thay đổi.
 
 \subsection{So sánh khả năng tổng quát hóa}
 
-VGG13-BN đạt $94,5\%$ trên Drone1 và $99,0\%$ trên Drone2, trung bình $96,5\%$. Đây là kết quả cao nhất trong hai tập tự thu hiện có, nhưng mức chênh 4,5 điểm phần trăm cho thấy mô hình vẫn chịu ảnh hưởng bởi khác biệt giữa hai phiên dữ liệu. Vì VGG13-BN là một CNN tuần tự tương đối cổ điển, kết quả này cũng cho thấy độ phù hợp trên dữ liệu tự thu không chỉ phụ thuộc vào mức độ hiện đại của kiến trúc.
+Khả năng generalization của từng backbone cần được đánh giá bằng cả ba nhóm kết quả: in-domain test set, dữ liệu public khác training set và dữ liệu RF tự thu. Một mô hình có Accuracy in-domain cao nhưng Recall thấp trên dữ liệu public hoặc dữ liệu tự thu chưa đủ tin cậy để triển khai. Ngược lại, một mô hình duy trì drone recall và non-drone recall ổn định trên nhiều nguồn dữ liệu có bằng chứng tốt hơn về độ bền vững trước domain shift.
 
-DINOv2 đạt $91,0\%$ trên Drone1 và $99,0\%$ trên Drone2. Chênh lệch 8 điểm phần trăm tương ứng với 16 ảnh. Mô hình nhận diện tốt hơn trên Drone2, nơi chỉ có 2 ảnh bị bỏ sót, so với 18 ảnh trên Drone1. Điều này cho thấy DINOv2 có kết quả tổng thể cao nhưng vẫn nhạy với khác biệt giữa hai tập.
-
-EfficientNet-B2 đạt $96,5\%$ trên Drone1 và $95,5\%$ trên Drone2. Chênh lệch chỉ 1 điểm phần trăm, tương ứng 2 ảnh. Đây là mô hình có kết quả ổn định nhất giữa hai tập, đồng thời có tỷ lệ trung bình đứng thứ hai sau VGG13-BN. Số liệu này cho thấy EfficientNet-B2 là lựa chọn nổi bật cho kịch bản tự thu đã thực hiện.
-
-Swin Transformer đạt $1,0\%$ trên Drone1 và $1,5\%$ trên Drone2. Mô hình chỉ nhận diện đúng 2 ảnh ở Drone1 và 3 ảnh ở Drone2. Chênh lệch giữa hai tập chỉ 0,5 điểm phần trăm, nhưng đây không phải dấu hiệu ổn định tích cực vì mức hiệu năng tuyệt đối rất thấp.
-
-ConvNeXtV2 tăng từ $49,5\%$ trên Drone1 lên $61,0\%$ trên Drone2, chênh lệch 11,5 điểm phần trăm. Mô hình nhận diện đúng 99 ảnh ở Drone1 và 122 ảnh ở Drone2. Mặc dù kết quả Drone2 cao hơn, cả hai giá trị đều thấp hơn đáng kể so với ba mô hình dẫn đầu.
-
-ResNet50 đạt $20,5\%$ trên Drone1 và $16,5\%$ trên Drone2. Mô hình chỉ nhận diện đúng lần lượt 41 và 33 ảnh, đồng thời có chênh lệch 4 điểm phần trăm. Độ chênh nhỏ không thể được xem là dấu hiệu ổn định tích cực khi mức hiệu năng tuyệt đối rất thấp. Trong trường hợp này, mô hình ổn định ở mức không đáp ứng yêu cầu phát hiện.
+Các giá trị trung bình trên dữ liệu tự thu trong Bảng~\ref{tab:real_stability} được lấy từ kết quả inference gộp toàn bộ tập đánh giá. Với tập \textit{Drone}, tỷ lệ đúng là số mẫu được dự đoán là \textit{Drone} chia cho tổng số mẫu drone. Với tập \textit{Non-drone}, tỷ lệ đúng là số mẫu được dự đoán là \textit{Non-drone} chia cho tổng số mẫu non-drone.
 
 \begin{table}[H]
     \centering
-    \caption{Độ ổn định giữa Drone1 và Drone2}
+    \caption{Tổng hợp khả năng tổng quát hóa và Recall trung bình trên dữ liệu tự thu}
     \label{tab:real_stability}
     \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.27\textwidth}|c|c|c|}
+    \scriptsize
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{|p{0.18\textwidth}|c|c|c|p{0.29\textwidth}|}
         \hline
-        \textbf{Mô hình} & \textbf{Trung bình (\%)} & \textbf{Chênh lệch tuyệt đối (\%)} & \textbf{Tổng số bỏ sót} \\ \hline
-        VGG13-BN & 96,5 & 4,5 & 13 \\ \hline
-        DINOv2 & 95,0 & 8,0 & 20 \\ \hline
-        EfficientNet-B2 & 96,0 & 1,0 & 16 \\ \hline
-        Swin Transformer & 1,25 & 0,5 & 395 \\ \hline
-        ConvNeXtV2 & 55,25 & 11,5 & 179 \\ \hline
-        ResNet50 & 18,5 & 4,0 & 326 \\ \hline
+        \textbf{Mô hình} &
+        \shortstack{\textbf{Recall}\\\textbf{công khai TB}} &
+        \shortstack{\textbf{Recall}\\\textbf{Drone tự thu TB}} &
+        \shortstack{\textbf{Recall}\\\textbf{Non-drone tự thu TB}} &
+        \textbf{Nhận xét} \\ \hline
+        VGG13-BN & 98,64 & 93,65 & 72,26 & Recall lớp Drone cao, còn cảnh báo sai ngoài trời \\ \hline
+        ResNet50 & 100,00 & 88,97 & 66,35 & Cần giảm cảnh báo sai \\ \hline
+        EfficientNet-B2 & 99,81 & 86,78 & 68,54 & Suy giảm rõ trên dữ liệu tự thu \\ \hline
+        ViT-B/16 & 100,00 & 93,83 & 88,53 & Cân bằng khá giữa hai lớp \\ \hline
+        Swin Transformer & 100,00 & 92,21 & 94,38 & Non-drone tốt, drone tự thu thấp hơn DINOv2 \\ \hline
+        DINOv2 & 100,00 & 94,70 & 99,76 & Ổn định nhất trên dữ liệu tự thu \\ \hline
     \end{tabular}
 \end{table}
 
-Bảng~\ref{tab:real_stability} cho thấy VGG13-BN có tỷ lệ trung bình cao nhất, còn EfficientNet-B2 có độ chênh thấp nhất trong nhóm mô hình hiệu năng cao. DINOv2 có trung bình thấp hơn VGG13-BN 1,5 điểm phần trăm và bỏ sót nhiều hơn 7 ảnh. ConvNeXtV2, ResNet50 và Swin Transformer có số lượng bỏ sót lần lượt là 179, 326 và 395, cho thấy hạn chế rõ rệt trong kịch bản thực tế.
-
-\section{Phân tích ảnh hưởng của tham số tạo spectrogram}
-
-Để khảo sát ảnh hưởng của tham số tạo spectrogram, đồ án sử dụng EfficientNet-B2 làm mô hình đánh giá chính do mô hình này có kết quả ổn định nhất trên dữ liệu RF tự thu. Một số cấu hình quan trọng có thể được kiểm tra thêm với DINOv2 nhằm quan sát liệu xu hướng có giữ được trên backbone khác nhóm hay không. Các backbone còn lại không được huấn luyện lại cho toàn bộ cấu hình STFT để giới hạn chi phí tính toán.
-
-\subsection{Thiết kế khảo sát tham số STFT}
-
-Spectrogram không chỉ phụ thuộc vào chất lượng tín hiệu I/Q mà còn phụ thuộc vào cấu hình STFT. Kích thước cửa sổ, kích thước FFT, hop length và loại cửa sổ quyết định cách năng lượng được phân bố trên hai trục thời gian--tần số. Một cấu hình không phù hợp có thể làm mất các burst ngắn, làm mờ biên dải phổ hoặc tạo ảnh có số hàng và số cột mất cân đối trước bước resize. Vì vậy, ảnh hưởng của tham số STFT cần được khảo sát như một phần của thực nghiệm thay vì xem đây là một bước tiền xử lý cố định.
-
-Khảo sát được thực hiện theo nguyên tắc chỉ thay đổi một yếu tố tại mỗi nhóm thí nghiệm. Một cấu hình cơ sở được lựa chọn gồm độ dài cửa sổ $N_w$, kích thước FFT $N_{\mathrm{FFT}}$, hop length $H$ và cửa sổ Hann. Khi khảo sát $N_{\mathrm{FFT}}$, các tham số còn lại được giữ nguyên; quy tắc tương tự được áp dụng cho $N_w$, $H$ và loại cửa sổ. Toàn bộ spectrogram của tập huấn luyện, xác thực và kiểm thử phải được sinh lại theo cấu hình đang xét.
-
-Mỗi cấu hình STFT cần được huấn luyện và đánh giá độc lập bằng cùng một backbone, cùng cách chia dữ liệu, cùng số epoch và cùng quy tắc lựa chọn checkpoint. Việc chỉ thay đổi STFT ở tập kiểm thử trong khi giữ mô hình huấn luyện bằng cấu hình khác sẽ đo độ nhạy trước sai lệch tiền xử lý, không đo chất lượng vốn có của cấu hình STFT. Do chi phí tính toán lớn, thí nghiệm lựa chọn tham số có thể sử dụng một backbone đại diện, ưu tiên EfficientNet-B2 hoặc DINOv2 dựa trên kết quả thực tế, sau đó xác nhận cấu hình được chọn trên các backbone còn lại.
-
-\begin{table}[H]
-    \centering
-    \caption{Các nhóm cấu hình dùng để khảo sát tham số STFT}
-    \label{tab:stft_experiment_design}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.23\textwidth}|p{0.27\textwidth}|p{0.39\textwidth}|}
-        \hline
-        \textbf{Tham số khảo sát} & \textbf{Các giá trị} & \textbf{Các tham số giữ cố định} \\ \hline
-        Độ dài cửa sổ $N_w$ & -- & $N_{\mathrm{FFT}}$, $H$, loại cửa sổ và quy tắc chuẩn hóa \\ \hline
-        Kích thước FFT $N_{\mathrm{FFT}}$ & -- & $N_w$, $H$, loại cửa sổ và quy tắc chuẩn hóa \\ \hline
-        Hop length $H$ & -- & $N_w$, $N_{\mathrm{FFT}}$, loại cửa sổ và quy tắc chuẩn hóa \\ \hline
-        Loại cửa sổ & Hann, Hamming, Blackman -- & $N_w$, $N_{\mathrm{FFT}}$, $H$ và quy tắc chuẩn hóa \\ \hline
-    \end{tabular}
-\end{table}
-
-Các giá trị trong Bảng~\ref{tab:stft_experiment_design} chỉ là khung tham khảo và cần được điều chỉnh theo tốc độ lấy mẫu, độ dài đoạn I/Q và cấu hình đã sử dụng. Không nên khảo sát các giá trị tạo ra quá ít khung thời gian hoặc kích thước FFT nhỏ hơn độ dài cửa sổ. Khi $N_{\mathrm{FFT}}>N_w$, phần tăng độ phân giải lưới tần số do zero-padding không đồng nghĩa với tăng độ phân giải vật lý của tín hiệu, do đó kết quả cần được diễn giải thận trọng.
-
-\subsection{Ảnh hưởng của độ dài cửa sổ và kích thước FFT}
-
-Độ dài cửa sổ chi phối sự đánh đổi giữa độ phân giải thời gian và độ phân giải tần số. Cửa sổ dài quan sát nhiều mẫu hơn trong mỗi phép FFT, nhờ đó có khả năng phân biệt các thành phần tần số gần nhau tốt hơn. Tuy nhiên, năng lượng của các sự kiện ngắn bị tổng hợp trong một khoảng thời gian dài hơn, làm giảm khả năng định vị burst. Cửa sổ ngắn bảo toàn biến thiên nhanh theo thời gian nhưng làm các dải phổ rộng hơn và khó tách các thành phần gần nhau.
-
-Kích thước FFT quyết định số bin trên trục tần số. Khi $N_{\mathrm{FFT}}$ bằng độ dài cửa sổ, tăng kích thước FFT đồng thời với tăng cửa sổ có thể cải thiện độ phân giải tần số nhưng làm giảm độ phân giải thời gian. Khi chỉ tăng $N_{\mathrm{FFT}}$ và giữ nguyên $N_w$, tín hiệu được zero-padding trước FFT; ảnh có nhiều bin hơn nhưng không chứa thêm thông tin quan sát. Sau bước resize về kích thước đầu vào cố định, số bin quá lớn còn có thể bị nội suy và không tạo ra lợi ích tương ứng cho mô hình.
-
-\begin{table}[H]
-    \centering
-    \caption{Kết quả khảo sát độ dài cửa sổ và kích thước FFT}
-    \label{tab:stft_window_fft_results}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|c|c|c|c|c|c|}
-        \hline
-        $\mathbf{N_w}$ & $\mathbf{N_{\mathrm{FFT}}}$ & \textbf{Số khung} & \textbf{Accuracy (\%)} & \textbf{Recall (\%)} & \textbf{F1-score (\%)} \\ \hline
-        -- & -- & -- & -- & -- & -- \\ \hline
-        -- & -- & -- & -- & -- & -- \\ \hline
-        -- & -- & -- & -- & -- & -- \\ \hline
-        -- & -- & -- & -- & -- & -- \\ \hline
-    \end{tabular}
-\end{table}
-
-Nhận xét từ Bảng~\ref{tab:stft_window_fft_results} cần dựa trên chênh lệch số liệu và đặc điểm ảnh tương ứng. Nếu cấu hình có cửa sổ lớn làm recall giảm, một nguyên nhân có thể là các burst ngắn bị làm mờ theo thời gian. Nếu kích thước FFT nhỏ làm precision giảm, các dải phổ của drone và nhiễu có thể bị trộn trên lưới tần số thưa. Cấu hình tốt nhất không nhất thiết là cấu hình có $N_{\mathrm{FFT}}$ lớn nhất mà là cấu hình duy trì đủ thông tin trên cả hai trục sau khi resize.
-
-% Gợi ý chèn hình: Cùng một đoạn I/Q được biểu diễn bằng nhiều cặp độ dài cửa sổ và kích thước FFT để minh họa sự đánh đổi thời gian--tần số.
-
-\subsection{Ảnh hưởng của hop length và độ chồng lấn}
-
-Hop length xác định khoảng dịch giữa hai cửa sổ STFT liên tiếp. Với độ dài cửa sổ $N_w$, tỷ lệ chồng lấn được tính bởi
-\begin{equation}
-    r_{\mathrm{overlap}}
-    =
-    1-\frac{H}{N_w}.
-    \label{eq:stft_overlap}
-\end{equation}
-Hop length nhỏ tạo độ chồng lấn lớn, tăng số cột thời gian và giúp mô tả liên tục hơn các burst. Đổi lại, các cột kề nhau có tương quan cao, kích thước dữ liệu tăng và chi phí tạo spectrogram lớn hơn. Hop length lớn làm giảm chi phí nhưng có thể bỏ qua biến thiên xảy ra giữa hai vị trí cửa sổ.
-
-\begin{table}[H]
-    \centering
-    \caption{Kết quả khảo sát hop length}
-    \label{tab:stft_hop_results}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|c|c|c|c|c|c|}
-        \hline
-        $\mathbf{H}$ & \textbf{Chồng lấn (\%)} & \textbf{Số khung} & \textbf{Accuracy (\%)} & \textbf{Recall (\%)} & \textbf{F1-score (\%)} \\ \hline
-        -- & -- & -- & -- & -- & -- \\ \hline
-        -- & -- & -- & -- & -- & -- \\ \hline
-        -- & -- & -- & -- & -- & -- \\ \hline
-    \end{tabular}
-\end{table}
-
-Nếu giảm hop length chỉ làm tăng số khung nhưng các chỉ số gần như không thay đổi, mức chồng lấn cao hơn không cung cấp thêm thông tin hữu ích sau resize. Nếu recall tăng, mô hình có thể được hưởng lợi từ việc các burst ngắn được biểu diễn liên tục hơn. Phân tích cần báo cáo thêm thời gian sinh dữ liệu hoặc kích thước lưu trữ để tránh lựa chọn một cấu hình có cải thiện rất nhỏ nhưng chi phí tăng lớn.
-
-\subsection{Ảnh hưởng của loại cửa sổ và chuẩn hóa phổ}
-
-Loại cửa sổ quyết định mức rò rỉ phổ và độ rộng búp chính. Cửa sổ Hann tạo sự cân bằng phổ biến giữa hai yếu tố này. Hamming có mức suy giảm búp phụ khác Hann, còn Blackman giảm rò rỉ phổ mạnh hơn nhưng làm búp chính rộng hơn. Sự khác biệt có thể ảnh hưởng đến độ sắc nét của dải tín hiệu và mức năng lượng nền trên spectrogram.
-
-Ngoài loại cửa sổ, quy tắc chuyển công suất sang thang logarit và chuẩn hóa cường độ cũng ảnh hưởng trực tiếp đến độ tương phản ảnh. Chuẩn hóa riêng từng ảnh làm nổi bật cấu trúc yếu nhưng loại bỏ chênh lệch công suất tuyệt đối giữa các mẫu. Chuẩn hóa toàn cục giữ quan hệ mức năng lượng giữa các ảnh nhưng có thể làm tín hiệu yếu kém nổi bật. Hai yếu tố này nên được khảo sát sau khi đã cố định $N_w$, $N_{\mathrm{FFT}}$ và $H$.
-
-\begin{table}[H]
-    \centering
-    \caption{Kết quả khảo sát cửa sổ và phương pháp chuẩn hóa spectrogram}
-    \label{tab:stft_window_normalization_results}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.20\textwidth}|p{0.25\textwidth}|c|c|c|}
-        \hline
-        \textbf{Cửa sổ} & \textbf{Chuẩn hóa} & \textbf{Accuracy (\%)} & \textbf{Recall (\%)} & \textbf{F1-score (\%)} \\ \hline
-        Hann & -- & -- & -- & -- \\ \hline
-        Hamming & -- & -- & -- & -- \\ \hline
-        Blackman & -- & -- & -- & -- \\ \hline
-        -- & -- & -- & -- & -- \\ \hline
-    \end{tabular}
-\end{table}
-
-\subsection{Độ nhạy khi cấu hình STFT thay đổi giữa huấn luyện và suy luận}
-
-Một thí nghiệm bổ sung là giữ nguyên mô hình được huấn luyện bằng cấu hình STFT cơ sở, sau đó thay đổi từng tham số khi tạo spectrogram cho tập kiểm thử. Thí nghiệm này mô phỏng tình huống pipeline triển khai không hoàn toàn trùng với pipeline huấn luyện. Mức suy giảm phản ánh độ nhạy của mô hình trước sai lệch tiền xử lý, không được dùng để kết luận cấu hình mới kém hơn về bản chất.
-
-\begin{table}[H]
-    \centering
-    \caption{Độ nhạy trước sai lệch cấu hình STFT tại giai đoạn suy luận}
-    \label{tab:stft_mismatch_results}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|p{0.31\textwidth}|c|c|c|}
-        \hline
-        \textbf{Cấu hình suy luận} & \textbf{Accuracy (\%)} & \textbf{Recall (\%)} & \textbf{Mức giảm F1 (điểm \%)} \\ \hline
-        Trùng cấu hình huấn luyện & -- & -- & 0 \\ \hline
-        Thay đổi $N_{\mathrm{FFT}}$ & -- & -- & [TÍNH] \\ \hline
-        Thay đổi hop length & -- & -- & [TÍNH] \\ \hline
-        Thay đổi loại cửa sổ & -- & -- & [TÍNH] \\ \hline
-        Thay đổi chuẩn hóa & -- & -- & [TÍNH] \\ \hline
-    \end{tabular}
-\end{table}
-
-Nếu hiệu năng giảm mạnh khi chỉ thay đổi tham số STFT ở giai đoạn suy luận, mô hình đã phụ thuộc đáng kể vào hình học và phân bố cường độ của spectrogram trong tập huấn luyện. Kết quả này nhấn mạnh yêu cầu lưu cấu hình tiền xử lý cùng checkpoint và áp dụng chính xác cấu hình đó khi xử lý dữ liệu bladeRF.
-
-\subsection{Tác động tới kết quả dự đoán}
-
-Cùng một mô hình có thể cho kết quả khác nhau khi chất lượng spectrogram thay đổi vì biểu diễn đầu vào quyết định trực tiếp các kích hoạt trong backbone. Khi tín hiệu rõ, các vùng năng lượng có hình dạng và độ tương phản gần dữ liệu huấn luyện, nên vector đặc trưng có khả năng nằm gần các mẫu drone đã biết. Khi nhiễu, clipping hoặc artifact xuất hiện, vector đặc trưng có thể dịch chuyển qua ranh giới quyết định.
-
-Chênh lệch giữa Drone1 và Drone2 trong Bảng~\ref{tab:real_recognition_results} cung cấp dấu hiệu rằng điều kiện dữ liệu ảnh hưởng khác nhau đến từng backbone. DINOv2 thay đổi 8 điểm phần trăm và ConvNeXtV2 thay đổi 11,5 điểm, trong khi EfficientNet-B2 chỉ thay đổi 1 điểm. Swin Transformer chỉ chênh 0,5 điểm phần trăm nhưng nằm ở mức nhận diện rất thấp, nên cần diễn giải cùng hiệu năng tuyệt đối. Tuy nhiên, chưa thể quy toàn bộ chênh lệch này cho chất lượng spectrogram nếu chưa đối chiếu SNR và artifact của hai tập. Điều kiện thu, loại tín hiệu và phân bố thời gian cũng có thể góp phần.
-
-% Gợi ý chèn hình: Các mẫu dự đoán đúng và sai của từng mô hình, kèm nhãn, confidence, SNR và trạng thái clipping/artifact.
-
-Phân tích lỗi nên ưu tiên các mẫu mà mô hình có độ tin cậy cao nhưng dự đoán sai. Những trường hợp này cho thấy mô hình không chỉ thiếu chắc chắn mà có thể đã học một dấu hiệu gây nhầm lẫn. Việc so sánh cùng một mẫu qua sáu backbone cũng giúp xác định artifact ảnh hưởng chung đến pipeline hay chỉ ảnh hưởng mạnh đến một kiểu biểu diễn.
+Khi phân tích Bảng~\ref{tab:real_stability}, DINOv2 là mô hình cân bằng nhất trong các kết quả hiện có: drone recall tự thu đạt $94{,}70\%$ và non-drone recall đạt $99{,}76\%$. ViT-B/16 cũng duy trì mức cân bằng tương đối tốt, trong khi Swin Transformer nhận diện non-drone tốt nhưng drone recall tự thu thấp hơn DINOv2 và ViT-B/16. Các mô hình CNN như VGG13-BN, ResNet50 và EfficientNet-B2 vẫn phát hiện được nhiều mẫu drone, nhưng false alarm trên non-drone outdoor cao hơn. Vì vậy, nhận xét phù hợp nhất là ở mức từng backbone cụ thể trong cùng preprocessing pipeline.
 
 \section{Thảo luận}
 
-\subsection{Ảnh hưởng của chiến lược huấn luyện}
+\subsection{Ảnh hưởng của training strategy}
 
-Theo thông tin kết quả hiện có, accuracy của các backbone trong chiến lược \textit{Feature Extraction-based Classification} đều dưới $50\%$. Kết quả này cho thấy việc sử dụng trực tiếp embedding cố định kết hợp với SVM chưa phù hợp với cấu hình dữ liệu và tiền xử lý của đề tài. Không gian đặc trưng tiền huấn luyện chưa tạo được sự phân tách ổn định giữa \textit{Drone} và \textit{Non-drone}.
+Kết quả mới cho thấy \textit{feature extraction + SVM} không thất bại hoàn toàn trong cấu hình thí nghiệm: Accuracy trong miền đạt từ $73{,}84\%$ đến $89{,}42\%$, còn Macro-F1 đạt từ $73{,}01\%$ đến $89{,}41\%$. Tuy nhiên, chiến lược này vẫn kém ổn định hơn fine-tuning vì Recall lớp \textit{Drone} rất cao nhưng Recall lớp \textit{Non-drone} thấp hơn đáng kể. Điều này cho thấy SVM trên feature vector cố định có xu hướng thiên về phát hiện drone và dễ tạo false alarm trong các tín hiệu nền.
 
-Khoảng cách miền giữa ảnh tiền huấn luyện và spectrogram là một nguyên nhân có thể giải thích xu hướng trên. Khi backbone bị đóng băng, các tầng vẫn ưu tiên những cấu trúc từng xuất hiện trong dữ liệu nguồn. Phép pooling thành embedding toàn cục cũng có thể làm giảm thông tin vị trí của dải phổ hoặc burst ngắn. SVM chỉ tối ưu ranh giới trên vector cuối nên không thể điều chỉnh các đặc trưng đã được trích xuất.
+Domain gap giữa ảnh pretraining và spectrogram là một nguyên nhân có thể giải thích giới hạn này. Khi backbone bị freeze, các tầng vẫn ưu tiên những cấu trúc từng xuất hiện trong dữ liệu nguồn. Phép gộp thành feature vector toàn cục cũng có thể làm giảm thông tin vị trí của dải phổ hoặc burst ngắn. SVM chỉ tối ưu decision boundary trên vector cuối nên không thể điều chỉnh các feature đã được trích xuất.
 
-Bảng~\ref{tab:fe_ft_comparison} là căn cứ định lượng để đánh giá lợi ích của fine-tuning. Khi $\Delta \mathrm{Acc}$ và $\Delta \mathrm{F1}$ dương, kết quả chứng tỏ việc cập nhật toàn bộ backbone giúp mô hình thích nghi tốt hơn với cấu trúc thời gian--tần số. Fine-tuning đồng thời thay đổi không gian đặc trưng và lớp phân loại, thay vì chỉ thay đổi siêu phẳng quyết định như \textit{Feature Extraction-based Classification}.
+Bảng~\ref{tab:fe_ft_comparison} là căn cứ định lượng để đánh giá lợi ích của fine-tuning. Mức cải thiện $\Delta \mathrm{Acc}$ từ $10{,}22$ đến $22{,}64$ điểm phần trăm và $\Delta \mathrm{F1}$ của lớp \textit{Drone} từ $10{,}06$ đến $19{,}41$ điểm phần trăm cho thấy việc cập nhật toàn bộ backbone giúp mô hình thích nghi tốt hơn với cấu trúc thời gian--tần số. Fine-tuning đồng thời thay đổi feature space và classifier, thay vì chỉ thay đổi decision boundary như \textit{feature extraction + SVM}.
 
-Tuy nhiên, fine-tuning có chi phí tính toán cao hơn và có thể học các đặc điểm riêng của tập nhị phân nội miền. Vì vậy, cải thiện trên tập kiểm thử nội miền cần được xem xét cùng kết quả Drone1, Drone2 và các bộ dữ liệu ngoài miền. Việc một số backbone đạt kết quả thực tế cao trong khi các backbone khác suy giảm mạnh cho thấy fine-tuning không tự động bảo đảm khả năng tổng quát hóa.
+Tuy nhiên, fine-tuning có chi phí tính toán cao hơn và có thể học các đặc điểm riêng của tập nhị phân in-domain. Vì vậy, cải thiện trên in-domain test set cần được xem xét cùng kết quả trên dữ liệu public khác training set và dữ liệu RF tự thu. Nếu một backbone chỉ tốt trên in-domain nhưng suy giảm mạnh trên RFUAV, DroneRF hoặc dữ liệu bladeRF tự thu, fine-tuning khi đó chưa đủ để bảo đảm generalization.
 
-\subsection{Khả năng tổng quát hóa của các backbone}
+\subsection{Generalization của các backbone}
 
-Trên hai tập tự thu, VGG13-BN có tỷ lệ trung bình cao nhất là $96,5\%$, EfficientNet-B2 đạt $96,0\%$ và DINOv2 đạt $95,0\%$. EfficientNet-B2 có độ chênh giữa hai tập thấp nhất trong nhóm mô hình hiệu năng cao, trong khi VGG13-BN đạt số mẫu đúng cao nhất. Swin Transformer chỉ đạt $1,25\%$, cho thấy kết quả nội miền cao không bảo đảm khả năng chuyển miền sang dữ liệu tự thu.
+Generalization của các backbone cần được đánh giá bằng cả drone recall và non-drone recall. Drone recall cao cho thấy mô hình ít bỏ sót mục tiêu, nhưng nếu non-drone recall thấp thì mô hình sẽ tạo nhiều false alarm trong môi trường nền. Ngược lại, non-drone recall cao nhưng drone recall thấp cho thấy mô hình quá thiên về lớp âm. Do đó, thứ hạng backbone không nên chỉ dựa trên một metric đơn lẻ.
 
-ConvNeXtV2, ResNet50 và Swin Transformer chỉ đạt trung bình lần lượt $55,25\%$, $18,5\%$ và $1,25\%$. Chênh lệch lớn giữa các backbone trên cùng dữ liệu cho thấy khả năng tổng quát hóa phụ thuộc vào biểu diễn được học và quá trình tối ưu của từng mô hình. Độ ổn định cũng phải được xem xét cùng mức hiệu năng tuyệt đối. ResNet50 và Swin Transformer có mức chênh thấp giữa Drone1 và Drone2, nhưng mức trung bình thấp nên không thể xem đây là sự ổn định có ý nghĩa tích cực.
+Các backbone được khảo sát đại diện cho nhiều hướng thiết kế khác nhau: CNN tuần tự, residual CNN, CNN tối ưu hiệu quả, Vision Transformer toàn cục, Transformer phân cấp và self-supervised representation. Chênh lệch giữa các mô hình trên cùng dữ liệu sẽ phản ánh tác động đồng thời của kiến trúc, pretrained weights và quá trình tối ưu. Vì các yếu tố này không được tách riêng hoàn toàn trong phạm vi đồ án, nhận xét nên được đưa ra ở mức từng backbone cụ thể.
 
-Kết quả không cung cấp căn cứ để kết luận Transformer luôn tốt hơn CNN. VGG13-BN và EfficientNet-B2 là CNN nhưng đạt tỷ lệ trung bình cao hơn DINOv2 một chút và cao hơn Swin Transformer rất rõ rệt trong hai tập tự thu. Tuy nhiên, DINOv2 cũng duy trì kết quả cao hơn nhiều so với ConvNeXtV2 và ResNet50. Vì các mô hình còn khác nhau về dữ liệu tiền huấn luyện, quy mô và cách tổ chức đặc trưng, nhận xét phù hợp chỉ nên được đưa ra ở mức từng backbone.
+Kết quả cũng không nên được dùng để kết luận đơn giản rằng Transformer luôn tốt hơn CNN hoặc ngược lại. ViT-B/16, Swin Transformer và DINOv2 đều có thành phần attention nhưng khác nhau rõ rệt về tổ chức biểu diễn và dữ liệu pretraining. Tương tự, VGG13-BN, ResNet50 và EfficientNet-B2 đều là CNN nhưng có cơ chế học feature khác nhau. Điều quan trọng là mô hình nào duy trì được hiệu năng ổn định hơn trên cả dữ liệu public ngoài training set, drone tự thu và non-drone tự thu.
 
-\subsection{Sự khác biệt giữa nội miền và dữ liệu thực tế}
+\subsection{Sự khác biệt giữa in-domain và dữ liệu thực tế}
 
-Tập nhị phân nội miền tạo điều kiện huấn luyện và so sánh các mô hình trong một môi trường dữ liệu có kiểm soát, với lớp \textit{Drone} từ DroneDetect v2 và lớp \textit{Non-drone} tự thu/bổ sung. Tuy nhiên, dữ liệu bladeRF dùng cho đánh giá thực tế khác về phần cứng thu, đáp ứng tần số, mức khuếch đại, nhiễu nền và các nguồn phát cùng băng tần. Do đó, kết quả nội miền không thể thay thế hoàn toàn phép đánh giá trên dữ liệu thực tế.
+Tập nhị phân in-domain tạo điều kiện training và so sánh các mô hình trong một môi trường dữ liệu có kiểm soát, với lớp \textit{Drone} từ DroneDetect v2 và lớp \textit{Non-drone} tự thu/bổ sung. Tuy nhiên, dữ liệu bladeRF dùng cho đánh giá thực tế khác về phần cứng thu, đáp ứng tần số, mức khuếch đại, nhiễu nền và các nguồn phát cùng băng tần. Do đó, kết quả in-domain không thể thay thế hoàn toàn phép đánh giá trên dữ liệu thực tế.
 
-Sự phân hóa từ $96,5\%$ của VGG13-BN đến $1,25\%$ của Swin Transformer cho thấy dữ liệu tự thu cung cấp thêm thông tin quan trọng về khả năng chuyển miền. Sau khi recall nội miền được bổ sung vào Bảng~\ref{tab:internal_real_drop} và kết quả ngoài miền được bổ sung vào Bảng~\ref{tab:external_domain_recognition_results}, mức chênh lệch sẽ cho biết mô hình nào suy giảm nhiều nhất. Nếu thứ hạng nội miền không trùng với thứ hạng thực tế hoặc thứ hạng ngoài miền, việc lựa chọn mô hình triển khai không nên chỉ dựa trên accuracy của tập kiểm thử nội miền.
+Các bộ dữ liệu public khác training set bổ sung một dạng kiểm tra khác so với dữ liệu tự thu. RFUAV và DroneRF có thể khác về thiết bị thu, loại drone và quy trình thu mẫu, trong khi dữ liệu tự thu phản ánh trực tiếp cấu hình bladeRF của đồ án. Vì hai bộ dữ liệu public này chỉ có lớp \textit{Drone}, kết quả của chúng chủ yếu cho biết mức suy giảm khả năng phát hiện drone khi đổi nguồn dữ liệu. Khả năng hạn chế false alarm cần được đối chiếu riêng bằng dữ liệu \textit{Non-drone} tự thu trong Bảng~\ref{tab:self_nondrone_recall_results}.
 
-Tập nội miền vẫn có vai trò cần thiết trong huấn luyện, lựa chọn checkpoint và so sánh có kiểm soát. Dữ liệu thực tế và dữ liệu ngoài miền đóng vai trò bổ sung để kiểm tra độ bền vững trước domain shift. Các phép đánh giá này cần được sử dụng đồng thời thay vì xem một nguồn dữ liệu là sự thay thế cho nguồn còn lại.
+Tập in-domain vẫn có vai trò cần thiết trong training, lựa chọn checkpoint và so sánh có kiểm soát. Dữ liệu thực tế và dữ liệu out-of-domain đóng vai trò bổ sung để kiểm tra độ bền vững trước domain shift. Các phép đánh giá này cần được sử dụng đồng thời thay vì xem một nguồn dữ liệu là sự thay thế cho nguồn còn lại.
 
 \subsection{Ảnh hưởng của khoảng cách thu}
 
-Thí nghiệm tại 5~m, 10~m, 15~m và 20~m bổ sung một yếu tố triển khai quan trọng cho đánh giá thực tế. Khoảng cách tăng thường làm giảm công suất tín hiệu tại đầu thu, từ đó giảm độ tương phản giữa cấu trúc drone và nền trên spectrogram. Tuy nhiên, khoảng cách chỉ là một biến đại diện; SNR và điều kiện truyền sóng mới phản ánh trực tiếp chất lượng tín hiệu mà mô hình nhận được.
+Thí nghiệm ngoài trời tại 10~m, 30~m, 60~m, 80~m và 100~m bổ sung một yếu tố triển khai quan trọng cho đánh giá thực tế. Khoảng cách tăng thường làm giảm công suất tín hiệu tại đầu thu, từ đó giảm độ tương phản giữa cấu trúc drone và nền trên spectrogram. Tuy nhiên, khoảng cách chỉ là một biến đại diện; SNR và điều kiện truyền sóng mới phản ánh trực tiếp chất lượng tín hiệu mà mô hình nhận được.
 
-Bảng~\ref{tab:distance_recognition_results} cho phép so sánh tỷ lệ nhận diện của từng backbone tại cùng một khoảng cách, trong khi Bảng~\ref{tab:distance_degradation} thể hiện độ ổn định từ 5~m đến 20~m. Mô hình phù hợp hơn cho triển khai cần duy trì cả tỷ lệ nhận diện cao và mức suy giảm thấp. Một mô hình có $\Delta R$ nhỏ nhưng hiệu năng thấp tại mọi khoảng cách không thể được xem là có khả năng hoạt động tốt.
+Bảng~\ref{tab:self_collected_outdoor_distance_statistics} cho biết số lượng ảnh ở từng mốc, còn Bảng~\ref{tab:distance_recognition_results} cho phép so sánh recall của VGG13-BN và DINOv2 tại cùng một khoảng cách. Mô hình phù hợp hơn cho triển khai cần duy trì recall cao trên nhiều mốc, đặc biệt ở các khoảng cách xa hơn như 80~m và 100~m. Một mô hình có kết quả ổn định nhưng thấp ở mọi khoảng cách không thể được xem là có khả năng hoạt động tốt.
 
-Kết quả theo khoảng cách cần được đối chiếu với SNR trung bình trong Bảng~\ref{tab:distance_capture_setup}. Nếu hai backbone suy giảm khác nhau trên cùng dữ liệu, chênh lệch phản ánh độ bền vững khác nhau của biểu diễn. Nếu toàn bộ mô hình cùng giảm mạnh tại một vị trí, nguyên nhân có khả năng liên quan đến chất lượng phiên thu hoặc môi trường RF hơn là một kiến trúc riêng lẻ.
-
-\subsection{Vai trò của cấu hình STFT}
-
-Cấu hình STFT là một thành phần của mô hình thực nghiệm vì nó quyết định thông tin được biểu diễn trước khi ảnh đi vào backbone. Độ dài cửa sổ và kích thước FFT chi phối sự đánh đổi giữa độ phân giải thời gian và tần số, trong khi hop length quyết định mật độ quan sát theo thời gian. Loại cửa sổ và phương pháp chuẩn hóa tiếp tục làm thay đổi rò rỉ phổ và độ tương phản của ảnh.
-
-Kết quả từ Bảng~\ref{tab:stft_window_fft_results}, Bảng~\ref{tab:stft_hop_results} và Bảng~\ref{tab:stft_window_normalization_results} cần được sử dụng để lựa chọn cấu hình dựa trên chỉ số phân loại thay vì chỉ dựa trên hình ảnh trực quan. Nếu nhiều cấu hình có hiệu năng gần nhau, cấu hình có chi phí tạo ảnh thấp hơn và ổn định hơn trên dữ liệu thực tế nên được ưu tiên.
-
-Bảng~\ref{tab:stft_mismatch_results} đánh giá một khía cạnh khác là độ nhạy trước sai lệch tiền xử lý. Mức suy giảm lớn khi cấu hình suy luận khác cấu hình huấn luyện cho thấy tham số STFT phải được xem là một phần của checkpoint triển khai. Mô hình và pipeline tạo spectrogram cần được lưu, kiểm thử và phiên bản hóa cùng nhau.
+Kết quả theo khoảng cách cần được đối chiếu với SNR, công suất trung bình, clipping và điều kiện truyền sóng tại từng phiên thu. Nếu VGG13-BN và DINOv2 suy giảm khác nhau trên cùng dữ liệu, chênh lệch phản ánh độ bền vững khác nhau của biểu diễn. Nếu cả hai cùng giảm mạnh tại một vị trí, nguyên nhân có khả năng liên quan đến chất lượng phiên thu hoặc môi trường RF hơn là một kiến trúc riêng lẻ.
 
 \subsection{Giới hạn của thực nghiệm}
 
-Drone1 và Drone2 chỉ chứa mẫu thuộc lớp \textit{Drone}. Vì vậy, kết quả trên hai tập phản ánh recall của lớp drone nhưng không đo được precision, specificity hoặc tỷ lệ cảnh báo giả. Một mô hình nhận diện đúng phần lớn mẫu drone vẫn có thể dự đoán nhầm nhiều tín hiệu nền thành drone nếu được triển khai trong môi trường mở.
+Dữ liệu tự thu đã bao gồm cả \textit{Drone} và \textit{Non-drone}, nhưng số lượng mẫu giữa các nhóm chưa cân bằng. Nhóm \textit{Non-drone} trong nhà chỉ có 120 ảnh, nhỏ hơn đáng kể so với nhóm ngoài trời và nhóm drone. Vì vậy, khi diễn giải tỷ lệ nhận diện lớp \textit{Non-drone}, cần báo cáo kèm số lượng mẫu và không suy rộng quá mức từ một môi trường có ít quan sát.
 
-Mỗi tập thực tế gồm 200 spectrogram và được tạo từ số lượng điều kiện thu còn giới hạn. Thí nghiệm tại bốn khoảng cách mở rộng phạm vi đánh giá nhưng vẫn chưa đại diện cho mọi khoảng cách, loại drone, cấu hình ăng-ten hoặc môi trường nhiễu. Các ảnh cắt từ cùng một bản ghi còn có thể tương quan với nhau, vì vậy số lượng ảnh không nhất thiết tương đương cùng số lượng quan sát độc lập.
+Dữ liệu drone outdoor có nhiều mốc khoảng cách hơn trước, nhưng vẫn chưa đại diện cho mọi khoảng cách, loại drone, cấu hình ăng-ten hoặc môi trường nhiễu. Kết quả tách theo khoảng cách hiện mới có cho VGG13-BN và DINOv2 tại các mốc 10~m, 30~m, 60~m, 80~m và 100~m, vì vậy chưa thể kết luận xu hướng khoảng cách cho toàn bộ backbone. Các ảnh cắt từ cùng một bản ghi còn có thể tương quan với nhau, vì vậy số lượng ảnh không nhất thiết tương đương cùng số lượng quan sát độc lập.
 
-Ảnh hưởng của SNR, clipping, stripe artifact và tham số STFT mới chỉ có thể kết luận định lượng sau khi hoàn thiện các bảng thí nghiệm tương ứng. Chênh lệch giữa Drone1 và Drone2 là dấu hiệu về tác động của điều kiện dữ liệu, nhưng chưa đủ để quy nguyên nhân cho một yếu tố riêng lẻ. Khi khảo sát STFT, chi phí tính toán có thể giới hạn số backbone được huấn luyện lại cho từng cấu hình; do đó, kết quả trên một backbone đại diện không nên được mặc nhiên suy rộng cho toàn bộ mô hình. Các giới hạn này cần được xem xét khi diễn giải kết quả và đề xuất phạm vi áp dụng của hệ thống.
+Ảnh hưởng của SNR, clipping và stripe artifact mới chỉ có thể kết luận định lượng khi có thêm thống kê chất lượng tín hiệu cho từng nhóm dữ liệu. Các giới hạn này cần được xem xét khi diễn giải kết quả và đề xuất phạm vi áp dụng của hệ thống.
 
 \section{Kết chương}
 
-Chương này đã trình bày thiết kế và kết quả thực nghiệm dùng để đánh giá chiến lược huấn luyện, backbone và khả năng tổng quát hóa của hệ thống phát hiện drone. Các thí nghiệm sử dụng tập nhị phân nội miền gồm mẫu \textit{Drone} từ DroneDetect v2 và mẫu \textit{Non-drone} tự thu/bổ sung cho đánh giá chính, hai tập Drone1, Drone2 thu bằng bladeRF cho đánh giá thực tế và các bộ dữ liệu RFUAV, CageDroneRF, DRFF-R1, DRFF-R2 cho kiểm thử ngoài miền. Accuracy, precision, recall, F1-score và ma trận nhầm lẫn được lựa chọn để mô tả các khía cạnh khác nhau của lỗi phân loại.
+Chương này đã trình bày thiết kế và kết quả thực nghiệm dùng để đánh giá training strategy, backbone và generalization của hệ thống phát hiện drone. Các thí nghiệm sử dụng tập nhị phân in-domain gồm mẫu \textit{Drone} từ DroneDetect v2 và mẫu \textit{Non-drone} tự thu/bổ sung cho đánh giá chính, các bộ dữ liệu public RFUAV và DroneRF cho kiểm thử ngoài training set, cùng dữ liệu RF tự thu bằng bladeRF cho đánh giá thực tế. RFUAV và DroneRF chỉ có lớp \textit{Drone} trong phạm vi đánh giá, còn dữ liệu tự thu được tổ chức thành drone indoor, drone outdoor theo các mốc 10~m, 30~m, 60~m, 80~m, 100~m, và non-drone indoor/outdoor.
 
-Kết quả hiện có cho thấy \textit{Feature Extraction-based Classification} với SVM chưa phù hợp trong cấu hình thí nghiệm vì các backbone đều đạt accuracy dưới $50\%$. Fine-tuning được kỳ vọng và cần được xác nhận bằng các bảng nội miền là chiến lược hiệu quả hơn do cho phép biểu diễn thích nghi với spectrogram RF. Trên dữ liệu thực tế tự thu, VGG13-BN, EfficientNet-B2 và DINOv2 đạt tỷ lệ nhận diện trung bình lần lượt là $96,5\%$, $96,0\%$ và $95,0\%$. ConvNeXtV2 đạt $55,25\%$, ResNet50 đạt $18,5\%$, còn Swin Transformer chỉ đạt $1,25\%$.
+Kết quả \textit{feature extraction + SVM} trong miền đạt từ $73{,}84\%$ đến $89{,}42\%$ Accuracy, trong đó DINOv2 và Swin Transformer là hai backbone tốt nhất theo Macro-F1. Tuy vậy, SVM còn hạn chế ở Recall lớp \textit{Non-drone}, cho thấy nguy cơ tạo false alarm khi chỉ dùng feature vector cố định. Fine-tuning đạt từ $92{,}70\%$ đến $99{,}64\%$ Accuracy trên in-domain test set và tiếp tục là chiến lược tốt hơn trong các thí nghiệm hiện có. Tuy nhiên, hiệu quả của fine-tuning cần được đánh giá cùng kết quả trên dữ liệu public khác training set và dữ liệu tự thu để tránh kết luận chỉ dựa trên in-domain.
 
-Các kết quả chứng minh khả năng tổng quát hóa phụ thuộc vào từng backbone. VGG13-BN đạt trung bình cao nhất trên hai tập tự thu, còn EfficientNet-B2 ổn định nhất giữa hai tập, vì vậy không có cơ sở kết luận Transformer luôn tốt hơn CNN. Sự khác biệt giữa dữ liệu nội miền, dữ liệu tự thu và dữ liệu ngoài miền cần được phân tích cùng domain shift, khoảng cách thu và chất lượng spectrogram. Thí nghiệm tại 5~m, 10~m, 15~m và 20~m cho phép đánh giá mức duy trì khả năng nhận diện khi điều kiện truyền thay đổi. SNR thấp, clipping và stripe artifact có thể làm thay đổi đặc trưng đầu vào và ảnh hưởng trực tiếp đến dự đoán. Bên cạnh đó, độ dài cửa sổ, kích thước FFT, hop length, loại cửa sổ và phương pháp chuẩn hóa cần được khảo sát có kiểm soát vì chúng quyết định trực tiếp độ phân giải và hình học của ảnh đầu vào.
+Trên hai bộ dữ liệu public chỉ gồm lớp \textit{Drone}, hầu hết mô hình đạt xấp xỉ hoặc bằng $100\%$ drone recall. Trên dữ liệu RF tự thu, DINOv2 cân bằng nhất với $94{,}70\%$ drone recall và $99{,}76\%$ non-drone recall; ViT-B/16 cũng cho kết quả tương đối cân bằng, trong khi VGG13-BN, ResNet50 và EfficientNet-B2 tạo nhiều false alarm hơn trên non-drone outdoor. Kết quả theo khoảng cách hiện có cho VGG13-BN và DINOv2 cho thấy recall giảm tại 100~m, vì vậy cần tiếp tục đối chiếu với SNR, clipping và điều kiện truyền sóng.
 
 Những phát hiện của chương tạo cơ sở cho Chương~5 tổng kết đóng góp của đề tài, trình bày các hạn chế về dữ liệu và phạm vi đánh giá, đồng thời đề xuất hướng mở rộng hệ thống phát hiện drone trên nhiều điều kiện RF thực tế hơn.
 

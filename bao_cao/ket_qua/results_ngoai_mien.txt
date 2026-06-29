@@ -1,0 +1,157 @@
+{
+  "method": "swin_v2_s_finetuned_classifier",
+  "model_name": "swin_v2_s_binary_finetuned",
+  "backbone_name": "swin_v2_s",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Swin_S/balanced_swin_small_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/Drone_RF_spectrograms/Drone_RF_spectrograms",
+  "source_images": 260,
+  "detected_drone_count": 260,
+  "detected_non_drone_count": 0,
+  "detected_drone_rate": 1.0,
+}
+{
+  "method": "swin_v2_s_finetuned_classifier",
+  "model_name": "swin_v2_s_binary_finetuned",
+  "backbone_name": "swin_v2_s",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Swin_S/balanced_swin_small_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/RFUAV_spectrograms/RFUAV_spectrograms",
+  "source_images": 256,
+  "detected_drone_count": 256,
+  "detected_non_drone_count": 0,
+  "detected_drone_rate": 1.0,
+  "score_mean": 0.999954104423523,
+  "score_std": 0.0005725178052671254,
+}
+
+{
+  "method": "vgg13_bn_finetuned_classifier",
+  "model_name": "vgg13_bn_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/VGG13BN/balanced_vgg13_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/RFUAV_spectrograms/RFUAV_spectrograms",
+  "source_images": 256,
+  "detected_drone_count": 256,
+  "detected_non_drone_count": 0,
+  "detected_drone_rate": 1.0,
+  "score_mean": 0.9997143149375916,
+  "score_std": 0.0042014881037175655,
+}
+{
+  "method": "vgg13_bn_finetuned_classifier",
+  "model_name": "vgg13_bn_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/VGG13BN/balanced_vgg13_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/Drone_RF_spectrograms/Drone_RF_spectrograms",
+  "source_images": 260,
+  "detected_drone_count": 253,
+  "detected_non_drone_count": 7,
+  "detected_drone_rate": 0.9730769230769231,
+  "score_mean": 0.9340003132820129,
+  "score_std": 0.11925306916236877,
+}
+
+
+{
+  "method": "vit_b16_finetuned_classifier",
+  "model_name": "vit_b16_binary_finetuned",
+  "backbone_name": "vit_b_16",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Vit_B16/balanced_vit_b16_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/RFUAV_spectrograms/RFUAV_spectrograms",
+  "source_images": 256,
+  "detected_drone_count": 256,
+  "detected_non_drone_count": 0,
+  "detected_drone_rate": 1.0,
+  "score_mean": 0.9991174936294556,
+  "score_std": 0.001328089041635394,
+}
+{
+  "method": "vit_b16_finetuned_classifier",
+  "model_name": "vit_b16_binary_finetuned",
+  "backbone_name": "vit_b_16",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Vit_B16/balanced_vit_b16_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/Drone_RF_spectrograms/Drone_RF_spectrograms",
+  "source_images": 260,
+  "detected_drone_count": 260,
+  "detected_non_drone_count": 0,
+  "detected_drone_rate": 1.0,
+  "score_mean": 0.9970642328262329,
+  "score_std": 0.0007974814507178962,
+}
+
+
+{
+  "method": "dinov2_finetuned_classifier",
+  "model_name": "dinov2_vits14_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/DinoV2/balanced_dinov2_vits14_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/Drone_RF_spectrograms/Drone_RF_spectrograms",
+  "source_images": 260,
+  "detected_drone_count": 260,
+  "detected_non_drone_count": 0,
+  "detected_drone_rate": 1.0,
+  "score_mean": 0.9999954104423523,
+  "score_std": 1.6907785038711154e-06,
+}
+{
+  "method": "dinov2_finetuned_classifier",
+  "model_name": "dinov2_vits14_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/DinoV2/balanced_dinov2_vits14_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/RFUAV_spectrograms/RFUAV_spectrograms",
+  "source_images": 256,
+  "detected_drone_count": 256,
+  "detected_non_drone_count": 0,
+  "detected_drone_rate": 1.0,
+  "score_mean": 0.9999995827674866,
+  "score_std": 4.1389299099137133e-07,
+}
+
+
+{
+  "method": "resnet50_finetuned_classifier",
+  "model_name": "resnet50_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Resnet50/balanced_resnet50_binary_v11.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/Drone_RF_spectrograms/Drone_RF_spectrograms",
+  "source_images": 260,
+  "detected_drone_count": 260,
+  "detected_non_drone_count": 0,
+  "detected_drone_rate": 1.0,
+  "score_mean": 0.9993652105331421,
+  "score_std": 0.001100028632208705,
+}
+{
+  "method": "resnet50_finetuned_classifier",
+  "model_name": "resnet50_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Resnet50/balanced_resnet50_binary_v11.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/RFUAV_spectrograms/RFUAV_spectrograms",
+  "source_images": 256,
+  "detected_drone_count": 256,
+  "detected_non_drone_count": 0,
+  "detected_drone_rate": 1.0,
+  "score_mean": 0.9995929002761841,
+  "score_std": 0.0015090112574398518,
+}
+
+
+{
+  "method": "efficientnet_b2_finetuned_classifier",
+  "model_name": "efficientnet_b2_binary_finetuned",
+  "backbone_name": "efficientnet_b2",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/EfficientNetB2/balanced_efficientnet_b2_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/RFUAV_spectrograms/RFUAV_spectrograms",
+  "source_images": 256,
+  "detected_drone_count": 256,
+  "detected_non_drone_count": 0,
+  "detected_drone_rate": 1.0,
+  "score_mean": 0.9138501882553101,
+  "score_std": 0.07434031367301941,
+}
+{
+  "method": "efficientnet_b2_finetuned_classifier",
+  "model_name": "efficientnet_b2_binary_finetuned",
+  "backbone_name": "efficientnet_b2",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/EfficientNetB2/balanced_efficientnet_b2_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/Drone_RF_spectrograms/Drone_RF_spectrograms",
+  "source_images": 260,
+  "detected_drone_count": 259,
+  "detected_non_drone_count": 1,
+  "detected_drone_rate": 0.9961538461538462,
+  "score_mean": 0.9749056100845337,
+  "score_std": 0.05450202152132988,
+}

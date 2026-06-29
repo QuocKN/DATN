@@ -19,15 +19,15 @@ from tqdm import tqdm
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = "fine_tune/DINOv2/dinov2_binary_runs/balanced_dinov2_vits14_binary_new.pt"
-SOURCE_DIR =r"/media/quocnk/Ngocmx_disk/Data_22_6_spectrogram_0_05/drone_tu_thu_full/drone_outdoor_50m_spectrograms"
+# CHECKPOINT_IN = "fine_tune/DINOv2/dinov2_binary_runs/balanced_dinov2_vits14_binary_new.pt"
+CHECKPOINT_IN = r"d:\balanced_dinov2_vits14_binary_data_v6.pt"
+SOURCE_DIR = r"e:\Data_22_6\Drone_tu_thu_full\drone\drone_100m_spectrograms"
 OUTPUT_JSON = "fine_tune/DINOv2/report/test/results.json"
 OUTPUT_CHART = "fine_tune/DINOv2/report/test/results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 128
 NUM_WORKERS = 4
-
 
 class DINOv2Classifier(nn.Module):
     def __init__(self, backbone: nn.Module, feature_dim: int, num_classes: int) -> None:
@@ -258,6 +258,7 @@ def main() -> None:
         "method": "dinov2_finetuned_classifier",
         "model_name": checkpoint.get("model_name", "dinov2_binary_finetuned"),
         "checkpoint_in": str(checkpoint_path),
+        "source_dir": str(source_root),
         "source_images": total,
         "detected_drone_count": drone_count,
         "detected_non_drone_count": non_drone_count,

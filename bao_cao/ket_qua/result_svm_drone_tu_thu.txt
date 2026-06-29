@@ -1,0 +1,90 @@
+{
+  "method": "linear_probe_classifier",
+  "selected_model": "resnet50",
+  "feature_extractor": "resnet50_imagenet_v2_penultimate",
+  "model_name": "svm",
+  "artifact_in": "/kaggle/input/datasets/quoclop/model-svm/Feature_extraction/resnet50_trained_classifier.joblib",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 3650,
+  "detected_non_drone_count": 238,
+  "detected_drone_rate": 0.9387860082304527,
+  "score_mean": 0.6478623580459355,
+  "score_std": 0.0939738704399707,
+}
+
+{
+  "method": "linear_probe_classifier",
+  "selected_model": "vit_b16",
+  "feature_extractor": "vit_b_16_imagenet_cls_token",
+  "model_name": "svm",
+  "artifact_in": "/kaggle/input/datasets/quoclop/model-svm/Feature_extraction/vit_b16_trained_classifier.joblib",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 3370,
+  "detected_non_drone_count": 518,
+  "detected_drone_rate": 0.8667695473251029,
+  "score_mean": 0.606374207429936,
+  "score_std": 0.1254102447764864,
+}
+
+{
+  "method": "linear_probe_classifier",
+  "selected_model": "swin_small",
+  "feature_extractor": "swin_v2_s_imagenet_penultimate",
+  "model_name": "svm",
+  "artifact_in": "/kaggle/input/datasets/quoclop/model-svm/Feature_extraction/swin_small_trained_classifier.joblib",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 3457,
+  "detected_non_drone_count": 431,
+  "detected_drone_rate": 0.8891460905349794,
+  "score_mean": 0.6075690509269182,
+  "score_std": 0.10385427853791575,
+}
+
+
+{
+  "method": "linear_probe_classifier",
+  "selected_model": "dinov2",
+  "feature_extractor": "dinov2_vits14_imagenet_ssl",
+  "model_name": "svm",
+  "artifact_in": "/kaggle/input/datasets/quoclop/model-svm/Feature_extraction/dinov2_trained_classifier.joblib",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 3404,
+  "detected_non_drone_count": 484,
+  "detected_drone_rate": 0.8755144032921811,
+  "score_mean": 0.6016361564574685,
+  "score_std": 0.09937895703667975,
+}
+
+{
+  "method": "linear_probe_classifier",
+  "selected_model": "efficientnet_b2",
+  "feature_extractor": "efficientnet_b2_imagenet_penultimate",
+  "model_name": "svm",
+  "artifact_in": "/kaggle/input/datasets/quoclop/model-svm/Feature_extraction/efficientnetb2_trained_classifier.joblib",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 3094,
+  "detected_non_drone_count": 794,
+  "detected_drone_rate": 0.7957818930041153,
+  "score_mean": 0.5773082522213261,
+  "score_std": 0.10622473450232266,
+}
+
+{
+  "method": "linear_probe_classifier",
+  "selected_model": "vgg13bn",
+  "feature_extractor": "vgg13_bn_imagenet_penultimate",
+  "model_name": "svm",
+  "artifact_in": "/kaggle/input/datasets/quoclop/model-svm/Feature_extraction/vgg13bn_trained_classifier.joblib",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 2808,
+  "detected_non_drone_count": 1080,
+  "detected_drone_rate": 0.7222222222222222,
+  "score_mean": 0.5316660227419423,
+  "score_std": 0.1319741574754606,
+}

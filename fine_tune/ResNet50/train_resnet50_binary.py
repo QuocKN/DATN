@@ -1,3 +1,4 @@
+#Resnet50
 from __future__ import annotations
 
 import argparse
@@ -7,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Sequence, Tuple
 
+import cv2
 import numpy as np
 import torch
 import torch.nn as nn
@@ -21,11 +23,33 @@ from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 from torchvision import models, transforms
 from tqdm import tqdm
 
-DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/drone"
-NON_DRONE_ROOT = "/home/quocnk/Documents/NKQuoc/Data/Spectrum/balanced_binary_dataset/non_drone"
+
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 IMAGE_SIZE = 224
 CLASS_NAMES = ["non_drone", "drone"]
+IMAGENET_MEAN = [0.485, 0.456, 0.406]
+IMAGENET_STD = [0.229, 0.224, 0.225]
+IMAGE_PREPROCESS = "sobel_edge_3channel"
+LOSS_CLASS_WEIGHTS = [1.0, 3.0]  # [non_drone, drone]
+
+
+class SobelEdge3Channel:
+    def __call__(self, img: Image.Image) -> Image.Image:
+        img = np.array(img.convert("RGB"))
+
+        gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY).astype(np.float32)
+        gray = (gray - gray.min()) / (gray.max() - gray.min() + 1e-6)
+
+        gx = cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3)
+        gy = cv2.Sobel(gray, cv2.CV_32F, 0, 1, ksize=3)
+
+        edge = np.sqrt(gx * gx + gy * gy)
+        edge = edge / (edge.max() + 1e-6)
+
+        edge3 = np.stack([edge, edge, edge], axis=-1)
+        edge3 = (edge3 * 255).astype(np.uint8)
+
+        return Image.fromarray(edge3)
 
 
 @dataclass(frozen=True)
@@ -44,7 +68,8 @@ class BinarySpectrogramDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int]:
         sample = self.samples[idx]
-        image = Image.open(sample.path).convert("RGB")
+        with Image.open(sample.path) as img:
+            image = img.convert("RGB")
         return self.transform(image), sample.label
 
 
@@ -74,17 +99,17 @@ def build_transforms(image_size: int) -> Tuple[transforms.Compose, transforms.Co
     train_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
-            transforms.Grayscale(num_output_channels=3),
+            SobelEdge3Channel(),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
     )
     eval_tf = transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
-            transforms.Grayscale(num_output_channels=3),
+            SobelEdge3Channel(),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
     )
     return train_tf, eval_tf
@@ -130,6 +155,11 @@ def build_samples(
     return train_samples, valid_samples, test_samples
 
 
+def freeze_all_backbone_params(model: nn.Module) -> None:
+    for param in model.parameters():
+        param.requires_grad = False
+
+
 def build_model(freeze_backbone: bool) -> nn.Module:
     try:
         model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
@@ -139,8 +169,7 @@ def build_model(freeze_backbone: bool) -> nn.Module:
         ) from exc
 
     if freeze_backbone:
-        for param in model.parameters():
-            param.requires_grad = False
+        freeze_all_backbone_params(model)
 
     model.fc = nn.Linear(model.fc.in_features, len(CLASS_NAMES))
     return model
@@ -166,16 +195,33 @@ def make_class_weights(samples: Sequence[Sample], device: torch.device) -> torch
     return torch.tensor(weights, dtype=torch.float32, device=device)
 
 
-def make_balanced_sampler(samples: Sequence[Sample]) -> WeightedRandomSampler:
+def make_sample_weights(samples: Sequence[Sample]) -> torch.Tensor:
     labels = np.array([s.label for s in samples], dtype=np.int64)
-    counts = np.bincount(labels, minlength=len(CLASS_NAMES)).astype(np.float64)
-    class_weights = 1.0 / np.maximum(counts, 1.0)
+    counts = np.bincount(labels, minlength=len(CLASS_NAMES)).astype(np.float32)
+    class_weights = counts.sum() / np.maximum(counts, 1.0)
     sample_weights = class_weights[labels]
-    return WeightedRandomSampler(
-        weights=torch.from_numpy(sample_weights).double(),
-        num_samples=len(sample_weights),
-        replacement=True,
-    )
+    return torch.tensor(sample_weights, dtype=torch.double)
+
+
+def build_optimizer(
+    model: nn.Module,
+    backbone_lr: float,
+    head_lr: float,
+    weight_decay: float,
+) -> torch.optim.Optimizer:
+    backbone_params = [p for n, p in model.named_parameters() if p.requires_grad and not n.startswith("fc.")]
+    head_params = [p for n, p in model.named_parameters() if p.requires_grad and n.startswith("fc.")]
+
+    param_groups = []
+    if backbone_params:
+        param_groups.append({"params": backbone_params, "lr": backbone_lr})
+    if head_params:
+        param_groups.append({"params": head_params, "lr": head_lr})
+
+    if not param_groups:
+        raise ValueError("No trainable parameters found for optimizer")
+
+    return torch.optim.AdamW(param_groups, weight_decay=weight_decay)
 
 
 def train_one_epoch(
@@ -280,21 +326,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--image-size", type=int, default=IMAGE_SIZE)
-    parser.add_argument("--lr", type=float, default=1e-5)
+    parser.add_argument("--lr", type=float, default=None, help="Deprecated: override both --backbone-lr and --head-lr")
+    parser.add_argument("--backbone-lr", type=float, default=1e-5)
+    parser.add_argument("--head-lr", type=float, default=1e-4)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
     parser.add_argument("--max-drone-train", type=int, default=0, help="0 means use all drone train images")
     parser.add_argument("--max-non-drone-train", type=int, default=0, help="0 means use all non-drone train images")
     parser.add_argument("--freeze-backbone", action="store_true", help="Train only the final classifier layer")
     parser.add_argument(
         "--use-balanced-sampler",
-        action="store_true",
+        default="True",
         help="Use WeightedRandomSampler for class-balanced mini-batches in training loader",
     )
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--early-stop-patience", type=int, default=7, help="Stop if no valid_macro_f1 improvement for N epochs")
     parser.add_argument("--early-stop-min-delta", type=float, default=0.001, help="Minimum valid_macro_f1 gain to count as improvement")
-    return parser.parse_args()
+    args = parser.parse_known_args()[0]
+    if args.lr is not None:
+        args.backbone_lr = args.lr
+        args.head_lr = args.lr
+    return args
 
 
 def main() -> None:
@@ -315,45 +367,60 @@ def main() -> None:
 
     train_tf, eval_tf = build_transforms(args.image_size)
     train_dataset = BinarySpectrogramDataset(train_samples, train_tf)
-    train_sampler = make_balanced_sampler(train_samples) if args.use_balanced_sampler else None
+    valid_dataset = BinarySpectrogramDataset(valid_samples, eval_tf)
+    test_dataset = BinarySpectrogramDataset(test_samples, eval_tf)
+
+    train_sampler = None
+    if args.use_balanced_sampler:
+        sample_weights = make_sample_weights(train_samples)
+        train_sampler = WeightedRandomSampler(
+            weights=sample_weights,
+            num_samples=len(sample_weights),
+            replacement=True,
+        )
+
+    pin_memory = device.type == "cuda"
+    common_loader_kwargs = {"num_workers": args.num_workers, "pin_memory": pin_memory}
     loaders = {
         "train": DataLoader(
             train_dataset,
             batch_size=args.batch_size,
             shuffle=train_sampler is None,
             sampler=train_sampler,
-            num_workers=args.num_workers,
-            pin_memory=True,
+            **common_loader_kwargs,
         ),
         "valid": DataLoader(
-            BinarySpectrogramDataset(valid_samples, eval_tf),
+            valid_dataset,
             batch_size=args.batch_size,
             shuffle=False,
-            num_workers=args.num_workers,
-            pin_memory=True,
+            **common_loader_kwargs,
         ),
         "test": DataLoader(
-            BinarySpectrogramDataset(test_samples, eval_tf),
+            test_dataset,
             batch_size=args.batch_size,
             shuffle=False,
-            num_workers=args.num_workers,
-            pin_memory=True,
+            **common_loader_kwargs,
         ),
     }
 
     print(f"Device: {device}")
     print("Model: resnet50")
+    print(f"Image preprocess: {IMAGE_PREPROCESS}")
+    print(f"Balanced sampler: {args.use_balanced_sampler}")
+    print(f"Freeze backbone: {args.freeze_backbone}")
     print(f"Classes: {CLASS_NAMES}")
     print(f"train: {len(train_samples)} {count_labels(train_samples)}")
-    print(f"use_balanced_sampler: {args.use_balanced_sampler}")
     print(f"valid: {len(valid_samples)} {count_labels(valid_samples)}")
     print(f"test: {len(test_samples)} {count_labels(test_samples)}")
 
-    model = build_model(freeze_backbone=args.freeze_backbone).to(device)
-    optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=args.lr, weight_decay=args.weight_decay)
+    model = build_model(freeze_backbone=args.freeze_backbone)
+    model = model.to(device)
+
+    optimizer = build_optimizer(model, args.backbone_lr, args.head_lr, args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
-    class_weights = None if args.use_balanced_sampler else make_class_weights(train_samples, device)
+    class_weights = torch.tensor(LOSS_CLASS_WEIGHTS, dtype=torch.float32, device=device)
     criterion = nn.CrossEntropyLoss(weight=class_weights)
+    print(f"Loss class weights: {dict(zip(CLASS_NAMES, LOSS_CLASS_WEIGHTS))}")
 
     best_valid_macro_f1 = -1.0
     best_path = out_dir / "balanced_resnet50_binary.pt"
@@ -376,7 +443,7 @@ def main() -> None:
             "valid_loss": valid_loss,
             "valid_acc": valid_acc,
             "valid_macro_f1": valid_macro_f1,
-            "lr": optimizer.param_groups[0]["lr"],
+            "lr": [group["lr"] for group in optimizer.param_groups],
         }
         history.append(row)
         print(json.dumps(row, indent=2))
@@ -389,10 +456,15 @@ def main() -> None:
             torch.save(
                 {
                     "model_name": "resnet50_binary_finetuned",
+                    "backbone_name": "resnet50",
                     "state_dict": model.state_dict(),
                     "class_names": CLASS_NAMES,
                     "class_to_idx": {"non_drone": 0, "drone": 1},
                     "image_size": args.image_size,
+                    "image_preprocess": IMAGE_PREPROCESS,
+                    "image_mean": IMAGENET_MEAN,
+                    "image_std": IMAGENET_STD,
+                    "loss_class_weights": LOSS_CLASS_WEIGHTS,
                     "args": vars(args),
                     "best_valid_macro_f1": best_valid_macro_f1,
                 },
@@ -428,12 +500,18 @@ def main() -> None:
     }
     summary = {
         "model_name": "resnet50_binary_finetuned",
+        "backbone_name": "resnet50",
         "args": vars(args),
         "drone_root": args.drone_root,
         "non_drone_root": args.non_drone_root,
         "checkpoint": str(best_path),
         "class_names": CLASS_NAMES,
         "class_to_idx": {"non_drone": 0, "drone": 1},
+        "image_size": args.image_size,
+        "image_preprocess": IMAGE_PREPROCESS,
+        "image_mean": IMAGENET_MEAN,
+        "image_std": IMAGENET_STD,
+        "loss_class_weights": LOSS_CLASS_WEIGHTS,
         "used_image_counts": used_image_counts,
         "train_images_used_total": len(train_samples),
         "train_images_used_by_class": train_counts,
@@ -468,6 +546,7 @@ def main() -> None:
     print("\nTest summary")
     print(json.dumps({"test_loss": test_loss, "test_acc": test_acc, "summary": str(summary_path)}, indent=2))
 
-
+DRONE_ROOT = "/kaggle/input/balanced-dataset-drone-chuan-full-non-done/drone/drone"
+NON_DRONE_ROOT = "/kaggle/input/balanced-dataset-drone-chuan-full-non-done/non_drone/non_drone"
 if __name__ == "__main__":
     main()

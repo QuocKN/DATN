@@ -1,18 +1,18 @@
-import os
+# import os
 
-folder_path = r"/media/quocnk/Ngocmx_disk/Data_22_6_spectrogram_0_05/non_drone_tu_thu_full"  # Thay bằng đường dẫn của bạn
+# folder_path = r"e:\Data_22_6\Drone_tu_thu_full\drone_evaluate\door"  # Thay bằng đường dẫn của bạn
 
-image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp', '.tiff'}
+# image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp', '.tiff'}
 
-count = 0
+# count = 0
 
-for root, dirs, files in os.walk(folder_path):
-    for file in files:
-        ext = os.path.splitext(file)[1].lower()
-        if ext in image_extensions:
-            count += 1
+# for root, dirs, files in os.walk(folder_path):
+#     for file in files:
+#         ext = os.path.splitext(file)[1].lower()
+#         if ext in image_extensions:
+#             count += 1
 
-print(f"Tổng số ảnh: {count}")
+# print(f"Tổng số ảnh: {count}")
 
 # from PIL import Image
 
@@ -40,3 +40,12 @@ print(f"Tổng số ảnh: {count}")
 #     "mixed.png",
 #     (mixed * 255).astype(np.uint8)
 # )
+
+
+
+import joblib
+
+obj = joblib.load(r"e:\DATN_model_result\Feature_extraction\dinov2_trained_classifier.joblib")
+
+print(type(obj))
+print(obj)

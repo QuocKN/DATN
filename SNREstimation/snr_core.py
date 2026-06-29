@@ -7,11 +7,11 @@ from typing import Callable
 import numpy as np
 from scipy.signal import welch
 
-SAMPLE_RATE = 60e6
+SAMPLE_RATE = 40e6
 EXPECTED_BANDWIDTH = 28e6
-NFFT = 409600
+NFFT = 1024
 MAX_NFFT = 16384
-SEGMENT_SECONDS = 1.0
+SEGMENT_SECONDS = 2
 def add_common_snr_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("-i", "--input", required=True, help="Input IQ file")
     parser.add_argument(

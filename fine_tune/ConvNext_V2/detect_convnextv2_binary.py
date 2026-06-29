@@ -24,10 +24,10 @@ except Exception as exc:  # pragma: no cover
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = "fine_tune/ConvNext_V2/convnextv2_binary_runs/balanced_convnextv2_binary.pt"
-SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
-OUTPUT_JSON = "fine_tune/ConvNext_V2/report/test/2toan_results.json"
-OUTPUT_CHART = "fine_tune/ConvNext_V2/report/test/2toan_results_chart.png"
+CHECKPOINT_IN = r"d:\balanced_convnextv2_binary.pt"
+SOURCE_DIR = r"e:\Data_22_6\Drone_tu_thu_full\drone\drone_10m_spectrograms"
+OUTPUT_JSON = r"fine_tune\ConvNext_V2\report\test\results.json"
+OUTPUT_CHART = r"fine_tune\ConvNext_V2\report\test\results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 128

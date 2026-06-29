@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import List, Sequence
 
+import cv2
 import matplotlib
 
 matplotlib.use("Agg")
@@ -19,25 +20,53 @@ from tqdm import tqdm
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = "fine_tune/ResNet50/resnet50_binary_runs/best_resnet50_binary.pt"
-SOURCE_DIR = r"G:\DATN_DATA\RF\Tu_thu\2toan_spectrograms"
+CHECKPOINT_IN = r"e:\DATN_model_result\Resnet50\balanced_resnet50_binary.pt"
+SOURCE_DIR = r"e:\Data_22_6\Drone_tu_thu_full\drone\drone_100m_spectrograms"
 OUTPUT_JSON = "fine_tune/ResNet50/report/test/results.json"
 OUTPUT_CHART = "fine_tune/ResNet50/report/test/results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 128
 NUM_WORKERS = 4
+IMAGENET_MEAN = [0.485, 0.456, 0.406]
+IMAGENET_STD = [0.229, 0.224, 0.225]
+IMAGE_PREPROCESS = "sobel_edge_3channel"
+
+
+class SobelEdge3Channel:
+    def __call__(self, img: Image.Image) -> Image.Image:
+        img = np.array(img.convert("RGB"))
+
+        gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY).astype(np.float32)
+        gray = (gray - gray.min()) / (gray.max() - gray.min() + 1e-6)
+
+        gx = cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3)
+        gy = cv2.Sobel(gray, cv2.CV_32F, 0, 1, ksize=3)
+
+        edge = np.sqrt(gx * gx + gy * gy)
+        edge = edge / (edge.max() + 1e-6)
+
+        edge3 = np.stack([edge, edge, edge], axis=-1)
+        edge3 = (edge3 * 255).astype(np.uint8)
+
+        return Image.fromarray(edge3)
 
 
 class SpectrogramDataset(Dataset):
-    def __init__(self, image_paths: Sequence[Path], image_size: int) -> None:
+    def __init__(
+        self,
+        image_paths: Sequence[Path],
+        image_size: int,
+        image_mean: Sequence[float],
+        image_std: Sequence[float],
+    ) -> None:
         self.image_paths = list(image_paths)
         self.transform = transforms.Compose(
             [
                 transforms.Resize((image_size, image_size)),
-                transforms.Grayscale(num_output_channels=3),
+                SobelEdge3Channel(),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                transforms.Normalize(mean=image_mean, std=image_std),
             ]
         )
 
@@ -45,7 +74,8 @@ class SpectrogramDataset(Dataset):
         return len(self.image_paths)
 
     def __getitem__(self, idx: int) -> torch.Tensor:
-        image = Image.open(self.image_paths[idx]).convert("RGB")
+        with Image.open(self.image_paths[idx]) as img:
+            image = img.convert("RGB")
         return self.transform(image)
 
 
@@ -77,10 +107,17 @@ def infer(
     model: nn.Module,
     device: torch.device,
     image_size: int,
+    image_mean: Sequence[float],
+    image_std: Sequence[float],
     batch_size: int,
     num_workers: int,
 ) -> tuple[np.ndarray, np.ndarray]:
-    dataset = SpectrogramDataset(image_paths, image_size=image_size)
+    dataset = SpectrogramDataset(
+        image_paths,
+        image_size=image_size,
+        image_mean=image_mean,
+        image_std=image_std,
+    )
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
 
     probs_all: List[np.ndarray] = []
@@ -202,6 +239,15 @@ def main() -> None:
     device = torch.device(DEVICE if torch.cuda.is_available() and DEVICE.startswith("cuda") else "cpu")
     checkpoint = torch.load(checkpoint_path, map_location=device)
     model, class_names, class_to_idx, image_size = build_model(checkpoint, device)
+    image_mean = checkpoint.get("image_mean", IMAGENET_MEAN)
+    image_std = checkpoint.get("image_std", IMAGENET_STD)
+    checkpoint_image_preprocess = checkpoint.get("image_preprocess")
+    image_preprocess = IMAGE_PREPROCESS
+    if checkpoint_image_preprocess not in (None, IMAGE_PREPROCESS):
+        print(
+            f"Warning: checkpoint image_preprocess={checkpoint_image_preprocess!r}; "
+            f"using {IMAGE_PREPROCESS!r} in this detector."
+        )
 
     if "drone" not in class_to_idx:
         raise ValueError("Checkpoint class_to_idx does not contain 'drone'")
@@ -213,6 +259,8 @@ def main() -> None:
         model=model,
         device=device,
         image_size=image_size,
+        image_mean=image_mean,
+        image_std=image_std,
         batch_size=BATCH_SIZE,
         num_workers=NUM_WORKERS,
     )
@@ -240,6 +288,7 @@ def main() -> None:
         "method": "resnet50_finetuned_classifier",
         "model_name": checkpoint.get("model_name", "resnet50_binary_finetuned"),
         "checkpoint_in": str(checkpoint_path),
+        "source_dir": str(source_root),
         "source_images": total,
         "detected_drone_count": drone_count,
         "detected_non_drone_count": non_drone_count,
@@ -248,6 +297,11 @@ def main() -> None:
         "score_std": float(np.std(scores)) if total else None,
         "class_names": class_names,
         "class_to_idx": class_to_idx,
+        "image_size": image_size,
+        "image_preprocess": image_preprocess,
+        "checkpoint_image_preprocess": checkpoint_image_preprocess,
+        "image_mean": image_mean,
+        "image_std": image_std,
         "best_valid_macro_f1": checkpoint.get("best_valid_macro_f1"),
     }
 

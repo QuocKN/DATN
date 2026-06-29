@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Sequence
 
+import cv2
 import matplotlib
 
 matplotlib.use("Agg")
@@ -35,27 +36,27 @@ EXCLUDE_NAME_KEYWORDS = {
 }
 DEFAULT_MEAN = [0.485, 0.456, 0.406]
 DEFAULT_STD = [0.229, 0.224, 0.225]
-DEFAULT_IMAGE_PREPROCESS = "legacy_imagenet"
+DEFAULT_IMAGE_PREPROCESS = "sobel_edge_3channel"
 DEFAULT_PERCENTILE_LOW = 1.0
 DEFAULT_PERCENTILE_HIGH = 99.0
 
 # Edit these values directly, or override them with command line arguments.
 MODEL_ARCH = "resnet50"
-CHECKPOINT_IN = r"d:\best_resnet50_binary_data_v6.pt"
+CHECKPOINT_IN = r"d:\balanced_resnet50_binary_edge.pt"
 SOURCE_PATH = r"E:\Data_22_6\drone_test"
 OUTPUT_DIR = r"fine_tune/grad_cam_outputs/resnet50_2"
 
-TARGET_CLASS = "drone"  # Use "predicted" to explain the predicted class instead.
+TARGET_CLASS = "both"  # Options: "drone", "predicted", or "both" for predicted CAM + target drone CAM.
 TARGET_LAYER = ""  # Leave empty for a good default layer per CNN architecture.
 DEVICE = "cuda:0"
 BATCH_SIZE = 64
 NUM_WORKERS = 4
-TOP_K = 16
-SORT_BY = "drone_score"  # Options: drone_score, confidence, path
+TOP_K = 32
+SORT_BY = "confidence"  # Options: drone_score, confidence, path
 OVERLAY_ALPHA = 0.45
-CASE_FILTER = "all"
+CASE_FILTER = "false_negative_drone"
 SOURCE_BINARY_LABEL = "auto"
-OCCLUSION_THRESHOLD = 0.75
+OCCLUSION_THRESHOLD = 0.60
 OCCLUSION_FILL_MODE = "mean"
 OCCLUSION_FILL_VALUE = 255
 OCCLUSION_COMPARE_MODES = "white,black,mean,median"
@@ -75,6 +76,41 @@ class PercentileNormalizeTensor:
         return ((x - lo) / scale).clamp(0.0, 1.0)
 
 
+class SobelEdge3Channel:
+    def __call__(self, img: Image.Image) -> Image.Image:
+        img = np.array(img.convert("RGB"))
+
+        gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY).astype(np.float32)
+        gray = (gray - gray.min()) / (gray.max() - gray.min() + 1e-6)
+
+        gx = cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3)
+        gy = cv2.Sobel(gray, cv2.CV_32F, 0, 1, ksize=3)
+
+        edge = np.sqrt(gx * gx + gy * gy)
+        edge = edge / (edge.max() + 1e-6)
+
+        edge3 = np.stack([edge, edge, edge], axis=-1)
+        edge3 = (edge3 * 255).astype(np.uint8)
+
+        return Image.fromarray(edge3)
+
+
+def make_tensor_transform(
+    mean: Sequence[float],
+    std: Sequence[float],
+    image_preprocess: str,
+    percentile_low: float,
+    percentile_high: float,
+) -> transforms.Compose:
+    steps = [transforms.ToTensor()]
+    if image_preprocess == "percentile":
+        steps.append(PercentileNormalizeTensor(low=percentile_low, high=percentile_high))
+    elif image_preprocess not in {"legacy_imagenet", "sobel_edge_3channel"}:
+        raise ValueError(f"Unsupported image_preprocess: {image_preprocess}")
+    steps.append(transforms.Normalize(mean=mean, std=std))
+    return transforms.Compose(steps)
+
+
 def make_transform(
     image_size: int,
     mean: Sequence[float],
@@ -83,17 +119,36 @@ def make_transform(
     percentile_low: float,
     percentile_high: float,
 ) -> transforms.Compose:
-    steps = [
-        transforms.Resize((image_size, image_size)),
-        transforms.Grayscale(num_output_channels=3),
-        transforms.ToTensor(),
-    ]
-    if image_preprocess == "percentile":
-        steps.append(PercentileNormalizeTensor(low=percentile_low, high=percentile_high))
-    elif image_preprocess != "legacy_imagenet":
+    steps = [transforms.Resize((image_size, image_size))]
+    if image_preprocess == "sobel_edge_3channel":
+        steps.append(SobelEdge3Channel())
+    elif image_preprocess in {"legacy_imagenet", "percentile"}:
+        steps.append(transforms.Grayscale(num_output_channels=3))
+    else:
         raise ValueError(f"Unsupported image_preprocess: {image_preprocess}")
-    steps.append(transforms.Normalize(mean=mean, std=std))
+    steps.extend(
+        make_tensor_transform(
+            mean=mean,
+            std=std,
+            image_preprocess=image_preprocess,
+            percentile_low=percentile_low,
+            percentile_high=percentile_high,
+        ).transforms
+    )
     return transforms.Compose(steps)
+
+
+def make_model_input_image(
+    image: Image.Image,
+    image_size: int,
+    image_preprocess: str,
+) -> Image.Image:
+    image = image.convert("RGB").resize((image_size, image_size), Image.BILINEAR)
+    if image_preprocess == "sobel_edge_3channel":
+        return SobelEdge3Channel()(image)
+    if image_preprocess in {"legacy_imagenet", "percentile"}:
+        return image.convert("L").convert("RGB")
+    raise ValueError(f"Unsupported image_preprocess: {image_preprocess}")
 
 
 class SpectrogramDataset(Dataset):
@@ -540,14 +595,41 @@ def select_records(records: Sequence[PredictionRecord], sort_by: str, top_k: int
 
 
 def resolve_target_idx(target_class: str, class_to_idx: Dict[str, int], predicted_idx: int) -> int:
-    if target_class.lower() == "predicted":
+    target_class = target_class.lower()
+    if target_class == "predicted":
         return int(predicted_idx)
     if target_class in class_to_idx:
         return int(class_to_idx[target_class])
     try:
         return int(target_class)
     except ValueError as exc:
-        raise ValueError(f"TARGET_CLASS must be 'predicted', a class name, or a class index. Got: {target_class}") from exc
+        raise ValueError(
+            f"TARGET_CLASS must be 'predicted', 'both', a class name, or a class index. Got: {target_class}"
+        ) from exc
+
+
+def resolve_target_specs(target_class: str, class_to_idx: Dict[str, int], predicted_idx: int) -> List[tuple[str, int]]:
+    """Return one or more CAM targets.
+
+    - drone: explain evidence for class drone
+    - predicted: explain evidence for the predicted class
+    - both: generate predicted class CAM first, then target drone CAM.
+      This is equivalent to running ClassifierOutputTarget(target) twice:
+      once for the predicted class and once for the drone class.
+    """
+    value = target_class.lower()
+    if value == "both":
+        pred_idx = int(predicted_idx)
+        pred_name = next((name for name, idx in class_to_idx.items() if idx == pred_idx), "predicted")
+        specs: List[tuple[str, int]] = [(f"predicted_{pred_name}", pred_idx)]
+        if "drone" in class_to_idx:
+            drone_idx = int(class_to_idx["drone"])
+            if drone_idx != pred_idx:
+                specs.append(("target_drone", drone_idx))
+        return specs
+    idx = resolve_target_idx(target_class, class_to_idx, predicted_idx)
+    name = next((name for name, class_idx in class_to_idx.items() if class_idx == idx), str(idx))
+    return [(name, idx)]
 
 
 def save_panel(
@@ -562,7 +644,7 @@ def save_panel(
     fig, axes = plt.subplots(1, 5, figsize=(20, 4))
     fig.patch.set_facecolor("white")
     panels = [
-        ("Input", image_rgb),
+        ("Model Input", image_rgb),
         ("Grad-CAM", cam),
         ("Heatmap", heatmap_rgb),
         ("Overlay", overlay_rgb),
@@ -575,11 +657,15 @@ def save_panel(
             ax.imshow(data)
         ax.set_title(label, fontsize=11, fontweight="bold")
         ax.axis("off")
-    fig.suptitle(title, fontsize=11)
-    plt.tight_layout(rect=(0, 0, 1, 0.92))
+    fig.suptitle(title, fontsize=10)
+    plt.tight_layout(rect=(0, 0, 1, 0.86))
     output_path.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
+
+
+def format_optional_float(value: float | None) -> str:
+    return "n/a" if value is None else f"{value:.3f}"
 
 
 def cam_focus_stats(cam: np.ndarray) -> Dict[str, float]:
@@ -705,10 +791,9 @@ def generate_grad_cam_outputs(
 ) -> List[dict]:
     target_layer_desc, target_layer = choose_target_layer(bundle.model, bundle.arch, target_layer_name)
     grad_cam = GradCAM(bundle.model, target_layer)
-    transform = make_transform(
-        bundle.image_size,
-        bundle.mean,
-        bundle.std,
+    model_input_transform = make_tensor_transform(
+        mean=bundle.mean,
+        std=bundle.std,
         image_preprocess=bundle.image_preprocess,
         percentile_low=bundle.percentile_low,
         percentile_high=bundle.percentile_high,
@@ -720,85 +805,102 @@ def generate_grad_cam_outputs(
     try:
         for index, record in enumerate(tqdm(records, desc="Grad-CAM", unit="image")):
             with Image.open(record.path) as img:
-                image = img.convert("L").resize((bundle.image_size, bundle.image_size), Image.BILINEAR).convert("RGB")
+                image = make_model_input_image(
+                    image=img,
+                    image_size=bundle.image_size,
+                    image_preprocess=bundle.image_preprocess,
+                )
             image_rgb = np.asarray(image)
-            x = transform(image).unsqueeze(0).to(device)
-            target_idx = resolve_target_idx(target_class, bundle.class_to_idx, record.pred_idx)
-            target_label = idx_to_class.get(target_idx, str(target_idx))
-            cam, logits = grad_cam(x, target_idx=target_idx, output_size=(bundle.image_size, bundle.image_size))
-            probs = torch.softmax(logits, dim=1)[0].detach().cpu().numpy()
-
-            heatmap_rgb, overlay_rgb = overlay_heatmap(image_rgb, cam, alpha=overlay_alpha)
-            panel_fill_value = resolve_occlusion_fill_value(image_rgb, occlusion_fill_mode, occlusion_fill_value)
-            occluded_rgb, occlusion_mask = make_occluded_image(
-                image_rgb,
-                cam,
-                threshold=occlusion_threshold,
-                fill_value=panel_fill_value,
-            )
-            occluded_probs = predict_image_probabilities(bundle.model, occluded_rgb, transform, device)
+            x = model_input_transform(image).unsqueeze(0).to(device)
             drone_idx = bundle.class_to_idx.get("drone")
-            target_score_before = float(probs[target_idx])
-            target_score_after = float(occluded_probs[target_idx])
-            drone_score_before = float(probs[drone_idx]) if drone_idx is not None else float("nan")
-            drone_score_after = float(occluded_probs[drone_idx]) if drone_idx is not None else float("nan")
-            occlusion_tests = {}
-            for fill_mode in occlusion_compare_modes:
-                test_fill_value = resolve_occlusion_fill_value(image_rgb, fill_mode, occlusion_fill_value)
-                test_occluded_rgb, _ = make_occluded_image(
+
+            for target_name, target_idx in resolve_target_specs(target_class, bundle.class_to_idx, record.pred_idx):
+                target_label = idx_to_class.get(target_idx, str(target_idx))
+                cam, logits = grad_cam(x, target_idx=target_idx, output_size=(bundle.image_size, bundle.image_size))
+                logits_np = logits[0].detach().cpu().numpy()
+                logits_by_class = {name: float(logits_np[idx]) for name, idx in bundle.class_to_idx.items()}
+                non_drone_logit = logits_by_class.get("non_drone")
+                drone_logit = logits_by_class.get("drone")
+                probs = torch.softmax(logits, dim=1)[0].detach().cpu().numpy()
+
+                heatmap_rgb, overlay_rgb = overlay_heatmap(image_rgb, cam, alpha=overlay_alpha)
+                panel_fill_value = resolve_occlusion_fill_value(image_rgb, occlusion_fill_mode, occlusion_fill_value)
+                occluded_rgb, occlusion_mask = make_occluded_image(
                     image_rgb,
                     cam,
                     threshold=occlusion_threshold,
-                    fill_value=test_fill_value,
+                    fill_value=panel_fill_value,
                 )
-                test_probs = predict_image_probabilities(bundle.model, test_occluded_rgb, transform, device)
-                test_target_score = float(test_probs[target_idx])
-                test_drone_score = float(test_probs[drone_idx]) if drone_idx is not None else float("nan")
-                occlusion_tests[fill_mode] = {
-                    "fill_value": int(test_fill_value),
-                    "target_score": test_target_score,
-                    "target_score_drop": target_score_before - test_target_score,
-                    "drone_score": test_drone_score,
-                    "drone_score_drop": drone_score_before - test_drone_score if drone_idx is not None else None,
-                    "probabilities": {name: float(test_probs[idx]) for name, idx in bundle.class_to_idx.items()},
+                occluded_probs = predict_image_probabilities(bundle.model, occluded_rgb, model_input_transform, device)
+                target_score_before = float(probs[target_idx])
+                target_score_after = float(occluded_probs[target_idx])
+                drone_score_before = float(probs[drone_idx]) if drone_idx is not None else float("nan")
+                drone_score_after = float(occluded_probs[drone_idx]) if drone_idx is not None else float("nan")
+                occlusion_tests = {}
+                for fill_mode in occlusion_compare_modes:
+                    test_fill_value = resolve_occlusion_fill_value(image_rgb, fill_mode, occlusion_fill_value)
+                    test_occluded_rgb, _ = make_occluded_image(
+                        image_rgb,
+                        cam,
+                        threshold=occlusion_threshold,
+                        fill_value=test_fill_value,
+                    )
+                    test_probs = predict_image_probabilities(bundle.model, test_occluded_rgb, model_input_transform, device)
+                    test_target_score = float(test_probs[target_idx])
+                    test_drone_score = float(test_probs[drone_idx]) if drone_idx is not None else float("nan")
+                    occlusion_tests[fill_mode] = {
+                        "fill_value": int(test_fill_value),
+                        "target_score": test_target_score,
+                        "target_score_drop": target_score_before - test_target_score,
+                        "drone_score": test_drone_score,
+                        "drone_score_drop": drone_score_before - test_drone_score if drone_idx is not None else None,
+                        "probabilities": {name: float(test_probs[idx]) for name, idx in bundle.class_to_idx.items()},
+                    }
+                stem = f"{index:03d}_{record.pred_label}_cam_{target_name}_{sanitize_stem(record.path)}"
+                panel_path = output_dir / f"{stem}_panel.png"
+
+                title = (
+                    f"{record.path.name} | pred={record.pred_label} ({record.confidence:.3f}) | "
+                    f"target={target_name}/{target_label}\n"
+                    f"logits before softmax: non_drone={format_optional_float(non_drone_logit)} | "
+                    f"drone={format_optional_float(drone_logit)}\n"
+                    f"softmax target={target_score_before:.3f}->{target_score_after:.3f} | "
+                    f"softmax drone={drone_score_before:.3f}->{drone_score_after:.3f} | "
+                    f"mask={(occlusion_mask.mean() * 100):.1f}%"
+                )
+                save_panel(image_rgb, cam, heatmap_rgb, overlay_rgb, occluded_rgb, title=title, output_path=panel_path)
+
+                result = {
+                    "image": str(record.path),
+                    "source_label": record.source_label,
+                    "source_binary_label": record.source_binary_label,
+                    "prediction": record.pred_label,
+                    "is_correct": record.pred_label == record.source_binary_label if record.source_binary_label is not None else None,
+                    "confidence": record.confidence,
+                    "drone_score": drone_score_before,
+                    "occluded_drone_score": drone_score_after,
+                    "drone_score_drop": drone_score_before - drone_score_after if drone_idx is not None else None,
+                    "target_class": target_name,
+                    "target_label": target_label,
+                    "target_index": int(target_idx),
+                    "logits": logits_by_class,
+                    "non_drone_logit": non_drone_logit,
+                    "drone_logit": drone_logit,
+                    "probabilities": {name: float(probs[idx]) for name, idx in bundle.class_to_idx.items()},
+                    "occluded_probabilities": {name: float(occluded_probs[idx]) for name, idx in bundle.class_to_idx.items()},
+                    "target_score": target_score_before,
+                    "occluded_target_score": target_score_after,
+                    "target_score_drop": target_score_before - target_score_after,
+                    "occlusion_threshold": float(occlusion_threshold),
+                    "occlusion_fill_mode": occlusion_fill_mode,
+                    "occlusion_fill_value": int(panel_fill_value),
+                    "occlusion_tests": occlusion_tests,
+                    "occlusion_area_ratio": float(occlusion_mask.mean()),
+                    "target_layer": target_layer_desc,
+                    "panel": str(panel_path),
                 }
-            stem = f"{index:03d}_{record.pred_label}_target_{target_label}_{sanitize_stem(record.path)}"
-            panel_path = output_dir / f"{stem}_panel.png"
-
-            title = (
-                f"{record.path.name} | pred={record.pred_label} ({record.confidence:.3f}) | "
-                f"target={target_label}: {target_score_before:.3f}->{target_score_after:.3f} | "
-                f"mask={(occlusion_mask.mean() * 100):.1f}%"
-            )
-            save_panel(image_rgb, cam, heatmap_rgb, overlay_rgb, occluded_rgb, title=title, output_path=panel_path)
-
-            result = {
-                "image": str(record.path),
-                "source_label": record.source_label,
-                "source_binary_label": record.source_binary_label,
-                "prediction": record.pred_label,
-                "is_correct": record.pred_label == record.source_binary_label if record.source_binary_label is not None else None,
-                "confidence": record.confidence,
-                "drone_score": drone_score_before,
-                "occluded_drone_score": drone_score_after,
-                "drone_score_drop": drone_score_before - drone_score_after if drone_idx is not None else None,
-                "target_class": target_label,
-                "target_index": int(target_idx),
-                "probabilities": {name: float(probs[idx]) for name, idx in bundle.class_to_idx.items()},
-                "occluded_probabilities": {name: float(occluded_probs[idx]) for name, idx in bundle.class_to_idx.items()},
-                "target_score": target_score_before,
-                "occluded_target_score": target_score_after,
-                "target_score_drop": target_score_before - target_score_after,
-                "occlusion_threshold": float(occlusion_threshold),
-                "occlusion_fill_mode": occlusion_fill_mode,
-                "occlusion_fill_value": int(panel_fill_value),
-                "occlusion_tests": occlusion_tests,
-                "occlusion_area_ratio": float(occlusion_mask.mean()),
-                "target_layer": target_layer_desc,
-                "panel": str(panel_path),
-            }
-            result.update(cam_focus_stats(cam))
-            results.append(result)
+                result.update(cam_focus_stats(cam))
+                results.append(result)
     finally:
         grad_cam.close()
 
@@ -811,7 +913,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--checkpoint", default=CHECKPOINT_IN)
     parser.add_argument("--source", default=SOURCE_PATH, help="Image file or directory containing spectrogram images.")
     parser.add_argument("--output-dir", default=OUTPUT_DIR)
-    parser.add_argument("--target-class", default=TARGET_CLASS, help="Class name, class index, or 'predicted'.")
+    parser.add_argument("--target-class", default=TARGET_CLASS, help="Class name, class index, 'predicted', or 'both'.")
     parser.add_argument("--target-layer", default=TARGET_LAYER, help="Optional exact module name from model.named_modules().")
     parser.add_argument("--device", default=DEVICE)
     parser.add_argument("--batch-size", type=int, default=BATCH_SIZE)

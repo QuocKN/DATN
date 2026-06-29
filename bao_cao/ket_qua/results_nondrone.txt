@@ -1,0 +1,157 @@
+{
+  "method": "vgg13_bn_finetuned_classifier",
+  "model_name": "vgg13_bn_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/VGG13BN/balanced_vgg13_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/indoor",
+  "source_images": 120,
+  "detected_drone_count": 0,
+  "detected_non_drone_count": 120,
+  "detected_drone_rate": 0.0,
+  "score_mean": 2.292092722200323e-05,
+  "score_std": 7.930718129500747e-05,
+}
+{
+  "method": "vgg13_bn_finetuned_classifier",
+  "model_name": "vgg13_bn_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/VGG13BN/balanced_vgg13_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/outdoor",
+  "source_images": 1571,
+  "detected_drone_count": 469,
+  "detected_non_drone_count": 1102,
+  "detected_drone_rate": 0.2985359643539147,
+  "score_mean": 0.2936992347240448,
+  "score_std": 0.4193319082260132,
+}
+
+
+{
+  "method": "vit_b16_finetuned_classifier",
+  "model_name": "vit_b16_binary_finetuned",
+  "backbone_name": "vit_b_16",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Vit_B16/balanced_vit_b16_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/outdoor",
+  "source_images": 1571,
+  "detected_drone_count": 194,
+  "detected_non_drone_count": 1377,
+  "detected_drone_rate": 0.12348822406110757,
+  "score_mean": 0.14750120043754578,
+  "score_std": 0.2457771748304367,
+}
+{
+  "method": "vit_b16_finetuned_classifier",
+  "model_name": "vit_b16_binary_finetuned",
+  "backbone_name": "vit_b_16",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Vit_B16/balanced_vit_b16_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/indoor",
+  "source_images": 120,
+  "detected_drone_count": 0,
+  "detected_non_drone_count": 120,
+  "detected_drone_rate": 0.0,
+  "score_mean": 0.005083187483251095,
+  "score_std": 0.009278794750571251,
+}
+
+{
+  "method": "swin_v2_s_finetuned_classifier",
+  "model_name": "swin_v2_s_binary_finetuned",
+  "backbone_name": "swin_v2_s",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Swin_S/balanced_swin_small_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/indoor",
+  "source_images": 120,
+  "detected_drone_count": 0,
+  "detected_non_drone_count": 120,
+  "detected_drone_rate": 0.0,
+  "score_mean": 2.2933821242077101e-07,
+  "score_std": 5.124304038872651e-07,
+}
+{
+  "method": "swin_v2_s_finetuned_classifier",
+  "model_name": "swin_v2_s_binary_finetuned",
+  "backbone_name": "swin_v2_s",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Swin_S/balanced_swin_small_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/outdoor",
+  "source_images": 1571,
+  "detected_drone_count": 95,
+  "detected_non_drone_count": 1476,
+  "detected_drone_rate": 0.06047103755569701,
+  "score_mean": 0.06545326858758926,
+  "score_std": 0.21131198108196259,
+}
+
+
+{
+  "method": "dinov2_finetuned_classifier",
+  "model_name": "dinov2_vits14_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/DinoV2/balanced_dinov2_vits14_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/indoor",
+  "source_images": 120,
+  "detected_drone_count": 0,
+  "detected_non_drone_count": 120,
+  "detected_drone_rate": 0.0,
+  "score_mean": 8.414409239776433e-05,
+  "score_std": 0.00021290189761202782,
+}
+{
+  "method": "dinov2_finetuned_classifier",
+  "model_name": "dinov2_vits14_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/DinoV2/balanced_dinov2_vits14_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/outdoor",
+  "source_images": 1571,
+  "detected_drone_count": 4,
+  "detected_non_drone_count": 1567,
+  "detected_drone_rate": 0.002546148949713558,
+  "score_mean": 0.004017725586891174,
+  "score_std": 0.04180605337023735,
+}
+
+{
+  "method": "resnet50_finetuned_classifier",
+  "model_name": "resnet50_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Resnet50/balanced_resnet50_binary_v11.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/indoor",
+  "source_images": 120,
+  "detected_drone_count": 0,
+  "detected_non_drone_count": 120,
+  "detected_drone_rate": 0.0,
+  "score_mean": 0.0003745006106328219,
+  "score_std": 0.0005293787689879537,
+}
+{
+  "method": "resnet50_finetuned_classifier",
+  "model_name": "resnet50_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Resnet50/balanced_resnet50_binary_v11.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/outdoor",
+  "source_images": 1571,
+  "detected_drone_count": 569,
+  "detected_non_drone_count": 1002,
+  "detected_drone_rate": 0.36218968809675367,
+  "score_mean": 0.35206103324890137,
+  "score_std": 0.4307524263858795,
+}
+
+{
+  "method": "efficientnet_b2_finetuned_classifier",
+  "model_name": "efficientnet_b2_binary_finetuned",
+  "backbone_name": "efficientnet_b2",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/EfficientNetB2/balanced_efficientnet_b2_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/indoor",
+  "source_images": 120,
+  "detected_drone_count": 0,
+  "detected_non_drone_count": 120,
+  "detected_drone_rate": 0.0,
+  "score_mean": 0.00048023246927186847,
+  "score_std": 0.0007739078137092292,
+}
+{
+  "method": "efficientnet_b2_finetuned_classifier",
+  "model_name": "efficientnet_b2_binary_finetuned",
+  "backbone_name": "efficientnet_b2",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/EfficientNetB2/balanced_efficientnet_b2_binary.pt",
+  "source_dir": "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/outdoor",
+  "source_images": 1571,
+  "detected_drone_count": 532,
+  "detected_non_drone_count": 1039,
+  "detected_drone_rate": 0.33863781031190326,
+  "score_mean": 0.2885364890098572,
+  "score_std": 0.3826994001865387,
+}

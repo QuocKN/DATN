@@ -14,6 +14,7 @@ def convert_mat_to_spectrograms(
     chunk_size: int = 1_000_000,
     prefix: str = "spectrogram",
     mat_iq_key: str | None = None,
+    remove_dc: bool = False,
     max_duration_seconds: int | None = None,
     save_waveform: bool = True,
     waveform_prefix: str = "waveform",
@@ -63,6 +64,7 @@ def convert_mat_to_spectrograms(
                 sample_rate=sample_rate,
                 stft_point=stft_point,
                 duration_time=duration_time,
+                remove_dc=remove_dc,
             )
 
             output_path = os.path.join(output_dir, f"{prefix}_{index:06d}.png")

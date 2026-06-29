@@ -21,10 +21,11 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 FEATURE_EXTRACTOR = "swin_v2_s_imagenet_penultimate"
 
 # Edit these values directly.
-ARTIFACT_IN = "linear_probe/Swin_Small/trained_classifier.joblib"
-SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms_refactor"  # --- IGNORE ---
-OUTPUT_JSON = "linear_probe/Swin_Small/report/Tu_thu/2toan/results.json"
-OUTPUT_CHART = "linear_probe/Swin_Small/report/Tu_thu/2toan/results_chart.png"
+# ARTIFACT_IN = "linear_probe/Swin_Small/trained_classifier.joblib"
+ARTIFACT_IN = r"e:\DATN_model_result\Feature_extraction\swin_small_trained_classifier.joblib"
+SOURCE_DIR = r"e:\Data_22_6\Drone_tu_thu_full\drone\drone_10m_spectrograms"
+OUTPUT_JSON = "linear_probe/Swin_Small/report/test/results.json"
+OUTPUT_CHART = "linear_probe/Swin_Small/report/test/results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 64
@@ -37,6 +38,7 @@ class SpectrogramDataset(Dataset):
         self.transform = transforms.Compose(
             [
                 transforms.Resize((image_size, image_size)),
+                transforms.Grayscale(num_output_channels=3),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             ]

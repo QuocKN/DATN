@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 from typing import List, Sequence
 
-import joblib
 import matplotlib
 
 matplotlib.use("Agg")
@@ -20,10 +19,11 @@ from tqdm import tqdm
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-ARTIFACT_IN = "linear_probe/ResNet50/trained_classifier.joblib"
-SOURCE_DIR = "/home/quocnk/Documents/NKQuoc/Data/RF/Tu_thu/drone2/spectrograms"
-OUTPUT_JSON = "linear_probe/ResNet50/report/Tu_thu/2toan/results.json"
-OUTPUT_CHART = "linear_probe/ResNet50/report/Tu_thu/2toan/results_chart.png"
+CHECKPOINT_IN = r"d:\balanced_vit_b16_binary_data_v4.pt"
+# SOURCE_DIR = r"e:\Data_22_6\Drone_tu_thu_full\drone\drone_40m_spectrograms"
+SOURCE_DIR = r"e:\Data_22_6\Drone_tu_thu_full\non_drone\hanhlang_blue_spectrograms"
+OUTPUT_JSON = "fine_tune/ViT_B16/report/test/results.json"
+OUTPUT_CHART = "fine_tune/ViT_B16/report/test/results_chart.png"
 IMAGE_SIZE = 224
 DEVICE = "cuda:0"
 BATCH_SIZE = 128
@@ -46,8 +46,7 @@ class SpectrogramDataset(Dataset):
         return len(self.image_paths)
 
     def __getitem__(self, idx: int) -> torch.Tensor:
-        path = self.image_paths[idx]
-        image = Image.open(path).convert("RGB")
+        image = Image.open(self.image_paths[idx]).convert("RGB")
         return self.transform(image)
 
 
@@ -57,40 +56,50 @@ def collect_image_paths(root: Path) -> List[Path]:
     return sorted([p for p in root.rglob("*") if p.is_file() and p.suffix.lower() in IMAGE_EXTS])
 
 
-def load_feature_model(device: torch.device) -> torch.nn.Module:
+def build_model(checkpoint: dict, device: torch.device) -> tuple[nn.Module, List[str], dict, int]:
+    class_names = checkpoint.get("class_names", ["non_drone", "drone"])
+    class_to_idx = checkpoint.get("class_to_idx", {name: idx for idx, name in enumerate(class_names)})
+    image_size = int(checkpoint.get("image_size", IMAGE_SIZE))
+
     try:
-        base = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
+        model = models.vit_b_16(weights=models.ViT_B_16_Weights.IMAGENET1K_V1)
     except Exception:
-        base = models.resnet50(weights=None)
-
-    model = nn.Sequential(*list(base.children())[:-1])
-    model.eval()
+        model = models.vit_b_16(weights=None)
+    model.heads.head = nn.Linear(model.heads.head.in_features, len(class_names))
     model.to(device)
-    return model
+    model.load_state_dict(checkpoint["state_dict"], strict=True)
+    model.eval()
+    return model, class_names, class_to_idx, image_size
 
 
-def extract_embeddings(
+@torch.no_grad()
+def infer(
     image_paths: Sequence[Path],
-    model: torch.nn.Module,
+    model: nn.Module,
     device: torch.device,
     image_size: int,
     batch_size: int,
     num_workers: int,
-) -> np.ndarray:
+) -> tuple[np.ndarray, np.ndarray]:
     dataset = SpectrogramDataset(image_paths, image_size=image_size)
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
 
-    embs: List[np.ndarray] = []
-    with torch.no_grad():
-        for x in tqdm(loader, desc="Extract embeddings", unit="batch"):
-            x = x.to(device, non_blocking=True)
-            emb = model(x).flatten(1).detach().cpu().numpy()
-            embs.append(emb)
+    probs_all: List[np.ndarray] = []
+    pred_all: List[np.ndarray] = []
 
-    if not embs:
-        raise ValueError("No image found for embedding extraction")
+    model.eval()
+    for x in tqdm(loader, desc="Infer", unit="batch"):
+        x = x.to(device, non_blocking=True)
+        logits = model(x)
+        probs = torch.softmax(logits, dim=1)
+        pred = probs.argmax(dim=1)
+        probs_all.append(probs.detach().cpu().numpy())
+        pred_all.append(pred.detach().cpu().numpy())
 
-    return np.concatenate(embs, axis=0)
+    if not probs_all:
+        raise ValueError("No image found for inference")
+
+    return np.concatenate(probs_all, axis=0), np.concatenate(pred_all, axis=0)
 
 
 def visualize_detection_results(
@@ -101,7 +110,6 @@ def visualize_detection_results(
     total: int,
     model_name: str | None,
 ) -> None:
-    """Create a PNG dashboard for linear probe detection results."""
     fig, axes = plt.subplots(2, 2, figsize=(15, 10))
     fig.patch.set_facecolor("#f7f9fc")
 
@@ -157,16 +165,28 @@ def visualize_detection_results(
     ax4.set_title("Detection Summary", fontweight="bold")
     ax4.set_ylabel("Count-scaled value")
     ax4.grid(axis="y", alpha=0.3)
+
+    path = Path(SOURCE_DIR)
+    last_two_parts = path.parts[-2:]
+    drone_name = "/".join(last_two_parts)
+
     for bar, text in zip(bars, display_values):
-        ax4.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + max(total * 0.015, 0.5), text, ha="center", fontweight="bold")
+        ax4.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + max(total * 0.015, 0.5),
+            text,
+            ha="center",
+            fontweight="bold",
+        )
 
     fig.suptitle(
-        f"Linear Probe Detection Results | Model: {model_name or 'unknown'} | "
-        f"Drone: {drone_count}/{total} ({100 * drone_count / max(total, 1):.1f}%)",
+        f"{drone_name}\n\n"
+        f"Fine-tuned ViT-B/16 Detection Results | Model: {model_name or 'unknown'} | "
+        f"Drone: {drone_count}/{total} ({100 * drone_count / max(total, 1):.1f}%)\n",
         fontsize=14,
         fontweight="bold",
     )
-    plt.tight_layout(rect=(0, 0, 1, 0.95))
+    plt.tight_layout(rect=(0, 0, 1, 1))
     output_path.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -174,75 +194,64 @@ def visualize_detection_results(
 
 
 def main() -> None:
-    artifact_in = Path(ARTIFACT_IN)
+    checkpoint_path = Path(CHECKPOINT_IN)
     source_root = Path(SOURCE_DIR)
 
-    if not artifact_in.exists():
-        raise FileNotFoundError(f"Artifact file not found: {artifact_in}")
-
-    payload = joblib.load(artifact_in)
-    if payload.get("artifact_type") != "linear_probe_classifier":
-        raise ValueError("This script expects a linear_probe_classifier artifact")
-
-    clf = payload["model"]
-    summary_train = payload.get("summary", {})
-    feature_extractor = summary_train.get("feature_extractor")
-    if feature_extractor and feature_extractor != "resnet50_imagenet_v2_penultimate":
-        raise ValueError(
-            "This detector expects a ResNet50 artifact, "
-            f"but artifact feature_extractor={feature_extractor!r}"
-        )
+    if not checkpoint_path.exists():
+        raise FileNotFoundError(f"Checkpoint file not found: {checkpoint_path}")
 
     device = torch.device(DEVICE if torch.cuda.is_available() and DEVICE.startswith("cuda") else "cpu")
+    checkpoint = torch.load(checkpoint_path, map_location=device)
+    model, class_names, class_to_idx, image_size = build_model(checkpoint, device)
+
+    if "drone" not in class_to_idx:
+        raise ValueError("Checkpoint class_to_idx does not contain 'drone'")
+    drone_idx = int(class_to_idx["drone"])
 
     source_paths = collect_image_paths(source_root)
-    model = load_feature_model(device)
-    embeddings = extract_embeddings(
-        source_paths,
-        model,
-        device,
-        image_size=IMAGE_SIZE,
+    probs, pred = infer(
+        image_paths=source_paths,
+        model=model,
+        device=device,
+        image_size=image_size,
         batch_size=BATCH_SIZE,
         num_workers=NUM_WORKERS,
     )
 
-    pred = clf.predict(embeddings)
+    scores = probs[:, drone_idx]
     pred = pred.astype(int)
-
-    if hasattr(clf, "predict_proba"):
-        scores = clf.predict_proba(embeddings)[:, 1]
-    elif hasattr(clf, "decision_function"):
-        raw = clf.decision_function(embeddings)
-        # Monotonic mapping to [0,1] for readability only.
-        scores = 1.0 / (1.0 + np.exp(-raw))
-    else:
-        scores = pred.astype(np.float32)
+    idx_to_class = {v: k for k, v in class_to_idx.items()}
 
     predictions = []
     for path, y_hat, score in zip(source_paths, pred, scores):
+        label_name = idx_to_class.get(int(y_hat), str(int(y_hat)))
         predictions.append(
             {
                 "image": str(path),
-                "prediction": "drone" if int(y_hat) == 1 else "non_drone",
+                "prediction": label_name,
                 "drone_score": float(score),
             }
         )
 
-    drone_count = int(np.sum(pred == 1))
+    drone_count = int(np.sum(pred == drone_idx))
     total = int(len(pred))
+    non_drone_count = total - drone_count
 
     summary = {
-        "method": "linear_probe_classifier",
-        "feature_extractor": "resnet50_imagenet_v2_penultimate",
-        "model_name": payload.get("model_name"),
-        "artifact_in": str(artifact_in),
+        "method": "vit_b16_finetuned_classifier",
+        "model_name": checkpoint.get("model_name", "vit_b16_binary_finetuned"),
+        "backbone_name": checkpoint.get("backbone_name", "vit_b_16"),
+        "checkpoint_in": str(checkpoint_path),
+        "source_dir": str(source_root),
         "source_images": total,
         "detected_drone_count": drone_count,
-        "detected_non_drone_count": total - drone_count,
+        "detected_non_drone_count": non_drone_count,
         "detected_drone_rate": float(drone_count / max(total, 1)),
         "score_mean": float(np.mean(scores)) if total else None,
         "score_std": float(np.std(scores)) if total else None,
-        "train_summary": summary_train,
+        "class_names": class_names,
+        "class_to_idx": class_to_idx,
+        "best_valid_macro_f1": checkpoint.get("best_valid_macro_f1"),
     }
 
     output_path = Path(OUTPUT_JSON)
@@ -256,11 +265,11 @@ def main() -> None:
     chart_path = Path(OUTPUT_CHART)
     visualize_detection_results(
         scores=scores,
-        pred=pred,
+        pred=(pred == drone_idx).astype(np.int64),
         output_path=chart_path,
         drone_count=drone_count,
         total=total,
-        model_name=payload.get("model_name"),
+        model_name=Path(CHECKPOINT_IN).stem,
     )
 
 
