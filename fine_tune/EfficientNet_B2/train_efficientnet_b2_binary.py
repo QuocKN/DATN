@@ -1,3 +1,4 @@
+#EfficientNet B2
 from __future__ import annotations
 
 import argparse
@@ -525,9 +526,8 @@ def main() -> None:
     print("\nTest summary")
     print(json.dumps({"test_loss": test_loss, "test_acc": test_acc, "summary": str(summary_path)}, indent=2))
 
-
-DRONE_ROOT = "/kaggle/input/datasets/quoclop/balanced-dataset-drone-chuan-full-non-done/balanced_dataset_drone_chuan_full_non_done_1/balanced_dataset_drone_chuan_full_non_done/drone"
-NON_DRONE_ROOT = "/kaggle/input/datasets/quoclop/balanced-dataset-drone-chuan-full-non-done/balanced_dataset_drone_chuan_full_non_done_1/balanced_dataset_drone_chuan_full_non_done/non_drone"
+DRONE_ROOT = "/kaggle/input/balanced-dataset-drone-chuan-full-non-done/drone/drone"
+NON_DRONE_ROOT = "/kaggle/input/balanced-dataset-drone-chuan-full-non-done/non_drone_not11/non_drone"
 
 
 if __name__ == "__main__":

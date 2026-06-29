@@ -1,3 +1,4 @@
+#train
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -29,9 +30,6 @@ add_common_import_paths()
 
 from common import run_split_embedding_linear_probe
 
-# Change this constant to choose the backbone:
-# "dinov2", "swin_small", "vit_b16", "resnet50", "efficientnet_b2", or "vgg13bn".
-MODEL_TO_TRAIN = "dinov2"
 
 # Shared train settings.
 TRAIN_SPLIT = "train"
@@ -240,11 +238,14 @@ def main() -> None:
         extra_summary={"svm_class_weight": SVM_CLASS_WEIGHT},
         svm_class_weight=SVM_CLASS_WEIGHT,
     )
-    
+
 DRONE_ROOT = r"/kaggle/input/balanced-dataset-drone-chuan-full-non-done/drone/drone"
-NON_DRONE_ROOT = r"/kaggle/input/balanced-dataset-drone-chuan-full-non-done/non_drone_not11/non_drone"
-MAX_DRONE = 2200
-MAX_NON_DRONE = 2200
+NON_DRONE_ROOT = "/kaggle/input/balanced-dataset-drone-chuan-full-non-done/non_drone_not11/non_drone"
+MAX_DRONE = 2500
+MAX_NON_DRONE = 2500
+# Change this constant to choose the backbone:
+# "dinov2", "swin_small", "vit_b16", "resnet50", "efficientnet_b2", or "vgg13bn".
+MODEL_TO_TRAIN = "vgg13bn"
 
 if __name__ == "__main__":
     main()

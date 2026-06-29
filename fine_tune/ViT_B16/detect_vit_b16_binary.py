@@ -1,3 +1,4 @@
+#ViT_B16
 from __future__ import annotations
 
 import json
@@ -19,9 +20,9 @@ from tqdm import tqdm
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = r"d:\balanced_vit_b16_binary_data_v4.pt"
-# SOURCE_DIR = r"e:\Data_22_6\Drone_tu_thu_full\drone\drone_40m_spectrograms"
-SOURCE_DIR = r"e:\Data_22_6\Drone_tu_thu_full\non_drone\hanhlang_blue_spectrograms"
+# CHECKPOINT_IN = r"d:\balanced_vit_b16_binary_data_v4.pt"
+# # SOURCE_DIR = r"e:\Data_22_6\Drone_tu_thu_full\drone\drone_40m_spectrograms"
+# SOURCE_DIR = r"e:\Data_22_6\Drone_tu_thu_full\non_drone\hanhlang_blue_spectrograms"
 OUTPUT_JSON = "fine_tune/ViT_B16/report/test/results.json"
 OUTPUT_CHART = "fine_tune/ViT_B16/report/test/results_chart.png"
 IMAGE_SIZE = 224
@@ -271,7 +272,15 @@ def main() -> None:
         total=total,
         model_name=Path(CHECKPOINT_IN).stem,
     )
+CHECKPOINT_IN = r"/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/Vit_B16/balanced_vit_b16_binary.pt"
+SOURCE_DIR = r"/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evaluate/non_drone_evalueate"
+# SOURCE_DIR = r"/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/drone_evaluate/drone_evaluate"
 
+# SOURCE_DIR = "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/Drone_RF_spectrograms/Drone_RF_spectrograms"
+# SOURCE_DIR = "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/RFUAV_spectrograms/RFUAV_spectrograms"
+
+SOURCE_DIR = r"/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/drone_evaluate/drone_evaluate/indoor"
+# SOURCE_DIR = "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/indoor"
 
 if __name__ == "__main__":
     main()

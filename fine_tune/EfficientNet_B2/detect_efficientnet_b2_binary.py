@@ -1,3 +1,4 @@
+#EfficientNet B2
 from __future__ import annotations
 
 import json
@@ -19,8 +20,6 @@ from tqdm import tqdm
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff"}
 
 # Edit these values directly.
-CHECKPOINT_IN = r"d:\balanced_efficientnet_b2_binary_data_v6.pt"
-SOURCE_DIR = r"e:\Data_22_6\Drone_tu_thu_full\non_drone\non_drone_outdoor_t11_wifi_spectrograms"
 OUTPUT_JSON = "fine_tune/EfficientNet_B2/report/Tu_thu/results.json"
 OUTPUT_CHART = "fine_tune/EfficientNet_B2/report/Tu_thu/results_chart.png"
 IMAGE_SIZE = 260
@@ -294,6 +293,14 @@ def main() -> None:
         model_name=Path(CHECKPOINT_IN).stem,
     )
 
+CHECKPOINT_IN = r"/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune/EfficientNetB2/balanced_efficientnet_b2_binary.pt"
+SOURCE_DIR = r"/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/drone_evaluate/drone_evaluate"
+# SOURCE_DIR = r"/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evaluate/non_drone_evalueate"
+# SOURCE_DIR = "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/Drone_RF_spectrograms/Drone_RF_spectrograms"
+# SOURCE_DIR = "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/RFUAV_spectrograms/RFUAV_spectrograms"
+
+# SOURCE_DIR = r"/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/drone_evaluate/drone_evaluate/outdoor"
+# SOURCE_DIR = "/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate/outdoor"
 
 if __name__ == "__main__":
     main()

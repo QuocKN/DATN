@@ -191,14 +191,14 @@ MODEL_CONFIGS = {
     ),
     "efficientnet_b2": DetectConfig(
         feature_extractor="efficientnet_b2_imagenet_penultimate",
-        default_artifact="linear_probe/EfficientNet_B2/trained_classifier.joblib",
+        default_artifact="/kaggle/input/datasets/quoclop/model-svm/Feature_extraction/efficientnetb2_trained_classifier.joblib",
         image_size=260,
         batch_size=128,
         load_model=load_efficientnet_b2,
     ),
     "vgg13bn": DetectConfig(
         feature_extractor="vgg13_bn_imagenet_penultimate",
-        default_artifact="linear_probe/VGG13_BN/trained_classifier.joblib",
+        default_artifact="/kaggle/input/datasets/quoclop/model-svm/Feature_extraction/vgg13bn_trained_classifier.joblib",
         image_size=224,
         batch_size=32,
         load_model=load_vgg13bn,
@@ -399,10 +399,11 @@ def main() -> None:
     )
 # Change this constant to choose the detector backbone:
 # "dinov2", "swin_small", "vit_b16", "resnet50", "efficientnet_b2", or "vgg13bn".
-MODEL_TO_DETECT = "dinov2"
+MODEL_TO_DETECT = "vgg13bn"
 
 # Edit these values directly.
-SOURCE_DIR = r"/kaggle/input/datasets/kqucnguyn/data-test-spectrograms/drone_evaluate/drone_evaluate"
+# SOURCE_DIR = r"/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate"
+SOURCE_DIR = r"/kaggle/input/data-test-spectrograms/non_drone_evaluate/non_drone_evalueate"
 
 if __name__ == "__main__":
     main()
