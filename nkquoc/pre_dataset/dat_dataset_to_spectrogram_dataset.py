@@ -534,7 +534,7 @@ def maybe_scale_spectrogram_image(output_path: str) -> None:
     if not ENABLE_IMAGE_SCALING:
         return
 
-    from nkquoc.scale_image import scale_image
+    from nkquoc.pre_dataset.scale_image import scale_image
 
     scale_image(Path(output_path), SCALE_TOP_RATIO, SCALE_BOTTOM_RATIO)
 

@@ -24,7 +24,7 @@ from typing import Any
 import numpy as np
 
 try:
-    from .base.iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
+    from ..base.iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
 except ImportError:
     from base.iq_preprocessing import blank_impulsive_spikes, despike_iq, repair_clipped_iq
 
