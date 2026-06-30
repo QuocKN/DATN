@@ -1,0 +1,152 @@
+\documentclass[../DoAn.tex]{subfiles}
+\begin{document}
+
+\section*{Phụ lục: Một số ảnh spectrogram minh họa}
+\addcontentsline{toc}{section}{Phụ lục: Một số ảnh spectrogram minh họa}
+\label{sec:appendix_spectrogram_examples}
+
+Phụ lục này bổ sung một số ảnh spectrogram để minh họa trực quan cho dữ liệu và các kịch bản đánh giá trong đồ án.
+Các ảnh được đặt tại \texttt{Hinh\_ve/phu\_luc/anh\_phu\_luc}; mỗi nhóm hình tương ứng với một loại dữ liệu và các
+ảnh trong cùng nhóm được xếp trên một hàng ngang.
+
+\newcommand{\appendixpic}[3]{%
+    \begin{minipage}{#1}
+        \centering
+        \includegraphics[width=\linewidth]{#2}
+        {\scriptsize #3}
+    \end{minipage}%
+}
+
+\subsection*{Mẫu từ tập DroneDetectv2}
+
+Hình~\ref{fig:appendix_dataset_drone} minh họa hai mẫu spectrogram thuộc nguồn dữ liệu drone chính được sử dụng trong
+tập huấn luyện.
+
+\begin{figure}[H]
+    \centering
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/dataset_drone/1.png}{Mẫu 1}
+    \hspace{0.08\textwidth}
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/dataset_drone/2.png}{Mẫu 2}
+    \caption{Một số mẫu spectrogram từ tập DroneDetectv2}
+    \label{fig:appendix_dataset_drone}
+\end{figure}
+
+\subsection*{Mẫu từ các bộ dữ liệu ngoài miền}
+
+Hình~\ref{fig:appendix_dataset_external} trình bày các mẫu từ RFUAV và DroneRF, được dùng để kiểm tra khả năng tổng
+quát hóa của mô hình trên nguồn dữ liệu khác với tập huấn luyện.
+
+\begin{figure}[H]
+    \centering
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/dataset_ngoai/RFUAV.png}{RFUAV}
+    \hspace{0.08\textwidth}
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/dataset_ngoai/DroneRF.png}{DroneRF}
+    \caption{Một số mẫu spectrogram từ các bộ dữ liệu ngoài miền}
+    \label{fig:appendix_dataset_external}
+\end{figure}
+
+\subsection*{Mẫu dữ liệu RF tự thu}
+
+Hình~\ref{fig:appendix_self_collected} trình bày bốn mẫu spectrogram sinh ra từ dữ liệu RF tự thu. Nhóm ảnh này phản
+ánh điều kiện thu bằng SDR trong môi trường thực tế hơn so với dữ liệu công khai dùng để huấn luyện.
+
+\begin{figure}[H]
+    \centering
+    \appendixpic{0.23\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/tu_thu/1.png}{Mẫu 1}
+    \hfill
+    \appendixpic{0.23\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/tu_thu/2.png}{Mẫu 2}
+    \hfill
+    \appendixpic{0.23\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/tu_thu/3.png}{Mẫu 3}
+    \hfill
+    \appendixpic{0.23\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/tu_thu/4.png}{Mẫu 4}
+    \caption{Một số mẫu spectrogram từ dữ liệu RF tự thu}
+    \label{fig:appendix_self_collected}
+\end{figure}
+
+\subsection*{Mẫu thu trong nhà và ngoài trời}
+
+Hình~\ref{fig:appendix_indoor} và Hình~\ref{fig:appendix_outdoor} minh họa hai điều kiện thu khác nhau. Môi trường thu,
+vật cản, phản xạ đa đường và mức nhiễu nền có thể làm thay đổi hình dạng năng lượng trên spectrogram.
+
+\begin{figure}[H]
+    \centering
+    \appendixpic{0.32\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/indoor/1.png}{Indoor}
+    \caption{Mẫu spectrogram thu trong nhà}
+    \label{fig:appendix_indoor}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \appendixpic{0.32\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/outdoor/1.png}{Outdoor}
+    \caption{Mẫu spectrogram thu ngoài trời}
+    \label{fig:appendix_outdoor}
+\end{figure}
+
+\subsection*{Mẫu chất lượng tốt và chất lượng kém}
+
+Hình~\ref{fig:appendix_good_examples} minh họa các mẫu spectrogram có cấu trúc tín hiệu tương đối rõ. Ngược lại,
+Hình~\ref{fig:appendix_not_good_examples} trình bày các mẫu khó quan sát hơn, có thể do SNR thấp, nhiễu đồng kênh,
+clipping hoặc điều kiện thu không ổn định.
+
+\begin{figure}[H]
+    \centering
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/good/1.png}{Mẫu 1}
+    \hfill
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/good/2.png}{Mẫu 2}
+    \hfill
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/good/3.png}{Mẫu 3}
+    \caption{Một số mẫu spectrogram có cấu trúc tín hiệu rõ}
+    \label{fig:appendix_good_examples}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/not_good/1.png}{Mẫu 1}
+    \hfill
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/not_good/2.png}{Mẫu 2}
+    \hfill
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/not_good/3.png}{Mẫu 3}
+    \caption{Một số mẫu spectrogram khó quan sát hơn}
+    \label{fig:appendix_not_good_examples}
+\end{figure}
+
+\subsection*{Mẫu tín hiệu nền và nhiễu cùng băng tần}
+
+Hình~\ref{fig:appendix_noise_examples} minh họa một số mẫu tín hiệu nền hoặc nguồn phát cùng băng tần. Các nguồn này
+có thể chồng lấn với tín hiệu drone trong băng 2,4~GHz và làm tăng độ khó của bài toán phân loại.
+
+\begin{figure}[H]
+    \centering
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/nhieu/blue.png}{Bluetooth}
+    \hfill
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/nhieu/wf1.png}{Wi-Fi -- 1}
+    \hfill
+    \appendixpic{0.30\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/nhieu/wf2.png}{Wi-Fi -- 2}
+    \caption{Một số mẫu tín hiệu nền và nguồn phát cùng băng tần}
+    \label{fig:appendix_noise_examples}
+\end{figure}
+
+\subsection*{Mẫu spectrogram theo khoảng cách thu}
+
+Hình~\ref{fig:appendix_distance_examples} minh họa các mẫu spectrogram ở những khoảng cách thu khác nhau. Khoảng cách
+có thể ảnh hưởng đến công suất thu và SNR, nhưng mức thay đổi trên spectrogram còn phụ thuộc vào hướng anten, môi
+trường truyền sóng và nhiễu nền tại thời điểm thu.
+
+\begin{figure}[H]
+    \centering
+    \appendixpic{0.155\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/khoang_cach/10m.png}{10~m}
+    \hfill
+    \appendixpic{0.155\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/khoang_cach/30m.png}{30~m}
+    \hfill
+    \appendixpic{0.155\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/khoang_cach/40m.png}{40~m}
+    \hfill
+    \appendixpic{0.155\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/khoang_cach/60m.png}{60~m}
+    \hfill
+    \appendixpic{0.155\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/khoang_cach/80m.png}{80~m}
+    \hfill
+    \appendixpic{0.155\textwidth}{Hinh_ve/phu_luc/anh_phu_luc/khoang_cach/100m.png}{100~m}
+    \caption{Một số mẫu spectrogram theo khoảng cách thu}
+    \label{fig:appendix_distance_examples}
+\end{figure}
+
+\end{document}

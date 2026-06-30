@@ -1,0 +1,253 @@
+%\makeglossaries
+\makenoidxglossaries
+
+% ===== Danh mục thuật ngữ và từ viết tắt =====
+
+\newglossaryentry{uav}{
+    type=\acronymtype,
+    name={UAV},
+    description={Thiết bị bay không người lái}
+}
+\newglossaryentry{rf}{
+    type=\acronymtype,
+    name={RF},
+    description={Tần số vô tuyến}
+}
+\newglossaryentry{ism}{
+    type=\acronymtype,
+    name={ISM},
+    description={Băng tần công nghiệp, khoa học và y tế}
+}
+\newglossaryentry{iot}{
+    type=\acronymtype,
+    name={IoT},
+    description={Internet vạn vật}
+}
+
+\newglossaryentry{iq}{
+    type=\acronymtype,
+    name={I/Q},
+    description={Thành phần đồng pha và vuông pha}
+}
+
+\newglossaryentry{sdr}{
+    type=\acronymtype,
+    name={SDR},
+    description={Vô tuyến định nghĩa bằng phần mềm}
+}
+
+\newglossaryentry{adc}{
+    type=\acronymtype,
+    name={ADC},
+    description={Bộ chuyển đổi tương tự sang số}
+}
+
+\newglossaryentry{usb}{
+    type=\acronymtype,
+    name={USB},
+    description={Chuẩn kết nối tuần tự đa dụng}
+}
+
+\newglossaryentry{stft}{
+    type=\acronymtype,
+    name={STFT},
+    description={Biến đổi Fourier thời gian ngắn}
+}
+
+\newglossaryentry{fft}{
+    type=\acronymtype,
+    name={FFT},
+    description={Biến đổi Fourier nhanh}
+}
+
+\newglossaryentry{psd}{
+    type=\acronymtype,
+    name={PSD},
+    description={Mật độ công suất phổ}
+}
+
+\newglossaryentry{snr}{
+    type=\acronymtype,
+    name={SNR},
+    description={Tỉ số tín hiệu trên nhiễu}
+}
+
+\newglossaryentry{pl}{
+    type=\acronymtype,
+    name={PL},
+    description={Suy hao đường truyền}
+}
+
+\newglossaryentry{ofdm}{
+    type=\acronymtype,
+    name={OFDM},
+    description={Ghép kênh phân chia tần số trực giao}
+}
+
+\newglossaryentry{fhss}{
+    type=\acronymtype,
+    name={FHSS},
+    description={Trải phổ nhảy tần}
+}
+
+\newglossaryentry{bpsk}{
+    type=\acronymtype,
+    name={BPSK},
+    description={Điều chế dịch pha nhị phân}
+}
+
+\newglossaryentry{qpsk}{
+    type=\acronymtype,
+    name={QPSK},
+    description={Điều chế dịch pha vuông góc}
+}
+
+\newglossaryentry{qam}{
+    type=\acronymtype,
+    name={QAM},
+    description={Điều chế biên độ cầu phương}
+}
+
+\newglossaryentry{rdid}{
+    type=\acronymtype,
+    name={RDID},
+    description={Định danh drone từ xa}
+}
+
+\newglossaryentry{ieee}{
+    type=\acronymtype,
+    name={IEEE},
+    description={Viện Kỹ sư Điện và Điện tử}
+}
+
+\newglossaryentry{cnn}{
+    type=\acronymtype,
+    name={CNN},
+    description={Mạng nơ-ron tích chập}
+}
+
+\newglossaryentry{rnn}{
+    type=\acronymtype,
+    name={RNN},
+    description={Mạng nơ-ron hồi tiếp}
+}
+
+\newglossaryentry{lstm}{
+    type=\acronymtype,
+    name={LSTM},
+    description={Mạng nhớ ngắn hạn dài}
+}
+
+\newglossaryentry{svm}{
+    type=\acronymtype,
+    name={SVM},
+    description={Máy vectơ hỗ trợ}
+}
+
+\newglossaryentry{svc}{
+    type=\acronymtype,
+    name={SVC},
+    description={Bộ phân loại vectơ hỗ trợ}
+}
+
+\newglossaryentry{rbf}{
+    type=\acronymtype,
+    name={RBF},
+    description={Hàm cơ sở bán kính}
+}
+
+\newglossaryentry{knn}{
+    type=\acronymtype,
+    name={KNN},
+    description={Thuật toán k láng giềng gần nhất}
+}
+
+\newglossaryentry{vit}{
+    type=\acronymtype,
+    name={ViT},
+    description={Vision Transformer}
+}
+
+\newglossaryentry{fe}{
+    type=\acronymtype,
+    name={FE},
+    description={Phân loại dựa trên trích xuất đặc trưng}
+}
+
+\newglossaryentry{ft}{
+    type=\acronymtype,
+    name={FT},
+    description={Tinh chỉnh mô hình}
+}
+
+\newglossaryentry{rgb}{
+    type=\acronymtype,
+    name={RGB},
+    description={Không gian màu đỏ, xanh lá, xanh dương}
+}
+
+\newglossaryentry{cpu}{
+    type=\acronymtype,
+    name={CPU},
+    description={Bộ xử lý trung tâm}
+}
+
+\newglossaryentry{gpu}{
+    type=\acronymtype,
+    name={GPU},
+    description={Bộ xử lý đồ họa}
+}
+
+\newglossaryentry{ram}{
+    type=\acronymtype,
+    name={RAM},
+    description={Bộ nhớ truy cập ngẫu nhiên}
+}
+
+\newglossaryentry{vram}{
+    type=\acronymtype,
+    name={VRAM},
+    description={Bộ nhớ đồ họa}
+}
+
+\newglossaryentry{acc}{
+    type=\acronymtype,
+    name={Acc},
+    description={Độ chính xác phân loại}
+}
+
+\newglossaryentry{tp}{
+    type=\acronymtype,
+    name={TP},
+    description={Dương tính đúng}
+}
+
+\newglossaryentry{tn}{
+    type=\acronymtype,
+    name={TN},
+    description={Âm tính đúng}
+}
+
+\newglossaryentry{fp}{
+    type=\acronymtype,
+    name={FP},
+    description={Dương tính giả}
+}
+
+\newglossaryentry{fn}{
+    type=\acronymtype,
+    name={FN},
+    description={Âm tính giả}
+}
+
+\newglossaryentry{f1}{
+    type=\acronymtype,
+    name={F1-score},
+    description={Trung bình điều hòa giữa Precision và Recall}
+}
+
+\newglossaryentry{macrof1}{
+    type=\acronymtype,
+    name={Macro-F1},
+    description={Trung bình cộng F1-score của các lớp}
+}

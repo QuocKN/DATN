@@ -1,0 +1,188 @@
+{
+  "method": "vgg13_bn_finetuned_classifier",
+  "model_name": "vgg13_bn_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune_V8/VGG13_BN/balanced_vgg13_binary.pt",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 1046,
+  "detected_non_drone_count": 2842,
+  "detected_drone_rate": 0.2690329218106996,
+  "score_mean": 0.2859634757041931,
+  "score_std": 0.3911948800086975,
+}
+{
+  "method": "vit_b16_finetuned_classifier",
+  "model_name": "vit_b16_binary_finetuned",
+  "backbone_name": "vit_b_16",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune_V8/ViT_B16/balanced_vit_b16_binary.pt",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 3167,
+  "detected_non_drone_count": 721,
+  "detected_drone_rate": 0.8145576131687243,
+  "score_mean": 0.812171995639801,
+  "score_std": 0.3615058362483978,
+}
+{
+  "method": "swin_v2_s_finetuned_classifier",
+  "model_name": "swin_v2_s_binary_finetuned",
+  "backbone_name": "swin_v2_s",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune_V8/Swin_small/balanced_swin_small_binary.pt",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 1173,
+  "detected_non_drone_count": 2715,
+  "detected_drone_rate": 0.30169753086419754,
+  "score_mean": 0.30597034096717834,
+  "score_std": 0.4069044589996338,
+}
+{
+  "method": "dinov2_finetuned_classifier",
+  "model_name": "dinov2_vits14_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune_V8/DinoV2/balanced_dinov2_vits14_binary.pt",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 2827,
+  "detected_non_drone_count": 1061,
+  "detected_drone_rate": 0.7271090534979424,
+  "score_mean": 0.7146578431129456,
+  "score_std": 0.41139817237854004,
+}
+{
+  "method": "resnet50_finetuned_classifier",
+  "model_name": "resnet50_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune_V8/ResNet50/balanced_resnet50_binary.pt",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 1549,
+  "detected_non_drone_count": 2339,
+  "detected_drone_rate": 0.3984053497942387,
+  "score_mean": 0.40512606501579285,
+  "score_std": 0.39727547764778137,
+}
+{
+  "method": "efficientnet_b2_finetuned_classifier",
+  "model_name": "efficientnet_b2_binary_finetuned",
+  "backbone_name": "efficientnet_b2",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune_V8/EfficientNet_B2/balanced_efficientnet_b2_binary.pt",
+  "source_dir": "/kaggle/input/data-test-spectrograms/drone_evaluate/drone_evaluate",
+  "source_images": 3888,
+  "detected_drone_count": 1687,
+  "detected_non_drone_count": 2201,
+  "detected_drone_rate": 0.4338991769547325,
+  "score_mean": 0.4260515868663788,
+  "score_std": 0.39397746324539185,
+}
+
+
+{
+  "method": "vgg13_bn_finetuned_classifier",
+  "model_name": "vgg13_bn_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune_V8/VGG13_BN/balanced_vgg13_binary.pt",
+  "source_dir": "/kaggle/input/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate",
+  "source_images": 1691,
+  "detected_drone_count": 355,
+  "detected_non_drone_count": 1336,
+  "detected_drone_rate": 0.20993494973388527,
+  "score_mean": 0.20308156311511993,
+  "score_std": 0.36175858974456787,
+}
+{
+  "method": "vit_b16_finetuned_classifier",
+  "model_name": "vit_b16_binary_finetuned",
+  "backbone_name": "vit_b_16",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune_V8/ViT_B16/balanced_vit_b16_binary.pt",
+  "source_dir": "/kaggle/input/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate",
+  "source_images": 1691,
+  "detected_drone_count": 212,
+  "detected_non_drone_count": 1479,
+  "detected_drone_rate": 0.12536960378474277,
+  "score_mean": 0.13937197625637054,
+  "score_std": 0.26078352332115173,
+}
+{
+  "method": "swin_v2_s_finetuned_classifier",
+  "model_name": "swin_v2_s_binary_finetuned",
+  "backbone_name": "swin_v2_s",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune_V8/Swin_small/balanced_swin_small_binary.pt",
+  "source_dir": "/kaggle/input/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate",
+  "source_images": 1691,
+  "detected_drone_count": 1,
+  "detected_non_drone_count": 1690,
+  "detected_drone_rate": 0.0005913660555884093,
+  "score_mean": 0.004018582869321108,
+  "score_std": 0.03337546065449715,
+}
+{
+  "method": "dinov2_finetuned_classifier",
+  "model_name": "dinov2_vits14_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune_V8/DinoV2/balanced_dinov2_vits14_binary.pt",
+  "source_dir": "/kaggle/input/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate",
+  "source_images": 1691,
+  "detected_drone_count": 13,
+  "detected_non_drone_count": 1678,
+  "detected_drone_rate": 0.00768775872264932,
+  "score_mean": 0.01871683821082115,
+  "score_std": 0.08004831522703171,
+}
+{
+  "method": "resnet50_finetuned_classifier",
+  "model_name": "resnet50_binary_finetuned",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune_V8/ResNet50/balanced_resnet50_binary.pt",
+  "source_dir": "/kaggle/input/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate",
+  "source_images": 1691,
+  "detected_drone_count": 500,
+  "detected_non_drone_count": 1191,
+  "detected_drone_rate": 0.29568302779420463,
+  "score_mean": 0.2938608229160309,
+  "score_std": 0.4146503508090973,
+}
+{
+  "method": "efficientnet_b2_finetuned_classifier",
+  "model_name": "efficientnet_b2_binary_finetuned",
+  "backbone_name": "efficientnet_b2",
+  "checkpoint_in": "/kaggle/input/datasets/kqucnguyn/model-dronedetect-final/Fine_tune_V8/EfficientNet_B2/balanced_efficientnet_b2_binary.pt",
+  "source_dir": "/kaggle/input/data-test-spectrograms/non_drone_evalueate/non_drone_evalueate",
+  "source_images": 1691,
+  "detected_drone_count": 323,
+  "detected_non_drone_count": 1368,
+  "detected_drone_rate": 0.19101123595505617,
+  "score_mean": 0.1724119782447815,
+  "score_std": 0.2738629877567291,
+}
+
+
+==================== TONG HOP KET QUA FINE-TUNE TU THU V8 ====================
+
+Du lieu danh gia:
+- Tap drone_evaluate: 3888 anh drone.
+- Tap non_drone_evalueate: 1691 anh non-drone.
+- Tong cong: 5579 anh.
+
+Cach quy doi:
+- TP = so anh drone duoc phat hien la drone.
+- FN = so anh drone bi nhan thanh non-drone.
+- FP = so anh non-drone bi nhan thanh drone.
+- TN = so anh non-drone duoc nhan dung la non-drone.
+
+Bang chi so tong hop:
+
+| Model | TP | FN | FP | TN | Accuracy | Precision | Recall/TPR | Specificity/TNR | FPR | F1-score | Balanced Acc |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| vgg13_bn | 1046 | 2842 | 355 | 1336 | 42.70% | 74.66% | 26.90% | 79.01% | 20.99% | 39.55% | 52.95% |
+| vit_b16 | 3167 | 721 | 212 | 1479 | 83.28% | 93.73% | 81.46% | 87.46% | 12.54% | 87.16% | 84.46% |
+| swin_v2_s | 1173 | 2715 | 1 | 1690 | 51.32% | 99.91% | 30.17% | 99.94% | 0.06% | 46.35% | 65.06% |
+| dinov2_vits14 | 2827 | 1061 | 13 | 1678 | 80.75% | 99.54% | 72.71% | 99.23% | 0.77% | 84.04% | 85.97% |
+| resnet50 | 1549 | 2339 | 500 | 1191 | 49.11% | 75.60% | 39.84% | 70.43% | 29.57% | 52.18% | 55.14% |
+| efficientnet_b2 | 1687 | 2201 | 323 | 1368 | 54.76% | 83.93% | 43.39% | 80.90% | 19.10% | 57.21% | 62.14% |
+
+Nhan xet chinh:
+- ViT_B16 co Accuracy cao nhat (83.28%), Recall cao nhat (81.46%) va F1-score cao nhat (87.16%). Mo hinh nay phu hop khi uu tien phat hien duoc nhieu drone.
+- DINOv2_vits14 co Balanced Accuracy cao nhat (85.97%), Precision rat cao (99.54%) va FPR rat thap (0.77%). Mo hinh nay can bang tot nhat giua phat hien drone va han che bao dong gia.
+- Swin_V2_S co Precision cao nhat (99.91%) va FPR thap nhat (0.06%), nhung Recall chi 30.17%, bo sot nhieu drone.
+- VGG13_BN, ResNet50 va EfficientNet_B2 co Recall va Accuracy thap hon ro ret, nen kem phu hop hon neu muc tieu la phat hien drone on dinh.
+
+Ket luan:
+- Lua chon tot nhat theo hieu nang tong the: DINOv2_vits14.
+- Lua chon tot nhat neu uu tien bat duoc nhieu drone: ViT_B16.
+- Lua chon tot nhat neu uu tien giam toi da bao dong gia: Swin_V2_S hoac DINOv2_vits14, trong do DINOv2_vits14 can bang hon do Recall cao hon nhieu.
